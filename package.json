@@ -1,0 +1,16 @@
+{
+  "name": "aissisted-robotics-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first robotics sandbox for planar arm kinematics, path planning, and obstacle awareness.",
+  "scripts": {
+    "start": "node scripts/dev-server.mjs",
+    "dev": "node scripts/dev-server.mjs",
+    "inspect": "node scripts/inspect-core.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
