@@ -1,0 +1,40 @@
+{
+  "fk": {
+    "jointsDegrees": [
+      30,
+      15
+    ],
+    "endEffector": {
+      "x": 239.148,
+      "y": 176.924
+    },
+    "workspace": {
+      "minReach": 40,
+      "maxReach": 300
+    }
+  },
+  "ik": {
+    "target": {
+      "x": 220,
+      "y": 110
+    },
+    "reachable": true,
+    "reason": null,
+    "jointsDegrees": [
+      56.46,
+      -70.57
+    ],
+    "edgeCase": false
+  },
+  "pathPlan": {
+    "waypointCount": 3,
+    "sampleCount": 64,
+    "valid": true,
+    "unreachableWaypoints": [],
+    "blockedWaypoints": [],
+    "totalPathLength": 300.746,
+    "totalDuration": 3.013,
+    "totalCollisionCount": 0
+  },
+  "scenarioFormat": "aissisted-robotics-sandbox/v1"
+}

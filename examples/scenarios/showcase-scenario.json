@@ -1,0 +1,58 @@
+{
+  "format": "aissisted-robotics-sandbox/v1",
+  "savedAt": "2026-03-21T13:00:00.000Z",
+  "scenarioName": "Showcase Snapshot",
+  "mode": "path",
+  "arm": {
+    "model": "planar-2d",
+    "linkLengths": [
+      170,
+      130
+    ],
+    "jointsDeg": [
+      30,
+      15
+    ],
+    "elbow": "down"
+  },
+  "target": {
+    "x": 220,
+    "y": 110
+  },
+  "path": {
+    "startJointsDeg": [
+      30,
+      15
+    ],
+    "playbackSpeed": 1,
+    "waypoints": [
+      {
+        "id": "wp-1",
+        "label": "P1",
+        "x": 200,
+        "y": 50
+      },
+      {
+        "id": "wp-2",
+        "label": "P2",
+        "x": 190,
+        "y": 120
+      },
+      {
+        "id": "wp-3",
+        "label": "P3",
+        "x": 250,
+        "y": 80
+      }
+    ]
+  },
+  "obstacles": [
+    {
+      "id": "obs-1",
+      "type": "circle",
+      "x": -220,
+      "y": 220,
+      "radius": 28
+    }
+  ]
+}
