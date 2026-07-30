@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robotics-asset-manifest-v1.json",
+  "title": "AIssisted Robotics Asset Manifest Entry",
+  "description": "One reviewed file proposed for transfer into the AIssisted Robotics Databricks catalog.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifestVersion",
+    "assetId",
+    "relativePath",
+    "fileName",
+    "assetKind",
+    "sizeBytes",
+    "checksumSha256",
+    "sensitivity",
+    "containsPersonalData",
+    "dataOwner",
+    "retentionClass",
+    "transferStatus"
+  ],
+  "properties": {
+    "manifestVersion": {
+      "const": "aissisted-robotics-asset/v1"
+    },
+    "assetId": {
+      "type": "string",
+      "pattern": "^asset-[a-z0-9][a-z0-9-]{7,63}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "not": {
+        "pattern": "^(?:/|~|[A-Za-z]:\\\\)"
+      }
+    },
+    "fileName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "assetKind": {
+      "type": "string",
+      "enum": [
+        "document",
+        "dataset",
+        "image",
+        "video",
+        "cad",
+        "mesh",
+        "urdf",
+        "code",
+        "notebook",
+        "workcell",
+        "other"
+      ]
+    },
+    "mimeType": {
+      "type": ["string", "null"],
+      "maxLength": 160
+    },
+    "sizeBytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksumSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceDevice": {
+      "type": ["string", "null"],
+      "maxLength": 120
+    },
+    "sourceUrl": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "vendor": {
+      "type": ["string", "null"],
+      "maxLength": 160
+    },
+    "robotModel": {
+      "type": ["string", "null"],
+      "maxLength": 160
+    },
+    "countryOfOrigin": {
+      "type": ["string", "null"],
+      "maxLength": 120
+    },
+    "sourceLicense": {
+      "type": ["string", "null"],
+      "maxLength": 160
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "customer-confidential",
+        "restricted"
+      ]
+    },
+    "containsPersonalData": {
+      "type": "boolean"
+    },
+    "dataOwner": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "retentionClass": {
+      "type": "string",
+      "enum": [
+        "source-record",
+        "active-project",
+        "temporary-review",
+        "legal-hold"
+      ]
+    },
+    "transferStatus": {
+      "type": "string",
+      "enum": [
+        "inventoried",
+        "approved",
+        "rejected",
+        "uploaded",
+        "curated",
+        "archived"
+      ]
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "maxLength": 2000
+    }
+  }
+}

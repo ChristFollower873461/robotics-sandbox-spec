@@ -18,6 +18,8 @@ profile in a dependency-free browser workbench.
 - Photo-assisted workcell reconstruction: load a local overhead image or floor plan, enter real millimeter bounds, and trace collision fixtures on top.
 - A fixture ledger with exact names, positions, dimensions, provenance, and robot-base placement.
 - Versioned workcell JSON download, clipboard copy, and import for reproducible scenes.
+- A credential-free Databricks bundle and governed asset manifest for moving
+  approved robotics knowledge into the existing AIssisted Consulting workspace.
 - Five sourced single-arm profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
 - Two sourced, published dual systems: ALOHA Stationary and Franka FR3 Duo.
 - Explicit source-fact versus simulation-geometry labeling so normalized link lengths are never presented as vendor dimensions.
@@ -125,6 +127,10 @@ const plan = planWaypointTrajectory({
 │   ├── ARCHITECTURE.md
 │   ├── CODEX_SPEC.md
 │   └── STATE_OF_THE_ART.md
+├── databricks/
+│   ├── bootstrap/
+│   └── manifests/
+├── databricks.yml
 ├── examples/
 │   ├── environments/
 │   ├── outputs/
