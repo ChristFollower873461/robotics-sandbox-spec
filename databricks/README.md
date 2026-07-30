@@ -53,6 +53,32 @@ into `landing.asset_manifest`, then move the original to `landing.archive` after
 curation. Keep customer-confidential material in a separate customer-scoped
 catalog rather than this cross-project Robotics catalog.
 
+## Curating an approved intake
+
+Import `curation/archive_curation.py` and
+`notebooks/01_curate_robotics_intake.py` into the same Databricks workspace
+folder, then run the notebook with an approved JSONL manifest from
+`landing.inbox`.
+
+The notebook verifies the manifest against both `landing.asset_manifest` and
+the current file bytes before it writes anything. It then creates and
+idempotently updates:
+
+- `landing.archive_members`: every safe archive member plus explicit skip
+  reasons for blocked paths, oversized files, and non-text material;
+- `knowledge.source_documents`: extracted source text with sensitivity,
+  personal-data classification, source URL, license, and extraction status;
+- `knowledge.source_chunks`: deterministic overlapping chunks for search and
+  retrieval;
+- `landing.curation_runs`: append-only run counts, pending work, and sanitized
+  error codes.
+
+Archive members are streamed in place and never extracted to local disk.
+Traversal paths, dependencies, generated output, logs, environment files, and
+key material are blocked before their content is opened. The notebook makes no
+network or model calls. Audio remains `transcription-pending`, and extracted
+documents remain source evidence rather than independently verified facts.
+
 ## Cost and privacy boundaries
 
 - No always-on compute.
