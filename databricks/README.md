@@ -79,6 +79,44 @@ key material are blocked before their content is opened. The notebook makes no
 network or model calls. Audio remains `transcription-pending`, and extracted
 documents remain source evidence rather than independently verified facts.
 
+## Enriching pending PDF and audio
+
+Run `notebooks/02_enrich_pending_media.py` after the base curation notebook.
+It processes supported PDF and MP3 entries from the same approved manifest,
+re-verifies each file against the registry and current bytes, and idempotently
+updates the existing document and chunk records.
+
+- PDF text is extracted with pinned `pypdf`.
+- Audio is transcribed on Databricks compute with pinned `faster-whisper` and a
+  pinned `Systran/faster-distil-whisper-small.en` model revision.
+- Package and model downloads are external, but source media and extracted text
+  remain inside the governed workspace and are never printed.
+- Media marked as containing personal data is rejected by this workflow.
+- `landing.media_enrichment_runs` records counts, versions, sanitized error
+  codes, and timings without recording source text.
+
+The base curation merge preserves successfully enriched documents if it is run
+again, so a later inventory refresh cannot downgrade audio to
+`transcription-pending`.
+
+## Citation-backed search
+
+Import `search/citation_search.py` and
+`notebooks/03_search_robotics_knowledge.py` into the same workspace folder,
+then run the notebook with a bounded query. The result is limited to 50 rows
+and includes:
+
+- source asset, document, and chunk IDs;
+- display name, governed source path, URL, and license when present;
+- sensitivity and personal-data classification;
+- extraction method and status;
+- chunk and character offsets;
+- a bounded preview and stable `robotics://` citation locator.
+
+Personal-data sources are excluded by default and require an explicit widget
+change. Results are labeled `source-evidence-not-verified-fact`; retrieval does
+not promote an extracted statement into a trusted robot specification.
+
 ## Cost and privacy boundaries
 
 - No always-on compute.

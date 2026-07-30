@@ -247,6 +247,7 @@ def merge_rows(
     target_table: str,
     key_column: str,
     view_suffix: str,
+    preserve_extracted_target: bool = False,
 ) -> None:
     if not rows:
         return
@@ -256,12 +257,20 @@ def merge_rows(
     )
     view_name = f"_robotics_curation_{view_suffix}"
     staging.createOrReplaceTempView(view_name)
+    matched_condition = ""
+    if preserve_extracted_target:
+        matched_condition = """
+        AND NOT (
+          target.extraction_status = 'extracted'
+          AND source.extraction_status <> 'extracted'
+        )
+        """
     spark.sql(
         f"""
         MERGE INTO {target_table} AS target
         USING {view_name} AS source
         ON target.{key_column} = source.{key_column}
-        WHEN MATCHED THEN UPDATE SET *
+        WHEN MATCHED {matched_condition} THEN UPDATE SET *
         WHEN NOT MATCHED THEN INSERT *
         """
     )
@@ -425,6 +434,7 @@ merge_rows(
     f"{CATALOG}.knowledge.source_documents",
     "document_id",
     "source_documents",
+    preserve_extracted_target=True,
 )
 merge_rows(
     chunk_rows,
@@ -434,10 +444,12 @@ merge_rows(
     "source_chunks",
 )
 
-pending_documents = sum(
-    1
-    for document in document_rows
-    if document["extraction_status"] != "extracted"
+document_ids = [str(document["document_id"]) for document in document_rows]
+pending_documents = (
+    spark.table(f"{CATALOG}.knowledge.source_documents")
+    .where(F.col("document_id").isin(document_ids))
+    .where(F.col("extraction_status") != F.lit("extracted"))
+    .count()
 )
 finished_at = datetime.now(timezone.utc)
 if error_asset_ids:
