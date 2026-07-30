@@ -1,6 +1,7 @@
 export const ROBOT_PROFILES = [
   {
     id: "interbotix-wx250s",
+    topology: "single",
     model: "WIDOWX 250S",
     company: "INTERBOTIX / TROSSEN",
     country: "USA",
@@ -13,6 +14,7 @@ export const ROBOT_PROFILES = [
     productUrl:
       "https://docs.trossenrobotics.com/interbotix_xsarms_docs/",
     sourceReach: "679 MM TO FINGERTIP",
+    geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
     linkLengths: [155, 150],
     jointsDegrees: [38, -54],
     target: { x: -100, y: 20 },
@@ -33,6 +35,7 @@ export const ROBOT_PROFILES = [
   },
   {
     id: "niryo-ned2",
+    topology: "single",
     model: "NED2",
     company: "NIRYO",
     country: "FRANCE",
@@ -43,6 +46,7 @@ export const ROBOT_PROFILES = [
     sourceUrl: "https://github.com/NiryoRobotics/ned_ros",
     productUrl: "https://niryo.com/product/robotic-arm/",
     sourceReach: "490 MM",
+    geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
     linkLengths: [152, 132],
     jointsDegrees: [48, -62],
     target: { x: -100, y: 20 },
@@ -63,6 +67,7 @@ export const ROBOT_PROFILES = [
   },
   {
     id: "franka-research-3",
+    topology: "single",
     model: "FRANKA RESEARCH 3",
     company: "FRANKA ROBOTICS",
     country: "GERMANY",
@@ -73,6 +78,7 @@ export const ROBOT_PROFILES = [
     sourceUrl: "https://github.com/frankarobotics/libfranka",
     productUrl: "https://franka.de/research",
     sourceReach: "855 MM",
+    geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
     linkLengths: [174, 136],
     jointsDegrees: [26, -48],
     target: { x: -180, y: -100 },
@@ -93,6 +99,7 @@ export const ROBOT_PROFILES = [
   },
   {
     id: "ur5e",
+    topology: "single",
     model: "UR5E",
     company: "UNIVERSAL ROBOTS",
     country: "DENMARK",
@@ -104,6 +111,7 @@ export const ROBOT_PROFILES = [
       "https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver",
     productUrl: "https://www.universal-robots.com/products/ur5-robot/",
     sourceReach: "850 MM",
+    geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
     linkLengths: [168, 142],
     jointsDegrees: [33, -56],
     target: { x: -100, y: 20 },
@@ -124,6 +132,7 @@ export const ROBOT_PROFILES = [
   },
   {
     id: "hello-stretch-4",
+    topology: "single",
     model: "STRETCH 4",
     company: "HELLO ROBOT",
     country: "USA",
@@ -134,6 +143,7 @@ export const ROBOT_PROFILES = [
     sourceUrl: "https://github.com/hello-robot/stretch_ros2",
     productUrl: "https://hello-robot.com/stretch-4-product",
     sourceReach: "MOBILE MANIPULATOR",
+    geometryTruth: "ARCHITECTURE ABSTRACTED AS A 2-LINK ARM",
     linkLengths: [142, 156],
     jointsDegrees: [58, -72],
     target: { x: -100, y: 20 },
@@ -152,8 +162,81 @@ export const ROBOT_PROFILES = [
       { id: "stretch-b", label: "P2", x: -100, y: 20 },
     ],
   },
+  {
+    id: "aloha-stationary",
+    topology: "dual",
+    dualStatus: "PUBLISHED DUAL SYSTEM",
+    model: "ALOHA STATIONARY",
+    company: "TROSSEN / INTERBOTIX",
+    country: "USA",
+    countryCode: "US",
+    region: "AMERICAN",
+    openScope: "OPEN HARDWARE SYSTEM + TELEOPERATION CODE",
+    license: "MIT + COMPONENT LICENSES",
+    sourceUrl: "https://github.com/tonyzhaozh/aloha",
+    productUrl:
+      "https://docs.trossenrobotics.com/aloha_docs/1.0/specifications.html",
+    sourceReach: "1225W × 1019D × 1066H MM CELL",
+    geometryTruth: "SOURCE CELL ENVELOPE / NORMALIZED PER-ARM DRAWING",
+    baseSeparation: 220,
+    linkLengths: [126, 112],
+    jointsDegrees: [48, -64],
+    target: { x: -80, y: 20 },
+    elbow: "down",
+    visual: {
+      kind: "servo",
+      primary: "#3978ff",
+      secondary: "#eef2f3",
+      shell: "#1a2730",
+    },
+    obstacles: [
+      { id: "aloha-part", type: "circle", x: -112, y: -42, radius: 26 },
+    ],
+    waypoints: [
+      { id: "aloha-a", label: "P1", x: 128, y: 146 },
+      { id: "aloha-b", label: "P2", x: -80, y: 20 },
+    ],
+  },
+  {
+    id: "fr3-duo",
+    topology: "dual",
+    dualStatus: "PUBLISHED DUAL SYSTEM",
+    model: "FR3 DUO",
+    company: "FRANKA ROBOTICS",
+    country: "GERMANY",
+    countryCode: "DE",
+    region: "EUROPEAN",
+    openScope: "FCI + LIBFRANKA + OPEN LABS WORKFLOWS",
+    license: "APACHE-2.0 + COMPONENT LICENSES",
+    sourceUrl: "https://github.com/frankarobotics/libfranka",
+    productUrl: "https://franka.de/fr3-duo",
+    sourceReach: "2 × 7 DOF / 3 KG PER ARM",
+    geometryTruth: "SOURCE ARM COUNT + PAYLOAD / NORMALIZED DRAWING",
+    baseSeparation: 210,
+    linkLengths: [132, 116],
+    jointsDegrees: [36, -58],
+    target: { x: -84, y: 24 },
+    elbow: "down",
+    visual: {
+      kind: "cobot",
+      primary: "#ff8c52",
+      secondary: "#f2efe7",
+      shell: "#28221e",
+    },
+    obstacles: [
+      { id: "fr3-duo-part", type: "circle", x: -120, y: -44, radius: 26 },
+    ],
+    waypoints: [
+      { id: "fr3d-a", label: "P1", x: 132, y: 150 },
+      { id: "fr3d-b", label: "P2", x: -84, y: 24 },
+    ],
+  },
 ];
 
 export function getRobotProfile(id) {
   return ROBOT_PROFILES.find((profile) => profile.id === id) || ROBOT_PROFILES[0];
+}
+
+export function getRobotProfilesByTopology(topology) {
+  return ROBOT_PROFILES.filter((profile) => profile.topology === topology);
 }

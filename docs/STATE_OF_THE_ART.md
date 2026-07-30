@@ -47,7 +47,7 @@ modern high-DOF robot. It is the clearest algorithm for the learning job:
 
 1. Every red C-space cell corresponds to an arm configuration that intersects
    an obstacle.
-2. The cyan line is the actual sequence of joint configurations returned by
+2. The chartreuse line is the actual sequence of joint configurations returned by
    the planner.
 3. The Cartesian arm motion and joint-space route can be inspected together.
 4. A direct interpolated route is tried first; A* only detours when that route
@@ -59,18 +59,20 @@ and failure modes inspectable.
 
 ## Pick-your-bot source matrix
 
-Each profile is a normalized two-link teaching slice. The source link and
+Each profile is a normalized planar teaching slice. The source link and
 license label describe the open layer named below; they do not imply that all
-hardware, firmware, CAD, safety systems, or commercial software for the robot
-are open.
+hardware, firmware, CAD, safety systems, or commercial software for every
+robot are open.
 
-| Profile | Region | Open layer represented | Source |
-| --- | --- | --- | --- |
-| Interbotix WidowX 250S | United States | ROS 1/ROS 2 manipulator packages, BSD-3-Clause | [Interbotix ROS manipulators](https://github.com/Interbotix/interbotix_ros_manipulators), [X-Series documentation](https://docs.trossenrobotics.com/interbotix_xsarms_docs/) |
-| Niryo Ned2 | France | Ned ROS stack, GPL-3.0 | [Ned ROS](https://github.com/NiryoRobotics/ned_ros), [Niryo company/product context](https://niryo.com/about-us/) |
-| Franka Research 3 | Germany | `libfranka` low-level control interface, Apache-2.0; ROS 2 integration is separately published | [libfranka](https://github.com/frankarobotics/libfranka), [Franka ROS 2](https://github.com/frankarobotics/franka_ros2), [Franka company](https://franka.de/company) |
-| Universal Robots UR5e | Denmark | ROS 2 driver and description packages, BSD-3-Clause | [Universal Robots ROS 2 driver](https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver) |
-| Hello Robot Stretch 4 | United States | Full-stack open-source software with Python/ROS 2 SDKs; licenses are package-specific | [Stretch development overview](https://hello-robot.com/develop/), [Stretch ROS 2](https://github.com/hello-robot/stretch_ros2) |
+| Profile | Topology | Region | Open layer represented | Source |
+| --- | --- | --- | --- | --- |
+| Interbotix WidowX 250S | Single arm | United States | ROS 1/ROS 2 manipulator packages, BSD-3-Clause | [Interbotix ROS manipulators](https://github.com/Interbotix/interbotix_ros_manipulators), [X-Series documentation](https://docs.trossenrobotics.com/interbotix_xsarms_docs/) |
+| Niryo Ned2 | Single arm | France | Ned ROS stack, GPL-3.0 | [Ned ROS](https://github.com/NiryoRobotics/ned_ros), [Niryo company/product context](https://niryo.com/about-us/) |
+| Franka Research 3 | Single arm | Germany | `libfranka` low-level control interface, Apache-2.0; ROS 2 integration is separately published | [libfranka](https://github.com/frankarobotics/libfranka), [Franka ROS 2](https://github.com/frankarobotics/franka_ros2), [Franka company](https://franka.de/company) |
+| Universal Robots UR5e | Single arm | Denmark | ROS 2 driver and description packages, BSD-3-Clause | [Universal Robots ROS 2 driver](https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver) |
+| Hello Robot Stretch 4 | Single arm | United States | Full-stack open-source software with Python/ROS 2 SDKs; licenses are package-specific | [Stretch development overview](https://hello-robot.com/develop/), [Stretch ROS 2](https://github.com/hello-robot/stretch_ros2) |
+| ALOHA Stationary | Dual follower arms plus two leader arms | United States | Open hardware system and bimanual teleoperation code, MIT plus component licenses | [ALOHA repository](https://github.com/tonyzhaozh/aloha), [official specifications](https://docs.trossenrobotics.com/aloha_docs/1.0/specifications.html) |
+| Franka FR3 Duo | Two arms | Germany | FCI/`libfranka` and open LABS reference workflows; commercial hardware | [FR3 Duo](https://franka.de/fr3-duo), [Franka LABS](https://franka.de/labs) |
 
 Interbotix publishes a 679 mm fingertip reach for the WidowX 250S in its
 [X-Series specifications](https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications.html).
@@ -79,6 +81,19 @@ Franka identifies itself as a German company headquartered in Munich. The
 profile metadata records those source facts while keeping all on-screen link
 lengths normalized to the common ±360 mm workbench.
 
+ALOHA Stationary is a real published bimanual system: its official
+specification lists two WidowX leader arms and two ViperX follower arms in a
+1225 × 1019 × 1066 mm cell. The sandbox visualizes the two follower/workcell
+arms, not all four teleoperation arms. FR3 Duo is also a real published
+two-arm platform with two seven-axis FR3 arms and a stated 3 kg payload per
+arm. Unlike ALOHA, the Franka hardware is commercial; the open layer is its
+FCI/`libfranka` tooling and the LABS reference workflows.
+
+The UI keeps these source facts separate from the drawing. Every on-screen
+arm uses normalized two-link geometry chosen for a legible ±360 mm teaching
+workspace. The numbers on the link sliders are simulation inputs, not
+measurements copied from vendor CAD.
+
 ## Explicit limits
 
 This browser sandbox is not:
@@ -86,6 +101,7 @@ This browser sandbox is not:
 - a URDF/SRDF loader or vendor-accurate digital twin;
 - a dynamics, torque, payload, thermal, or controller model;
 - a self-collision-aware full high-DOF planner;
+- a coordinated bimanual planner or inter-arm collision model;
 - continuous collision detection;
 - GPU-accelerated trajectory optimization;
 - a safety-rated system or a path executor for physical hardware.

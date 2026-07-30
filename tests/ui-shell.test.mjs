@@ -11,6 +11,10 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /data-mode="path"/);
   assert.match(html, /id="add-waypoint"/);
   assert.match(html, /id="bot-options"/);
+  assert.match(html, /data-topology="single"/);
+  assert.match(html, /data-topology="dual"/);
+  assert.match(html, /id="profile-geometry-truth"/);
+  assert.match(html, /id="profile-product"/);
   assert.match(html, /id="cspace-canvas"/);
   assert.match(html, /data-planner="grid"/);
   assert.match(html, /id="add-circle"/);
@@ -29,5 +33,5 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(app, /evaluatePoseCollision/);
   assert.match(app, /manipulabilityMetrics/);
   assert.match(app, /buildConfigurationSpace/);
-  assert.match(app, /ROBOT_PROFILES/);
+  assert.match(app, /getRobotProfilesByTopology/);
 });

@@ -1,8 +1,9 @@
 # Robotics Sandbox / Robot Arm
 
 Interactive robotics sandbox focused on making robot-arm planning visible.
-Pick a real American or European open robotics ecosystem, then explore its
-normalized 2-DOF teaching profile in a dependency-free browser workbench.
+Pick a real American or European robotics ecosystem, compare the open software
+or hardware layer it publishes, then explore a normalized planar teaching
+profile in a dependency-free browser workbench.
 
 ## What this project demonstrates
 
@@ -14,7 +15,9 @@ normalized 2-DOF teaching profile in a dependency-free browser workbench.
 - Obstacle awareness with circle/rectangle collision checks against arm link segments.
 - Scenario snapshot serialization and hydration for repeatable state loading.
 - Draggable targets and obstacles, editable scene primitives, waypoint playback, and timeline scrubbing.
-- Five sourced platform profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
+- Five sourced single-arm profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
+- Two sourced, published dual systems: ALOHA Stationary and Franka FR3 Duo.
+- Explicit source-fact versus simulation-geometry labeling so normalized link lengths are never presented as vendor dimensions.
 
 ## Why this is worth showing
 
@@ -76,9 +79,9 @@ normalized 2-DOF teaching profile in a dependency-free browser workbench.
    npm run dev
    ```
 
-   Open `http://127.0.0.1:4173/`. Pick a bot, compare both IK
-   branches, move an obstacle, inspect the A* search in configuration space,
-   and scrub or play the solved trajectory.
+   Open `http://127.0.0.1:4173/`. Choose single- or dual-arm mode, pick a
+   platform, compare both IK branches, move an obstacle, inspect the A* search
+   in configuration space, and scrub or play the solved trajectory.
 
 ## Core API example
 
@@ -143,11 +146,13 @@ const plan = planWaypointTrajectory({
 - Scenario save/load helpers are implemented.
 - The browser UI supports sourced robot profiles, FK/IK, alternate IK
   branches, obstacle editing, direct/A* planning, C-space inspection,
-  manipulability diagnostics, and playback.
+  manipulability diagnostics, dual-arm mirrored workcells, and playback.
 
 ## Limitations and next steps
 
 - This is a normalized two-link teaching model, not a vendor-accurate digital twin.
+- Dual mode mirrors one per-arm plan; it does not yet coordinate independent
+  goals or detect inter-arm collision.
 - Collision checking is discretized and sampled, not continuous.
 - It does not model full high-DOF geometry, dynamics, torque, self-collision,
   uncertainty, safety-rated controls, or hardware execution.

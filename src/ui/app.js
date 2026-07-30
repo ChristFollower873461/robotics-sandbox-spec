@@ -12,7 +12,10 @@ import {
   samplePlannedPose,
 } from "../core/planning/pathPlanner.js";
 import { formatDegrees, formatDistance, formatPoint } from "./format.js";
-import { getRobotProfile, ROBOT_PROFILES } from "./robotProfiles.js";
+import {
+  getRobotProfile,
+  getRobotProfilesByTopology,
+} from "./robotProfiles.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const GRID_RESOLUTION = 58;
@@ -20,6 +23,7 @@ const profile = getRobotProfile("interbotix-wx250s");
 
 const state = {
   profileId: profile.id,
+  topology: profile.topology,
   mode: "ik",
   planner: "grid",
   maxJointVelocity: 1.35,
@@ -54,6 +58,9 @@ const elements = Object.fromEntries(
     "profile-license",
     "profile-reach",
     "profile-source",
+    "profile-product",
+    "profile-geometry-truth",
+    "profile-count",
     "model-readout",
     "mode-readout",
     "position-readout",
@@ -115,6 +122,42 @@ function svgElement(name, attributes = {}) {
 
 function clearLayer(layer) {
   layer.replaceChildren();
+}
+
+function selectedProfile() {
+  return getRobotProfile(state.profileId);
+}
+
+function isDualWorkcell() {
+  return selectedProfile().topology === "dual";
+}
+
+function projectPoint(point, side = "active") {
+  if (!isDualWorkcell()) return { ...point };
+  const halfSeparation = selectedProfile().baseSeparation / 2;
+  return side === "partner"
+    ? { x: halfSeparation - point.x, y: point.y }
+    : { x: point.x - halfSeparation, y: point.y };
+}
+
+function projectPose(pose, side = "active") {
+  if (!isDualWorkcell()) return pose;
+  return {
+    ...pose,
+    joints: pose.joints.map((point) => projectPoint(point, side)),
+    endEffector: projectPoint(pose.endEffector, side),
+    orientation:
+      side === "partner" ? Math.PI - pose.orientation : pose.orientation,
+  };
+}
+
+function activeCanvasPoint(event) {
+  const point = canvasPoint(event);
+  if (!isDualWorkcell()) return point;
+  return {
+    x: point.x + selectedProfile().baseSeparation / 2,
+    y: point.y,
+  };
 }
 
 function invalidateScene() {
@@ -206,16 +249,42 @@ function drawWorkspace() {
   const minReach = Math.abs(state.linkLengths[0] - state.linkLengths[1]);
   elements.workspaceLayer.append(
     svgElement("line", { x1: -350, y1: 0, x2: 350, y2: 0, class: "axis-line" }),
-    svgElement("line", { x1: 0, y1: -350, x2: 0, y2: 350, class: "axis-line" }),
-    svgElement("circle", { cx: 0, cy: 0, r: maxReach, class: "workspace-ring" })
+    svgElement("line", { x1: 0, y1: -350, x2: 0, y2: 350, class: "axis-line" })
   );
-  if (minReach > 0) {
+
+  const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
+  for (const side of sides) {
+    const base = projectPoint({ x: 0, y: 0 }, side);
     elements.workspaceLayer.append(
       svgElement("circle", {
-        cx: 0,
-        cy: 0,
-        r: minReach,
-        class: "workspace-ring workspace-ring--inner",
+        cx: base.x,
+        cy: base.y,
+        r: maxReach,
+        class: `workspace-ring workspace-ring--${side}`,
+      })
+    );
+    if (minReach > 0) {
+      elements.workspaceLayer.append(
+        svgElement("circle", {
+          cx: base.x,
+          cy: base.y,
+          r: minReach,
+          class: "workspace-ring workspace-ring--inner",
+        })
+      );
+    }
+  }
+
+  if (isDualWorkcell()) {
+    const leftBase = projectPoint({ x: 0, y: 0 }, "active");
+    const rightBase = projectPoint({ x: 0, y: 0 }, "partner");
+    elements.workspaceLayer.append(
+      svgElement("line", {
+        x1: leftBase.x,
+        y1: -34,
+        x2: rightBase.x,
+        y2: -34,
+        class: "dual-mount-line",
       })
     );
   }
@@ -226,12 +295,12 @@ function beginObstacleDrag(event, obstacleId) {
   event.stopPropagation();
   const obstacle = state.obstacles.find((item) => item.id === obstacleId);
   if (!obstacle) return;
-  const start = canvasPoint(event);
+  const start = activeCanvasPoint(event);
   const origin = { x: obstacle.x, y: obstacle.y };
   elements.armCanvas.setPointerCapture(event.pointerId);
 
   const move = (moveEvent) => {
-    const point = canvasPoint(moveEvent);
+    const point = activeCanvasPoint(moveEvent);
     obstacle.x = Math.max(-320, Math.min(320, origin.x + point.x - start.x));
     obstacle.y = Math.max(-320, Math.min(320, origin.y + point.y - start.y));
     invalidateScene();
@@ -250,69 +319,87 @@ function beginObstacleDrag(event, obstacleId) {
 function drawObstacles() {
   clearLayer(elements.obstacleLayer);
   state.obstacles.forEach((obstacle, index) => {
-    const shape =
-      obstacle.type === "circle"
-        ? svgElement("circle", {
-            cx: obstacle.x,
-            cy: obstacle.y,
-            r: obstacle.radius,
-            class: "obstacle",
-          })
-        : svgElement("rect", {
-            x: obstacle.x - obstacle.width / 2,
-            y: obstacle.y - obstacle.height / 2,
-            width: obstacle.width,
-            height: obstacle.height,
-            class: "obstacle",
-          });
-    shape.dataset.obstacleId = obstacle.id;
-    shape.setAttribute("tabindex", "0");
-    shape.setAttribute("aria-label", `Draggable obstacle ${index + 1}`);
-    shape.addEventListener("pointerdown", (event) =>
-      beginObstacleDrag(event, obstacle.id)
-    );
-    elements.obstacleLayer.append(shape);
+    const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
+    for (const side of sides) {
+      const center = projectPoint(obstacle, side);
+      const shape =
+        obstacle.type === "circle"
+          ? svgElement("circle", {
+              cx: center.x,
+              cy: center.y,
+              r: obstacle.radius,
+              class: "obstacle",
+            })
+          : svgElement("rect", {
+              x: center.x - obstacle.width / 2,
+              y: center.y - obstacle.height / 2,
+              width: obstacle.width,
+              height: obstacle.height,
+              class: "obstacle",
+            });
+      shape.dataset.obstacleId = obstacle.id;
+      shape.dataset.side = side;
+      if (side === "active") {
+        shape.setAttribute("tabindex", "0");
+        shape.setAttribute("aria-label", `Draggable obstacle ${index + 1}`);
+        shape.addEventListener("pointerdown", (event) =>
+          beginObstacleDrag(event, obstacle.id)
+        );
+      } else {
+        shape.classList.add("obstacle--mirrored");
+        shape.setAttribute("aria-hidden", "true");
+      }
+      elements.obstacleLayer.append(shape);
+    }
   });
 }
 
 function drawPath(plan) {
   clearLayer(elements.pathLayer);
-  if (plan.samples.length > 1) {
-    elements.pathLayer.append(
-      svgElement("polyline", {
-        points: plan.samples
-          .map((sample) => `${sample.endEffector.x},${sample.endEffector.y}`)
-          .join(" "),
-        class: "path-line",
-        "data-valid": plan.valid,
-      })
-    );
-  }
+  const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
+  for (const side of sides) {
+    if (plan.samples.length > 1) {
+      elements.pathLayer.append(
+        svgElement("polyline", {
+          points: plan.samples
+            .map((sample) => projectPoint(sample.endEffector, side))
+            .map((point) => `${point.x},${point.y}`)
+            .join(" "),
+          class: `path-line path-line--${side}`,
+          "data-valid": plan.valid,
+        })
+      );
+    }
 
-  plan.solvedWaypoints.forEach((waypoint, index) => {
-    const marker = svgElement("g", {
-      class: "waypoint-group",
-      transform: `translate(${waypoint.x} ${waypoint.y})`,
+    plan.solvedWaypoints.forEach((waypoint, index) => {
+      const point = projectPoint(waypoint, side);
+      const marker = svgElement("g", {
+        class: `waypoint-group waypoint-group--${side}`,
+        transform: `translate(${point.x} ${point.y})`,
+      });
+      marker.append(
+        svgElement("rect", {
+          x: -7,
+          y: -7,
+          width: 14,
+          height: 14,
+          class: "waypoint",
+          transform: "rotate(45)",
+        }),
+        svgElement("text", {
+          x: side === "partner" ? -13 : 13,
+          y: -13,
+          class: "waypoint-label",
+          "text-anchor": side === "partner" ? "end" : "start",
+          transform: "scale(1 -1)",
+        })
+      );
+      marker.querySelector("text").textContent = `P${index + 1}${
+        isDualWorkcell() ? (side === "active" ? "L" : "R") : ""
+      }`;
+      elements.pathLayer.append(marker);
     });
-    marker.append(
-      svgElement("rect", {
-        x: -7,
-        y: -7,
-        width: 14,
-        height: 14,
-        class: "waypoint",
-        transform: "rotate(45)",
-      }),
-      svgElement("text", {
-        x: 13,
-        y: -13,
-        class: "waypoint-label",
-        transform: "scale(1 -1)",
-      })
-    );
-    marker.querySelector("text").textContent = `P${index + 1}`;
-    elements.pathLayer.append(marker);
-  });
+  }
 }
 
 function drawGhostArm() {
@@ -325,19 +412,23 @@ function drawGhostArm() {
   );
   if (!alternative.reachable || !alternative.joints) return;
   const pose = forwardKinematics(state.linkLengths, alternative.joints);
-  const [base, elbow, wrist] = pose.joints;
-  elements.ghostLayer.append(
-    svgElement("polyline", {
-      points: `${base.x},${base.y} ${elbow.x},${elbow.y} ${wrist.x},${wrist.y}`,
-      class: "ghost-arm",
-    }),
-    svgElement("circle", {
-      cx: elbow.x,
-      cy: elbow.y,
-      r: 7,
-      class: "ghost-joint",
-    })
-  );
+  const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
+  for (const side of sides) {
+    const projected = projectPose(pose, side);
+    const [base, elbow, wrist] = projected.joints;
+    elements.ghostLayer.append(
+      svgElement("polyline", {
+        points: `${base.x},${base.y} ${elbow.x},${elbow.y} ${wrist.x},${wrist.y}`,
+        class: `ghost-arm ghost-arm--${side}`,
+      }),
+      svgElement("circle", {
+        cx: elbow.x,
+        cy: elbow.y,
+        r: 7,
+        class: "ghost-joint",
+      })
+    );
+  }
 }
 
 function drawAnalysis(pose, poseJoints) {
@@ -346,32 +437,40 @@ function drawAnalysis(pose, poseJoints) {
   const reach = state.linkLengths[0] + state.linkLengths[1];
   const major = Math.max(8, (metric.major / reach) * 64);
   const minor = Math.max(2, (metric.minor / reach) * 64);
-  elements.analysisLayer.append(
-    svgElement("ellipse", {
-      cx: pose.endEffector.x,
-      cy: pose.endEffector.y,
-      rx: major,
-      ry: minor,
-      transform: `rotate(${(metric.angle * 180) / Math.PI} ${pose.endEffector.x} ${pose.endEffector.y})`,
-      class: "manipulability-ellipse",
-      "data-singular": metric.singular,
-    })
-  );
+  const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
+  for (const side of sides) {
+    const point = projectPoint(pose.endEffector, side);
+    const angle =
+      side === "partner" ? Math.PI - metric.angle : metric.angle;
+    elements.analysisLayer.append(
+      svgElement("ellipse", {
+        cx: point.x,
+        cy: point.y,
+        rx: major,
+        ry: minor,
+        transform: `rotate(${(angle * 180) / Math.PI} ${point.x} ${point.y})`,
+        class: "manipulability-ellipse",
+        "data-singular": metric.singular,
+      })
+    );
+  }
 }
 
-function appendRobotBase(profileValue) {
+function appendRobotBase(profileValue, basePoint) {
   const kind = profileValue.visual.kind;
   if (kind === "mobile") {
     elements.armLayer.append(
-      svgElement("rect", { x: -43, y: -26, width: 86, height: 25, rx: 7, class: "robot-base" }),
-      svgElement("circle", { cx: -26, cy: -27, r: 9, class: "robot-wheel" }),
-      svgElement("circle", { cx: 26, cy: -27, r: 9, class: "robot-wheel" })
+      svgElement("rect", { x: basePoint.x - 43, y: -26, width: 86, height: 25, rx: 7, class: "robot-base" }),
+      svgElement("circle", { cx: basePoint.x - 26, cy: -27, r: 9, class: "robot-wheel" }),
+      svgElement("circle", { cx: basePoint.x + 26, cy: -27, r: 9, class: "robot-wheel" })
     );
     return;
   }
   elements.armLayer.append(
     svgElement("path", {
-      d: "M -33 -23 L 33 -23 L 23 0 L -23 0 Z",
+      d: `M ${basePoint.x - 33} -23 L ${basePoint.x + 33} -23 L ${
+        basePoint.x + 23
+      } 0 L ${basePoint.x - 23} 0 Z`,
       class: "robot-base",
     })
   );
@@ -392,93 +491,127 @@ function drawGripper(wrist, orientation, kind) {
 
 function drawArm(pose) {
   clearLayer(elements.armLayer);
-  const currentProfile = getRobotProfile(state.profileId);
-  const [base, elbow, wrist] = pose.joints;
+  const currentProfile = selectedProfile();
   const collidedSegments = new Set(
     pose.collisions?.map((collision) => collision.segmentIndex) || []
   );
-  appendRobotBase(currentProfile);
+  const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
 
-  [
-    [base, elbow],
-    [elbow, wrist],
-  ].forEach(([start, end], index) => {
-    elements.armLayer.append(
-      svgElement("line", {
-        x1: start.x,
-        y1: start.y,
-        x2: end.x,
-        y2: end.y,
-        class: "arm-link-shell",
-        "data-collision": collidedSegments.has(index),
-      }),
-      svgElement("line", {
-        x1: start.x,
-        y1: start.y,
-        x2: end.x,
-        y2: end.y,
-        class: "arm-link-core",
-        "data-link": index,
-        "data-collision": collidedSegments.has(index),
-      })
-    );
-  });
+  for (const side of sides) {
+    const projected = projectPose(pose, side);
+    const [base, elbow, wrist] = projected.joints;
+    appendRobotBase(currentProfile, base);
 
-  [base, elbow].forEach((joint, index) => {
+    [
+      [base, elbow],
+      [elbow, wrist],
+    ].forEach(([start, end], index) => {
+      elements.armLayer.append(
+        svgElement("line", {
+          x1: start.x,
+          y1: start.y,
+          x2: end.x,
+          y2: end.y,
+          class: `arm-link-shell arm-link-shell--${side}`,
+          "data-collision": collidedSegments.has(index),
+        }),
+        svgElement("line", {
+          x1: start.x,
+          y1: start.y,
+          x2: end.x,
+          y2: end.y,
+          class: `arm-link-core arm-link-core--${side}`,
+          "data-link": index,
+          "data-collision": collidedSegments.has(index),
+        })
+      );
+    });
+
+    [base, elbow].forEach((joint, index) => {
+      elements.armLayer.append(
+        svgElement("circle", {
+          cx: joint.x,
+          cy: joint.y,
+          r: index === 0 ? 15 : 13,
+          class: `joint joint--${currentProfile.visual.kind}`,
+        }),
+        svgElement("circle", {
+          cx: joint.x,
+          cy: joint.y,
+          r: 4,
+          class: "joint-core",
+        })
+      );
+    });
+
     elements.armLayer.append(
       svgElement("circle", {
-        cx: joint.x,
-        cy: joint.y,
-        r: index === 0 ? 15 : 13,
-        class: `joint joint--${currentProfile.visual.kind}`,
-      }),
-      svgElement("circle", {
-        cx: joint.x,
-        cy: joint.y,
-        r: 4,
-        class: "joint-core",
+        cx: wrist.x,
+        cy: wrist.y,
+        r: 9,
+        class: "end-effector",
       })
     );
-  });
-
-  elements.armLayer.append(
-    svgElement("circle", {
-      cx: wrist.x,
-      cy: wrist.y,
-      r: 9,
-      class: "end-effector",
-    })
-  );
-  drawGripper(wrist, pose.orientation, currentProfile.visual.kind);
+    drawGripper(wrist, projected.orientation, currentProfile.visual.kind);
+  }
 }
 
 function drawTarget() {
   clearLayer(elements.targetLayer);
+  const activeTarget = projectPoint(state.target, "active");
   const ring = svgElement("circle", {
-    cx: state.target.x,
-    cy: state.target.y,
+    cx: activeTarget.x,
+    cy: activeTarget.y,
     r: 18,
     class: "target-ring",
     tabindex: "0",
-    "aria-label": "Drag target position",
+    "aria-label": isDualWorkcell()
+      ? "Drag left arm target position"
+      : "Drag target position",
   });
   elements.targetLayer.append(
     ring,
     svgElement("line", {
-      x1: state.target.x - 27,
-      y1: state.target.y,
-      x2: state.target.x + 27,
-      y2: state.target.y,
+      x1: activeTarget.x - 27,
+      y1: activeTarget.y,
+      x2: activeTarget.x + 27,
+      y2: activeTarget.y,
       class: "target-cross",
     }),
     svgElement("line", {
-      x1: state.target.x,
-      y1: state.target.y - 27,
-      x2: state.target.x,
-      y2: state.target.y + 27,
+      x1: activeTarget.x,
+      y1: activeTarget.y - 27,
+      x2: activeTarget.x,
+      y2: activeTarget.y + 27,
       class: "target-cross",
     })
   );
+  if (isDualWorkcell()) {
+    const partnerTarget = projectPoint(state.target, "partner");
+    elements.targetLayer.append(
+      svgElement("circle", {
+        cx: partnerTarget.x,
+        cy: partnerTarget.y,
+        r: 18,
+        class: "target-ring target-ring--partner",
+        "aria-hidden": "true",
+      }),
+      svgElement("line", {
+        x1: partnerTarget.x - 27,
+        y1: partnerTarget.y,
+        x2: partnerTarget.x + 27,
+        y2: partnerTarget.y,
+        class: "target-cross target-cross--partner",
+      }),
+      svgElement("line", {
+        x1: partnerTarget.x,
+        y1: partnerTarget.y - 27,
+        x2: partnerTarget.x,
+        y2: partnerTarget.y + 27,
+        class: "target-cross target-cross--partner",
+      })
+    );
+  }
   ring.addEventListener("pointerdown", beginTargetDrag);
   ring.addEventListener("keydown", (event) => {
     const movement = {
@@ -539,7 +672,7 @@ function drawConfigurationSpace(space, plan, poseJoints) {
   }
 
   if (plan.jointPath.length > 1) {
-    context.strokeStyle = "#77f0df";
+    context.strokeStyle = "#d8ff28";
     context.lineWidth = 2.5 * ratio;
     context.beginPath();
     plan.jointPath.forEach((joints, index) => {
@@ -557,7 +690,7 @@ function drawConfigurationSpace(space, plan, poseJoints) {
     (angleToGrid(poseJoints[0], resolution) + 0.5) * cellWidth;
   const currentY =
     height - (angleToGrid(poseJoints[1], resolution) + 0.5) * cellHeight;
-  context.fillStyle = "#ff6335";
+  context.fillStyle = "#168cff";
   context.beginPath();
   context.arc(currentX, currentY, 4.5 * ratio, 0, Math.PI * 2);
   context.fill();
@@ -573,7 +706,9 @@ function updatePlannerReadout(plan) {
       "THE GRID SEARCH FAILED; THE COLLIDING DIRECT PATH REMAINS VISIBLE.";
   } else if (aStarSegments.length > 0) {
     elements.plannerState.textContent = "A* ROUTE FOUND";
-    elements.plannerNote.textContent = `${plan.plannerExpanded} STATES EXPANDED / ${plan.jointPath.length} JOINT NODES`;
+    elements.plannerNote.textContent = `${plan.plannerExpanded} STATES EXPANDED / ${
+      plan.jointPath.length
+    } JOINT NODES${isDualWorkcell() ? " / MIRRORED PER ARM" : ""}`;
   } else if (state.planner === "grid") {
     elements.plannerState.textContent = "DIRECT PATH IS FREE";
     elements.plannerNote.textContent =
@@ -590,7 +725,7 @@ function updateReadouts(pose, poseJoints, reachable, plan, message) {
   const metric = manipulabilityMetrics(state.linkLengths, poseJoints);
   const pathBlocked = plan.totalCollisionCount > 0 || plan.plannerFailures > 0;
   const colliding = Boolean(pose.colliding);
-  const profileValue = getRobotProfile(state.profileId);
+  const profileValue = selectedProfile();
   const modeNames = {
     fk: "FORWARD KINEMATICS",
     ik: "INVERSE KINEMATICS",
@@ -603,7 +738,9 @@ function updateReadouts(pose, poseJoints, reachable, plan, message) {
     direct: "DIRECT",
   };
 
-  elements.modelReadout.textContent = profileValue.model;
+  elements.modelReadout.textContent = `${profileValue.model}${
+    isDualWorkcell() ? " / 2 ARM" : ""
+  }`;
   elements.modeReadout.textContent = modeNames[state.mode];
   elements.positionReadout.textContent = formatPoint(pose.endEffector);
   elements.pathReadout.textContent = state.waypoints.length
@@ -718,7 +855,7 @@ function canvasPoint(event) {
   point.x = event.clientX;
   point.y = event.clientY;
   const matrix = elements.scene.getScreenCTM();
-  if (!matrix) return state.target;
+  if (!matrix) return projectPoint(state.target, "active");
   const local = point.matrixTransform(matrix.inverse());
   return {
     x: Math.max(-340, Math.min(340, local.x)),
@@ -731,7 +868,7 @@ function beginTargetDrag(event) {
   elements.armCanvas.setPointerCapture(event.pointerId);
   if (state.mode !== "path") state.mode = "ik";
   const move = (moveEvent) => {
-    state.target = canvasPoint(moveEvent);
+    state.target = activeCanvasPoint(moveEvent);
     render();
   };
   const end = () => {
@@ -784,7 +921,7 @@ function playPath() {
 }
 
 function resetProfileRoute() {
-  const profileValue = getRobotProfile(state.profileId);
+  const profileValue = selectedProfile();
   stopPlayback();
   state.waypoints = structuredClone(profileValue.waypoints);
   state.pathStartJoints = jointsFromDegrees(profileValue.jointsDegrees);
@@ -797,6 +934,7 @@ function applyProfile(profileId) {
   const profileValue = getRobotProfile(profileId);
   stopPlayback();
   state.profileId = profileValue.id;
+  state.topology = profileValue.topology;
   state.mode = "ik";
   state.linkLengths = [...profileValue.linkLengths];
   state.joints = jointsFromDegrees(profileValue.jointsDegrees);
@@ -816,8 +954,12 @@ function applyProfile(profileId) {
   elements.profileOpenScope.textContent = profileValue.openScope;
   elements.profileLicense.textContent = profileValue.license;
   elements.profileReach.textContent = profileValue.sourceReach;
+  elements.profileGeometryTruth.textContent = profileValue.geometryTruth;
   elements.profileSource.href = profileValue.sourceUrl;
-  elements.scenarioName.textContent = `${profileValue.model} BENCH`;
+  elements.profileProduct.href = profileValue.productUrl;
+  elements.scenarioName.textContent = `${profileValue.model} / ${
+    profileValue.topology === "dual" ? "PAIRED CELL" : "SINGLE ARM"
+  }`;
   elements.linkA.value = String(profileValue.linkLengths[0]);
   elements.linkB.value = String(profileValue.linkLengths[1]);
   elements.linkAOutput.value = `${profileValue.linkLengths[0]} mm`;
@@ -829,27 +971,53 @@ function applyProfile(profileId) {
       button.dataset.profile === profileValue.id ? "true" : "false"
     );
   });
+  document.querySelectorAll("[data-topology]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      button.dataset.topology === profileValue.topology ? "true" : "false"
+    );
+  });
   setMode("ik");
 }
 
-function buildProfilePicker() {
-  ROBOT_PROFILES.forEach((profileValue, index) => {
+function buildProfilePicker(topology = state.topology) {
+  const profiles = getRobotProfilesByTopology(topology);
+  elements.botOptions.replaceChildren();
+  elements.botOptions.style.setProperty("--profile-count", profiles.length);
+  elements.profileCount.textContent = `${String(profiles.length).padStart(
+    2,
+    "0"
+  )} AVAILABLE`;
+  profiles.forEach((profileValue, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "bot-option";
     button.dataset.profile = profileValue.id;
     button.style.setProperty("--profile-color", profileValue.visual.primary);
-    button.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+    button.setAttribute(
+      "aria-pressed",
+      profileValue.id === state.profileId ? "true" : "false"
+    );
     button.innerHTML = `
       <span class="bot-number">${String(index + 1).padStart(2, "0")}</span>
-      <span class="bot-silhouette bot-silhouette--${profileValue.visual.kind}">
+      <span class="bot-silhouette bot-silhouette--${profileValue.visual.kind} bot-silhouette--${profileValue.topology}">
         <i></i><i></i><i></i>
       </span>
-      <span><strong>${profileValue.model}</strong><small>${profileValue.countryCode} / ${profileValue.company}</small></span>
+      <span><strong>${profileValue.model}</strong><small>${
+        profileValue.dualStatus || `${profileValue.countryCode} / ${profileValue.company}`
+      }</small></span>
     `;
     button.addEventListener("click", () => applyProfile(profileValue.id));
     elements.botOptions.append(button);
   });
+}
+
+function setTopology(topology) {
+  const profiles = getRobotProfilesByTopology(topology);
+  if (profiles.length === 0) return;
+  state.topology = topology;
+  buildProfilePicker(topology);
+  applyProfile(profiles[0].id);
 }
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -858,6 +1026,10 @@ document.querySelectorAll("[data-mode]").forEach((button) => {
 
 document.querySelectorAll("[data-planner]").forEach((button) => {
   button.addEventListener("click", () => setPlanner(button.dataset.planner));
+});
+
+document.querySelectorAll("[data-topology]").forEach((button) => {
+  button.addEventListener("click", () => setTopology(button.dataset.topology));
 });
 
 [elements.linkA, elements.linkB].forEach((input, index) => {

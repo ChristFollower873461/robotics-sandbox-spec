@@ -106,14 +106,24 @@ test("configuration-space occupancy and direct A* API are deterministic", () => 
   assert.deepEqual(result.joints.at(-1), goal);
 });
 
-test("robot profiles identify their region and exact open-source layer", () => {
-  assert.equal(ROBOT_PROFILES.length, 5);
+test("robot profiles identify their topology, region, and exact open layer", () => {
+  assert.equal(ROBOT_PROFILES.length, 7);
+  assert.equal(
+    ROBOT_PROFILES.filter((profile) => profile.topology === "single").length,
+    5
+  );
+  assert.equal(
+    ROBOT_PROFILES.filter((profile) => profile.topology === "dual").length,
+    2
+  );
   assert.ok(ROBOT_PROFILES.some((profile) => profile.region === "AMERICAN"));
   assert.ok(ROBOT_PROFILES.some((profile) => profile.region === "EUROPEAN"));
   for (const profile of ROBOT_PROFILES) {
-    assert.match(profile.sourceUrl, /^https:\/\/github\.com\//);
+    assert.match(profile.sourceUrl, /^https:\/\//);
     assert.ok(profile.openScope.length > 10);
     assert.ok(profile.license.length > 2);
+    assert.ok(profile.geometryTruth.length > 10);
+    assert.ok(["single", "dual"].includes(profile.topology));
   }
 });
 

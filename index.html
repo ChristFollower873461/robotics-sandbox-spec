@@ -22,7 +22,7 @@
             <strong>Robotics Sandbox</strong>
           </span>
         </a>
-        <p>OPEN ROBOT ECOSYSTEMS / PLANAR MOTION LAB</p>
+        <p>OPEN ROBOT INDEX / MOTION LAB / 2026</p>
         <a href="https://github.com/ChristFollower873461/robotics-sandbox-spec">
           SOURCE ↗
         </a>
@@ -30,21 +30,62 @@
 
       <section class="bot-dock" aria-labelledby="bot-dock-title">
         <div class="bot-dock-heading">
-          <span>01 / CHOOSE A PLATFORM</span>
-          <strong id="bot-dock-title">PICK YOUR BOT</strong>
+          <span>OPEN ROBOT WORKCELL INDEX</span>
+          <h1 id="bot-dock-title">CHOOSE<br />A <em>ROBOT.</em></h1>
+          <p>
+            COMPARE REAL U.S. AND EUROPEAN ROBOTICS ECOSYSTEMS, THEN OPEN THE
+            MOTION MODEL.
+          </p>
         </div>
-        <div id="bot-options" class="bot-options" role="list"></div>
+
+        <div class="topology-panel">
+          <span>01 / ARM COUNT</span>
+          <div class="topology-switch" role="group" aria-label="Arm count">
+            <button type="button" data-topology="single" aria-pressed="true">
+              <b>1</b>
+              <span>
+                <strong>SINGLE ARM</strong>
+                <small>5 OPEN SOFTWARE ECOSYSTEMS</small>
+              </span>
+              <i class="topology-glyph topology-glyph--single" aria-hidden="true"></i>
+            </button>
+            <button type="button" data-topology="dual">
+              <b>2</b>
+              <span>
+                <strong>TWO ARM</strong>
+                <small>2 PUBLISHED DUAL SYSTEMS</small>
+              </span>
+              <i class="topology-glyph topology-glyph--dual" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="profile-index">
+          <div class="profile-index-heading">
+            <span>02 / PLATFORM</span>
+            <strong id="profile-count">05 AVAILABLE</strong>
+          </div>
+          <div id="bot-options" class="bot-options" role="list"></div>
+        </div>
+
         <article class="profile-brief" aria-live="polite">
-          <div>
-            <span id="profile-region">AMERICAN</span>
+          <div class="profile-title">
+            <span id="profile-region">AMERICAN / US</span>
             <strong id="profile-company">INTERBOTIX / TROSSEN</strong>
           </div>
           <p id="profile-open-scope">ROS 1 + ROS 2 MANIPULATOR PACKAGES</p>
           <dl>
-            <div><dt>OPEN LAYER</dt><dd id="profile-license">BSD-3-CLAUSE</dd></div>
-            <div><dt>SOURCE REACH</dt><dd id="profile-reach">679 MM TO FINGERTIP</dd></div>
+            <div><dt>OPEN LAYER LICENSE</dt><dd id="profile-license">BSD-3-CLAUSE</dd></div>
+            <div><dt>SOURCE FACT</dt><dd id="profile-reach">679 MM TO FINGERTIP</dd></div>
           </dl>
-          <a id="profile-source" href="#" target="_blank" rel="noreferrer">OPEN REPOSITORY ↗</a>
+          <div class="truth-label">
+            <span>SIM GEOMETRY</span>
+            <strong id="profile-geometry-truth">SOURCE REACH / NORMALIZED 2-LINK DRAWING</strong>
+          </div>
+          <div class="profile-links">
+            <a id="profile-source" href="#" target="_blank" rel="noreferrer">SOURCE ↗</a>
+            <a id="profile-product" href="#" target="_blank" rel="noreferrer">PRODUCT / DOCS ↗</a>
+          </div>
         </article>
       </section>
 
@@ -93,7 +134,7 @@
           </fieldset>
 
           <fieldset>
-            <legend>TEACHING GEOMETRY</legend>
+            <legend>NORMALIZED TEACHING GEOMETRY</legend>
             <label>
               <span>LINK A <output id="link-a-output">155 mm</output></span>
               <input id="link-a" type="range" min="40" max="260" value="155" />
@@ -154,7 +195,7 @@
           </fieldset>
 
           <p class="hint">
-            DRAG THE ORANGE TARGET OR RED OBSTACLES. THIS IS A NORMALIZED
+            DRAG THE BLUE TARGET OR RED OBSTACLES. THIS IS A NORMALIZED
             TWO-LINK TEACHING SLICE, NOT A VENDOR DIGITAL TWIN.
           </p>
         </aside>
@@ -204,7 +245,7 @@
             <header>
               <div>
                 <span>02 / SEE THE SEARCH</span>
-                <strong id="cspace-title">JOINT CONFIGURATION SPACE</strong>
+                <strong id="cspace-title">ACTIVE ARM CONFIGURATION SPACE</strong>
               </div>
               <div class="cspace-legend" aria-label="Configuration space legend">
                 <span><i data-tone="free"></i>FREE</span>
@@ -236,7 +277,7 @@
             <strong>LIVE</strong>
           </div>
           <dl>
-            <div><dt>END EFFECTOR</dt><dd id="position-readout">—</dd></div>
+            <div><dt>ACTIVE END EFFECTOR</dt><dd id="position-readout">—</dd></div>
             <div><dt>SHOULDER</dt><dd id="shoulder-metric">—</dd></div>
             <div><dt>ELBOW</dt><dd id="elbow-metric">—</dd></div>
             <div><dt>MANIPULABILITY</dt><dd id="manipulability-metric">—</dd></div>
@@ -250,8 +291,9 @@
             TARGET SOLVED. DRAG TO INSPECT THE WORKSPACE.
           </div>
           <p class="telemetry-note">
-            A* RUNS ON A DISCRETIZED 2D JOINT GRID. COLLISION CHECKS ARE
-            SAMPLED, NOT CONTINUOUS.
+            A* RUNS ON A DISCRETIZED 2D JOINT GRID. IN TWO-ARM MODE THE
+            MIRRORED ARM REPLAYS THE SAME PLAN; INTER-ARM COLLISION IS NOT
+            MODELED.
           </p>
         </aside>
       </section>
