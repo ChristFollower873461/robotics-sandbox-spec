@@ -12,6 +12,14 @@ import {
   findConfigurationPath,
 } from "../src/core/planning/configurationSpace.js";
 import { planWaypointTrajectory } from "../src/core/planning/pathPlanner.js";
+import {
+  WORKCELL_FORMAT,
+  createWorkcellSnapshot,
+  hydrateWorkcell,
+  normalizeWorkcell,
+  serializeWorkcell,
+  workcellFromPreset,
+} from "../src/core/environment/workcell.js";
 import { ROBOT_PROFILES } from "../src/ui/robotProfiles.js";
 
 function approxEqual(actual, expected, tolerance = 1e-6) {
@@ -147,4 +155,92 @@ test("every curated robot profile ships with a valid A* demo route", () => {
       `${profile.model} should demonstrate an A* detour`
     );
   }
+});
+
+test("workcell presets expose calibrated millimeter geometry", () => {
+  const workcell = workcellFromPreset("packing");
+
+  assert.equal(workcell.name, "PACKING CELL");
+  assert.equal(workcell.width, 1200);
+  assert.equal(workcell.height, 900);
+  assert.equal(workcell.fixtures.length, 3);
+  assert.ok(workcell.fixtures.every((fixture) => fixture.source === "preset"));
+});
+
+test("workcell JSON round-trips fixtures without embedding the reference image", () => {
+  const workcell = normalizeWorkcell({
+    name: "PHOTO CELL",
+    width: 1100,
+    height: 760,
+    robotBase: { x: 40, y: -20 },
+    reference: {
+      fileName: "shop-floor.jpg",
+      widthPx: 2400,
+      heightPx: 1600,
+      opacity: 0.5,
+      imageDataUrl: "data:image/jpeg;base64,not-exported",
+    },
+    fixtures: [
+      {
+        id: "table-a",
+        name: "TABLE A",
+        kind: "table",
+        type: "rect",
+        x: 230,
+        y: 80,
+        width: 300,
+        height: 180,
+        source: "traced",
+      },
+    ],
+  });
+  const json = serializeWorkcell(workcell, {
+    profileId: "interbotix-wx250s",
+    topology: "single",
+  });
+  const snapshot = JSON.parse(json);
+  const hydrated = hydrateWorkcell(json);
+
+  assert.equal(snapshot.format, WORKCELL_FORMAT);
+  assert.equal(snapshot.units, "mm");
+  assert.equal(snapshot.calibration.referenceFile, "shop-floor.jpg");
+  assert.equal(snapshot.calibration.imageEmbedded, false);
+  assert.doesNotMatch(json, /not-exported/);
+  assert.equal(hydrated.width, 1100);
+  assert.equal(hydrated.robotBase.x, 40);
+  assert.equal(hydrated.fixtures[0].name, "TABLE A");
+  assert.equal(hydrated.fixtures[0].width, 300);
+});
+
+test("workcell normalization clamps unsafe bounds and fixture counts", () => {
+  const workcell = normalizeWorkcell({
+    width: 100000,
+    height: 10,
+    robotBase: { x: 9000, y: -9000 },
+    fixtures: Array.from({ length: 220 }, (_, index) => ({
+      id: `fixture-${index}`,
+      type: "rect",
+      x: 9000,
+      y: -9000,
+      width: 0,
+      height: 9999,
+    })),
+  });
+  const snapshot = createWorkcellSnapshot(workcell);
+
+  assert.equal(workcell.width, 4000);
+  assert.equal(workcell.height, 300);
+  assert.equal(workcell.fixtures.length, 200);
+  assert.equal(workcell.robotBase.x, 2000);
+  assert.equal(workcell.robotBase.y, -150);
+  assert.equal(workcell.fixtures[0].x, 2000);
+  assert.equal(workcell.fixtures[0].y, -150);
+  assert.equal(snapshot.fixtures[0].width, 10);
+});
+
+test("workcell import rejects unknown file formats", () => {
+  assert.throws(
+    () => hydrateWorkcell({ format: "another-tool/v9" }),
+    /Unsupported workcell format/
+  );
 });

@@ -11,6 +11,8 @@ This repository is organized around a small but extendable split between robotic
   deterministic toroidal A* search over shoulder/elbow configuration space.
 - `src/core/planning/pathPlanner.js`: waypoint solving, direct-path checks,
   A* fallback, sampled trajectory generation, timing, and validity metrics.
+- `src/core/environment/workcell.js`: calibrated workcell bounds, fixture
+  validation, presets, and versioned JSON serialization/hydration.
 - `src/core/scenario/scenario.js`: state snapshot serialization/hydration for scenario save/load workflows.
 - `src/core/geometry.js`: shared numeric and interpolation utilities.
 
@@ -20,19 +22,24 @@ This repository is organized around a small but extendable split between robotic
 - `src/ui/format.js`: display formatting helpers for angles/distances/points.
 - `src/ui/robotProfiles.js`: sourced robot-platform metadata, normalized
   teaching geometry, visual language, and repeatable demo routes.
-- `src/ui/app.js`: SVG scene, Canvas C-space renderer, profile switching,
-  direct manipulation, planning controls, telemetry, and transport.
+- `src/ui/app.js`: SVG scene and reference-photo overlay, fixture ledger,
+  Canvas C-space renderer, profile switching, direct manipulation, planning
+  controls, telemetry, workcell file I/O, and transport.
 
 These modules are intentionally light so they can be reused by either a browser UI, CLI tool, or a backend adapter.
 
 ## Data flow at a glance
 
-1. User state defines arm config, target, waypoints, and obstacles.
-2. Kinematics solve poses (`forwardKinematics`, `inverseKinematics`).
-3. Direct interpolation is sampled and checked for collision.
-4. When requested and needed, A* searches a generated 2D joint-space grid.
-5. The UI renders Cartesian motion and joint-space search side by side.
-6. Scenario module persists/restores state snapshots.
+1. A workcell defines calibrated millimeter bounds, a robot base, and fixtures
+   in world coordinates.
+2. The active robot base converts world fixtures into robot-local collision
+   geometry.
+3. User state defines arm config, target, and waypoints.
+4. Kinematics solve poses (`forwardKinematics`, `inverseKinematics`).
+5. Direct interpolation is sampled and checked for collision.
+6. When requested and needed, A* searches a generated 2D joint-space grid.
+7. The UI renders Cartesian motion and joint-space search side by side.
+8. Workcell and scenario modules persist/restore portable state snapshots.
 
 ## Extension points
 

@@ -115,6 +115,16 @@
             <strong id="scenario-name">WIDOWX BENCH</strong>
           </div>
 
+          <div class="tool-switch" role="group" aria-label="Workbench panel">
+            <button type="button" data-tool="motion" aria-pressed="true">
+              MOTION
+            </button>
+            <button type="button" data-tool="environment">
+              BUILD CELL
+            </button>
+          </div>
+
+          <div id="motion-tools">
           <div class="mode-switch" role="group" aria-label="Control mode">
             <button type="button" data-mode="fk">FK</button>
             <button type="button" data-mode="ik" aria-pressed="true">IK</button>
@@ -162,11 +172,11 @@
             <div class="coordinate-grid">
               <label>
                 <span>X / MM</span>
-                <input id="target-x" type="number" min="-340" max="340" value="225" />
+                <input id="target-x" type="number" min="-2000" max="2000" value="225" />
               </label>
               <label>
                 <span>Y / MM</span>
-                <input id="target-y" type="number" min="-340" max="340" value="86" />
+                <input id="target-y" type="number" min="-2000" max="2000" value="86" />
               </label>
             </div>
             <label class="select-label">
@@ -195,15 +205,153 @@
           </fieldset>
 
           <p class="hint">
-            DRAG THE BLUE TARGET OR RED OBSTACLES. THIS IS A NORMALIZED
+            DRAG THE BLUE TARGET OR RED FIXTURES. THIS IS A NORMALIZED
             TWO-LINK TEACHING SLICE, NOT A VENDOR DIGITAL TWIN.
           </p>
+          </div>
+
+          <div id="environment-tools" class="environment-tools" hidden>
+            <div class="calibration-status">
+              <span>PHOTO CALIBRATION</span>
+              <strong id="calibration-state">NO REFERENCE / NUMERIC CELL</strong>
+            </div>
+
+            <fieldset>
+              <legend>01 / REFERENCE IMAGE</legend>
+              <label class="upload-control" for="reference-photo">
+                <span>OVERHEAD PHOTO OR FLOOR PLAN</span>
+                <strong>CHOOSE IMAGE</strong>
+              </label>
+              <input
+                id="reference-photo"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+              />
+              <div class="reference-actions">
+                <button id="remove-reference" type="button">REMOVE</button>
+                <label>
+                  <span>OPACITY <output id="reference-opacity-output">42%</output></span>
+                  <input id="reference-opacity" type="range" min="5" max="90" value="42" />
+                </label>
+              </div>
+              <p class="field-note">
+                USE A TOP-DOWN PHOTO WHEN POSSIBLE. THE IMAGE IS KEPT LOCAL AND
+                IS NOT EMBEDDED IN THE EXPORTED JSON.
+              </p>
+            </fieldset>
+
+            <fieldset>
+              <legend>02 / CALIBRATED BOUNDS</legend>
+              <label>
+                <span>CELL NAME</span>
+                <input id="workcell-name" type="text" maxlength="64" value="WIDOWX BENCH" />
+              </label>
+              <div class="coordinate-grid">
+                <label>
+                  <span>WIDTH / MM</span>
+                  <input id="workcell-width" type="number" min="300" max="4000" step="10" value="900" />
+                </label>
+                <label>
+                  <span>DEPTH / MM</span>
+                  <input id="workcell-height" type="number" min="300" max="4000" step="10" value="700" />
+                </label>
+              </div>
+              <div class="coordinate-grid">
+                <label>
+                  <span>ROBOT X / MM</span>
+                  <input id="robot-base-x" type="number" min="-2000" max="2000" step="5" value="0" />
+                </label>
+                <label>
+                  <span>ROBOT Y / MM</span>
+                  <input id="robot-base-y" type="number" min="-2000" max="2000" step="5" value="0" />
+                </label>
+              </div>
+              <p class="field-note">
+                ORIGIN IS THE CELL CENTER. ROBOT X/Y LOCATE THE MOUNT CENTER.
+                THIS FIRST PASS RECONSTRUCTS A 2D PLAN VIEW.
+              </p>
+            </fieldset>
+
+            <fieldset>
+              <legend>03 / STARTING LAYOUT</legend>
+              <div class="preset-grid">
+                <button type="button" data-workcell-preset="bench">BENCH</button>
+                <button type="button" data-workcell-preset="packing">PACKING</button>
+                <button type="button" data-workcell-preset="guarded">GUARDED</button>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>04 / TRACE OR ADD FIXTURE</legend>
+              <div class="fixture-tools">
+                <button id="trace-box" type="button">TRACE BOX</button>
+                <button type="button" data-fixture-kind="table">+ TABLE</button>
+                <button type="button" data-fixture-kind="wall">+ WALL</button>
+                <button type="button" data-fixture-kind="bin">+ BIN</button>
+                <button type="button" data-fixture-kind="circle">+ ROUND</button>
+              </div>
+              <p class="field-note">
+                TRACE BOX, THEN DRAG ACROSS THE REFERENCE IMAGE. ALL OUTPUT IS
+                RECORDED IN MILLIMETERS.
+              </p>
+            </fieldset>
+
+            <fieldset>
+              <legend>05 / FIXTURE LEDGER</legend>
+              <div id="fixture-list" class="fixture-list" role="list"></div>
+              <div id="fixture-inspector" class="fixture-inspector" hidden>
+                <label>
+                  <span>NAME</span>
+                  <input id="fixture-name" type="text" maxlength="48" />
+                </label>
+                <div class="coordinate-grid">
+                  <label>
+                    <span>X / MM</span>
+                    <input id="fixture-x" type="number" step="1" />
+                  </label>
+                  <label>
+                    <span>Y / MM</span>
+                    <input id="fixture-y" type="number" step="1" />
+                  </label>
+                </div>
+                <div class="coordinate-grid">
+                  <label>
+                    <span id="fixture-size-a-label">WIDTH / MM</span>
+                    <input id="fixture-size-a" type="number" min="10" step="1" />
+                  </label>
+                  <label id="fixture-size-b-field">
+                    <span>DEPTH / MM</span>
+                    <input id="fixture-size-b" type="number" min="10" step="1" />
+                  </label>
+                </div>
+                <div class="inspector-actions">
+                  <button id="duplicate-fixture" type="button">DUPLICATE</button>
+                  <button id="delete-fixture" type="button">DELETE</button>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>06 / PORTABLE SCENE</legend>
+              <div class="scene-file-actions">
+                <button id="download-workcell" type="button">DOWNLOAD JSON</button>
+                <button id="copy-workcell" type="button">COPY JSON</button>
+                <label class="import-control" for="import-workcell">IMPORT JSON</label>
+                <input id="import-workcell" type="file" accept="application/json,.json" hidden />
+              </div>
+              <p id="workcell-message" class="field-note" aria-live="polite">
+                READY / LOCAL-ONLY WORKCELL DATA
+              </p>
+            </fieldset>
+          </div>
         </aside>
 
         <div class="viewport-shell">
           <div class="viewport-stage">
             <div class="viewport-meta">
-              <span>WORKSPACE / ±360 MM</span>
+              <span id="workspace-readout">CELL / 900 × 700 MM</span>
               <span id="sample-readout">SAMPLE 000</span>
             </div>
             <svg
@@ -227,7 +375,8 @@
                   <path d="M 100 0 L 0 0 0 100" class="major-grid-line" />
                 </pattern>
               </defs>
-              <rect x="-360" y="-360" width="720" height="720" fill="url(#major-grid)" />
+              <g id="reference-layer"></g>
+              <rect id="grid-surface" x="-360" y="-360" width="720" height="720" fill="url(#major-grid)" />
               <g id="scene" transform="scale(1 -1)">
                 <g id="workspace-layer"></g>
                 <g id="obstacle-layer"></g>

@@ -1,0 +1,64 @@
+{
+  "format": "basement-boys/robot-workcell/v1",
+  "savedAt": "2026-07-30T00:00:00.000Z",
+  "units": "mm",
+  "name": "PHOTO-ASSISTED PACKING CELL",
+  "bounds": {
+    "width": 1200,
+    "height": 800
+  },
+  "robot": {
+    "profileId": "interbotix-wx250s",
+    "topology": "single",
+    "base": {
+      "x": 0,
+      "y": -75
+    },
+    "baseSeparation": 0,
+    "geometryStatus": "normalized-planar-teaching-model"
+  },
+  "calibration": {
+    "method": "photo-bounds",
+    "referenceFile": "reference-workcell.svg",
+    "referencePixels": {
+      "width": 1200,
+      "height": 800
+    },
+    "imageEmbedded": false
+  },
+  "fixtures": [
+    {
+      "id": "sample-infeed",
+      "name": "INFEED",
+      "kind": "conveyor",
+      "type": "rect",
+      "x": -345,
+      "y": 152.5,
+      "source": "traced",
+      "width": 270,
+      "height": 175
+    },
+    {
+      "id": "sample-outfeed",
+      "name": "OUTFEED",
+      "kind": "conveyor",
+      "type": "rect",
+      "x": 340,
+      "y": 152.5,
+      "source": "traced",
+      "width": 270,
+      "height": 175
+    },
+    {
+      "id": "sample-rear-guard",
+      "name": "REAR GUARD",
+      "kind": "guard",
+      "type": "rect",
+      "x": 0,
+      "y": -272.5,
+      "source": "traced",
+      "width": 1060,
+      "height": 45
+    }
+  ]
+}

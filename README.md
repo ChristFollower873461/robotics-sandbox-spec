@@ -15,6 +15,9 @@ profile in a dependency-free browser workbench.
 - Obstacle awareness with circle/rectangle collision checks against arm link segments.
 - Scenario snapshot serialization and hydration for repeatable state loading.
 - Draggable targets and obstacles, editable scene primitives, waypoint playback, and timeline scrubbing.
+- Photo-assisted workcell reconstruction: load a local overhead image or floor plan, enter real millimeter bounds, and trace collision fixtures on top.
+- A fixture ledger with exact names, positions, dimensions, provenance, and robot-base placement.
+- Versioned workcell JSON download, clipboard copy, and import for reproducible scenes.
 - Five sourced single-arm profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
 - Two sourced, published dual systems: ALOHA Stationary and Franka FR3 Duo.
 - Explicit source-fact versus simulation-geometry labeling so normalized link lengths are never presented as vendor dimensions.
@@ -80,8 +83,13 @@ profile in a dependency-free browser workbench.
    ```
 
    Open `http://127.0.0.1:4173/`. Choose single- or dual-arm mode, pick a
-   platform, compare both IK branches, move an obstacle, inspect the A* search
-   in configuration space, and scrub or play the solved trajectory.
+   platform, compare both IK branches, or open **Build Cell** to calibrate a
+   reference photo, trace fixtures, and export a portable workcell. Then
+   inspect the A* search in configuration space and scrub or play the solved
+   trajectory.
+
+   A matching reference image and portable scene are available in
+   `examples/environments/` for testing the photo-assisted workflow.
 
 ## Core API example
 
@@ -118,6 +126,7 @@ const plan = planWaypointTrajectory({
 │   ├── CODEX_SPEC.md
 │   └── STATE_OF_THE_ART.md
 ├── examples/
+│   ├── environments/
 │   ├── outputs/
 │   │   └── inspect-summary.json
 │   └── scenarios/
@@ -128,6 +137,7 @@ const plan = planWaypointTrajectory({
 ├── src/
 │   ├── core/
 │   │   ├── collision/
+│   │   ├── environment/
 │   │   ├── kinematics/
 │   │   ├── planning/
 │   │   └── scenario/
@@ -146,14 +156,20 @@ const plan = planWaypointTrajectory({
 - Scenario save/load helpers are implemented.
 - The browser UI supports sourced robot profiles, FK/IK, alternate IK
   branches, obstacle editing, direct/A* planning, C-space inspection,
-  manipulability diagnostics, dual-arm mirrored workcells, and playback.
+  manipulability diagnostics, dual-arm mirrored workcells, photo-calibrated
+  fixture tracing, workcell JSON import/export, and playback.
 
 ## Limitations and next steps
 
 - This is a normalized two-link teaching model, not a vendor-accurate digital twin.
 - Dual mode mirrors one per-arm plan; it does not yet coordinate independent
   goals or detect inter-arm collision.
+- Photo calibration maps the image bounds to user-entered cell dimensions. It
+  does not remove perspective distortion or infer dimensions from an
+  unmeasured photograph.
+- Fixture tracing is assisted/manual; automatic object recognition requires a
+  separate vision service and validation workflow.
 - Collision checking is discretized and sampled, not continuous.
 - It does not model full high-DOF geometry, dynamics, torque, self-collision,
   uncertainty, safety-rated controls, or hardware execution.
-- Scenario import/export remains a core API rather than a browser workflow.
+- CAD/mesh import and URDF-derived robot geometry remain future work.

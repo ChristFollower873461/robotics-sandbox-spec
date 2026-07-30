@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#d7d8d2"/>
+  <rect x="35" y="35" width="1130" height="730" fill="#ecece6" stroke="#202526" stroke-width="12"/>
+  <path d="M600 35V765M35 400H1165" stroke="#b4b8b3" stroke-width="3" stroke-dasharray="15 10"/>
+  <rect x="120" y="160" width="270" height="175" fill="#707a76" stroke="#202526" stroke-width="6"/>
+  <rect x="805" y="160" width="270" height="175" fill="#707a76" stroke="#202526" stroke-width="6"/>
+  <rect x="70" y="650" width="1060" height="45" fill="#4d5653"/>
+  <circle cx="600" cy="475" r="78" fill="#2c75c7" stroke="#202526" stroke-width="7"/>
+  <circle cx="600" cy="475" r="18" fill="#d8ff28"/>
+  <text x="255" y="255" text-anchor="middle" font-family="monospace" font-size="28" fill="#fff">INFEED</text>
+  <text x="940" y="255" text-anchor="middle" font-family="monospace" font-size="28" fill="#fff">OUTFEED</text>
+  <text x="600" y="745" text-anchor="middle" font-family="monospace" font-size="22" fill="#202526">1200 MM REFERENCE EDGE</text>
+</svg>

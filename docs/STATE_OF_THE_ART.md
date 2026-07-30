@@ -94,6 +94,20 @@ arm uses normalized two-link geometry chosen for a legible ±360 mm teaching
 workspace. The numbers on the link sliders are simulation inputs, not
 measurements copied from vendor CAD.
 
+## Photo-assisted workcell reconstruction
+
+The workcell editor can load a local overhead image or floor plan as a visual
+underlay. The user supplies the real cell width and depth, which calibrates the
+image bounds into millimeters. Rectangular fixtures can then be traced over the
+image or added from presets and refined with exact X/Y/width/depth inputs.
+Fixture geometry and provenance are exported in the versioned
+`basement-boys/robot-workcell/v1` JSON format; the source image itself is
+deliberately excluded.
+
+This is assisted reconstruction rather than photogrammetry. The browser does
+not infer scale from a photograph, correct lens or perspective distortion, or
+claim that traced silhouettes are certified collision meshes.
+
 ## Explicit limits
 
 This browser sandbox is not:
@@ -102,6 +116,8 @@ This browser sandbox is not:
 - a dynamics, torque, payload, thermal, or controller model;
 - a self-collision-aware full high-DOF planner;
 - a coordinated bimanual planner or inter-arm collision model;
+- a photogrammetry, automatic object-recognition, or perspective-correction
+  pipeline;
 - continuous collision detection;
 - GPU-accelerated trajectory optimization;
 - a safety-rated system or a path executor for physical hardware.

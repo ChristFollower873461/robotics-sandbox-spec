@@ -1,4 +1,11 @@
 import { evaluatePoseCollision } from "../core/collision/collision.js";
+import {
+  hydrateWorkcell,
+  normalizeFixture,
+  normalizeWorkcell,
+  serializeWorkcell,
+  workcellFromPreset,
+} from "../core/environment/workcell.js";
 import { angleToGrid, buildConfigurationSpace } from "../core/planning/configurationSpace.js";
 import {
   forwardKinematics,
@@ -21,9 +28,45 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const GRID_RESOLUTION = 58;
 const profile = getRobotProfile("interbotix-wx250s");
 
+function profileWorkcell(profileValue) {
+  const baseSeparation =
+    profileValue.topology === "dual" ? profileValue.baseSeparation : 0;
+  const activeBaseX = -baseSeparation / 2;
+  const fixtures = profileValue.obstacles.flatMap((obstacle, index) => {
+    const activeFixture = {
+      ...obstacle,
+      id: `${profileValue.id}-fixture-${index + 1}`,
+      name: `DEMO FIXTURE ${index + 1}`,
+      kind: obstacle.type === "circle" ? "fixture" : "table",
+      x: obstacle.x + activeBaseX,
+      source: "preset",
+    };
+    if (profileValue.topology !== "dual") return [activeFixture];
+    return [
+      activeFixture,
+      {
+        ...activeFixture,
+        id: `${activeFixture.id}-right`,
+        name: `DEMO FIXTURE ${index + 1} / RIGHT`,
+        x: baseSeparation / 2 - obstacle.x,
+      },
+    ];
+  });
+  return normalizeWorkcell({
+    name: `${profileValue.model} DEMO CELL`,
+    width: profileValue.topology === "dual" ? 1000 : 900,
+    height: 700,
+    robotBase: { x: 0, y: 0 },
+    fixtures,
+  });
+}
+
+const initialWorkcell = profileWorkcell(profile);
+
 const state = {
   profileId: profile.id,
   topology: profile.topology,
+  toolMode: "motion",
   mode: "ik",
   planner: "grid",
   maxJointVelocity: 1.35,
@@ -32,7 +75,11 @@ const state = {
   target: { ...profile.target },
   elbow: profile.elbow,
   waypoints: structuredClone(profile.waypoints),
-  obstacles: structuredClone(profile.obstacles),
+  obstacles: initialWorkcell.fixtures,
+  workcell: initialWorkcell,
+  selectedFixtureId: initialWorkcell.fixtures[0]?.id || null,
+  drawingFixture: false,
+  environmentDirty: false,
   pathStartJoints: jointsFromDegrees(profile.jointsDegrees),
   playbackProgress: 0,
   animationFrame: null,
@@ -44,6 +91,8 @@ const elements = Object.fromEntries(
   [
     "arm-canvas",
     "scene",
+    "reference-layer",
+    "grid-surface",
     "workspace-layer",
     "obstacle-layer",
     "path-layer",
@@ -106,6 +155,35 @@ const elements = Object.fromEntries(
     "transport-toggle",
     "transport-time",
     "transport-progress",
+    "motion-tools",
+    "environment-tools",
+    "calibration-state",
+    "reference-photo",
+    "remove-reference",
+    "reference-opacity",
+    "reference-opacity-output",
+    "workcell-name",
+    "workcell-width",
+    "workcell-height",
+    "robot-base-x",
+    "robot-base-y",
+    "trace-box",
+    "fixture-list",
+    "fixture-inspector",
+    "fixture-name",
+    "fixture-x",
+    "fixture-y",
+    "fixture-size-a",
+    "fixture-size-b",
+    "fixture-size-a-label",
+    "fixture-size-b-field",
+    "duplicate-fixture",
+    "delete-fixture",
+    "download-workcell",
+    "copy-workcell",
+    "import-workcell",
+    "workcell-message",
+    "workspace-readout",
   ].map((id) => [
     id.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()),
     document.querySelector(`#${id}`),
@@ -132,12 +210,22 @@ function isDualWorkcell() {
   return selectedProfile().topology === "dual";
 }
 
-function projectPoint(point, side = "active") {
-  if (!isDualWorkcell()) return { ...point };
+function robotBasePoint(side = "active") {
+  const origin = state.workcell.robotBase;
+  if (!isDualWorkcell()) return { ...origin };
   const halfSeparation = selectedProfile().baseSeparation / 2;
-  return side === "partner"
-    ? { x: halfSeparation - point.x, y: point.y }
-    : { x: point.x - halfSeparation, y: point.y };
+  return {
+    x: origin.x + (side === "partner" ? halfSeparation : -halfSeparation),
+    y: origin.y,
+  };
+}
+
+function projectPoint(point, side = "active") {
+  const base = robotBasePoint(side);
+  return {
+    x: base.x + (side === "partner" ? -point.x : point.x),
+    y: base.y + point.y,
+  };
 }
 
 function projectPose(pose, side = "active") {
@@ -153,11 +241,20 @@ function projectPose(pose, side = "active") {
 
 function activeCanvasPoint(event) {
   const point = canvasPoint(event);
-  if (!isDualWorkcell()) return point;
+  const base = robotBasePoint("active");
   return {
-    x: point.x + selectedProfile().baseSeparation / 2,
-    y: point.y,
+    x: point.x - base.x,
+    y: point.y - base.y,
   };
+}
+
+function planningObstacles() {
+  const base = robotBasePoint("active");
+  return state.obstacles.map((obstacle) => ({
+    ...obstacle,
+    x: obstacle.x - base.x,
+    y: obstacle.y - base.y,
+  }));
 }
 
 function invalidateScene() {
@@ -175,7 +272,7 @@ function planKey() {
     state.pathStartJoints || state.joints,
     state.waypoints,
     state.elbow,
-    state.obstacles,
+    planningObstacles(),
     state.planner,
     state.maxJointVelocity,
   ]);
@@ -189,7 +286,7 @@ function currentPlan() {
     startJoints: state.pathStartJoints || state.joints,
     waypoints: state.waypoints,
     elbow: state.elbow,
-    obstacles: state.obstacles,
+    obstacles: planningObstacles(),
     planner: state.planner,
     gridResolution: GRID_RESOLUTION,
     maxJointVelocity: state.maxJointVelocity,
@@ -202,13 +299,13 @@ function currentConfigurationSpace(plan) {
   if (plan.configurationSpace) return plan.configurationSpace;
   const key = JSON.stringify([
     state.linkLengths,
-    state.obstacles,
+    planningObstacles(),
     GRID_RESOLUTION,
   ]);
   if (state.cspaceCache?.key === key) return state.cspaceCache.value;
   const value = buildConfigurationSpace({
     linkLengths: state.linkLengths,
-    obstacles: state.obstacles,
+    obstacles: planningObstacles(),
     resolution: GRID_RESOLUTION,
   });
   state.cspaceCache = { key, value };
@@ -218,7 +315,11 @@ function currentConfigurationSpace(plan) {
 function solvePose() {
   if (state.mode === "fk") {
     return {
-      pose: evaluatePoseCollision(state.linkLengths, state.joints, state.obstacles),
+      pose: evaluatePoseCollision(
+        state.linkLengths,
+        state.joints,
+        planningObstacles()
+      ),
       reachable: true,
       message: "FORWARD KINEMATICS / JOINT INPUT ACTIVE.",
     };
@@ -227,7 +328,11 @@ function solvePose() {
   const solution = inverseKinematics(state.linkLengths, state.target, state.elbow);
   if (!solution.reachable || !solution.joints) {
     return {
-      pose: evaluatePoseCollision(state.linkLengths, state.joints, state.obstacles),
+      pose: evaluatePoseCollision(
+        state.linkLengths,
+        state.joints,
+        planningObstacles()
+      ),
       reachable: false,
       message: solution.reason,
     };
@@ -235,7 +340,11 @@ function solvePose() {
 
   state.joints = solution.joints;
   return {
-    pose: evaluatePoseCollision(state.linkLengths, solution.joints, state.obstacles),
+    pose: evaluatePoseCollision(
+      state.linkLengths,
+      solution.joints,
+      planningObstacles()
+    ),
     reachable: true,
     message: solution.edgeCase
       ? "TARGET SOLVED AT THE WORKSPACE BOUNDARY."
@@ -243,13 +352,101 @@ function solvePose() {
   };
 }
 
+function syncViewportBounds() {
+  const padding = 70;
+  const width = state.workcell.width + padding * 2;
+  const height = state.workcell.height + padding * 2;
+  const x = -state.workcell.width / 2 - padding;
+  const y = -state.workcell.height / 2 - padding;
+  elements.armCanvas.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
+  elements.gridSurface.setAttribute("x", x);
+  elements.gridSurface.setAttribute("y", y);
+  elements.gridSurface.setAttribute("width", width);
+  elements.gridSurface.setAttribute("height", height);
+}
+
+function drawReference() {
+  clearLayer(elements.referenceLayer);
+  const imageDataUrl = state.workcell.reference.imageDataUrl;
+  if (!imageDataUrl) return;
+  elements.referenceLayer.append(
+    svgElement("image", {
+      href: imageDataUrl,
+      x: -state.workcell.width / 2,
+      y: -state.workcell.height / 2,
+      width: state.workcell.width,
+      height: state.workcell.height,
+      preserveAspectRatio: "none",
+      opacity: state.workcell.reference.opacity,
+      class: "reference-image",
+    })
+  );
+}
+
+function dimensionLabel(text, x, y, anchor = "middle") {
+  const label = svgElement("text", {
+    class: "dimension-label",
+    "text-anchor": anchor,
+    transform: `translate(${x} ${y}) scale(1 -1)`,
+  });
+  label.textContent = text;
+  return label;
+}
+
 function drawWorkspace() {
   clearLayer(elements.workspaceLayer);
+  syncViewportBounds();
+  drawReference();
   const maxReach = state.linkLengths[0] + state.linkLengths[1];
   const minReach = Math.abs(state.linkLengths[0] - state.linkLengths[1]);
+  const halfWidth = state.workcell.width / 2;
+  const halfHeight = state.workcell.height / 2;
   elements.workspaceLayer.append(
-    svgElement("line", { x1: -350, y1: 0, x2: 350, y2: 0, class: "axis-line" }),
-    svgElement("line", { x1: 0, y1: -350, x2: 0, y2: 350, class: "axis-line" })
+    svgElement("rect", {
+      x: -halfWidth,
+      y: -halfHeight,
+      width: state.workcell.width,
+      height: state.workcell.height,
+      class: "workcell-boundary",
+    }),
+    svgElement("line", {
+      x1: -halfWidth,
+      y1: 0,
+      x2: halfWidth,
+      y2: 0,
+      class: "axis-line",
+    }),
+    svgElement("line", {
+      x1: 0,
+      y1: -halfHeight,
+      x2: 0,
+      y2: halfHeight,
+      class: "axis-line",
+    }),
+    svgElement("line", {
+      x1: -halfWidth,
+      y1: -halfHeight - 28,
+      x2: halfWidth,
+      y2: -halfHeight - 28,
+      class: "dimension-line",
+    }),
+    svgElement("line", {
+      x1: -halfWidth - 28,
+      y1: -halfHeight,
+      x2: -halfWidth - 28,
+      y2: halfHeight,
+      class: "dimension-line",
+    }),
+    dimensionLabel(
+      `${Math.round(state.workcell.width)} MM`,
+      0,
+      -halfHeight - 35
+    ),
+    dimensionLabel(
+      `${Math.round(state.workcell.height)} MM`,
+      -halfWidth - 36,
+      0
+    )
   );
 
   const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
@@ -276,8 +473,8 @@ function drawWorkspace() {
   }
 
   if (isDualWorkcell()) {
-    const leftBase = projectPoint({ x: 0, y: 0 }, "active");
-    const rightBase = projectPoint({ x: 0, y: 0 }, "partner");
+    const leftBase = robotBasePoint("active");
+    const rightBase = robotBasePoint("partner");
     elements.workspaceLayer.append(
       svgElement("line", {
         x1: leftBase.x,
@@ -295,15 +492,25 @@ function beginObstacleDrag(event, obstacleId) {
   event.stopPropagation();
   const obstacle = state.obstacles.find((item) => item.id === obstacleId);
   if (!obstacle) return;
-  const start = activeCanvasPoint(event);
+  state.selectedFixtureId = obstacleId;
+  syncFixtureEditor();
+  const start = canvasPoint(event);
   const origin = { x: obstacle.x, y: obstacle.y };
   elements.armCanvas.setPointerCapture(event.pointerId);
 
   const move = (moveEvent) => {
-    const point = activeCanvasPoint(moveEvent);
-    obstacle.x = Math.max(-320, Math.min(320, origin.x + point.x - start.x));
-    obstacle.y = Math.max(-320, Math.min(320, origin.y + point.y - start.y));
+    const point = canvasPoint(moveEvent);
+    obstacle.x = Math.max(
+      -state.workcell.width / 2,
+      Math.min(state.workcell.width / 2, origin.x + point.x - start.x)
+    );
+    obstacle.y = Math.max(
+      -state.workcell.height / 2,
+      Math.min(state.workcell.height / 2, origin.y + point.y - start.y)
+    );
+    state.environmentDirty = true;
     invalidateScene();
+    syncFixtureEditor();
     render();
   };
   const end = () => {
@@ -319,38 +526,62 @@ function beginObstacleDrag(event, obstacleId) {
 function drawObstacles() {
   clearLayer(elements.obstacleLayer);
   state.obstacles.forEach((obstacle, index) => {
-    const sides = isDualWorkcell() ? ["active", "partner"] : ["active"];
-    for (const side of sides) {
-      const center = projectPoint(obstacle, side);
-      const shape =
-        obstacle.type === "circle"
-          ? svgElement("circle", {
-              cx: center.x,
-              cy: center.y,
-              r: obstacle.radius,
-              class: "obstacle",
-            })
-          : svgElement("rect", {
-              x: center.x - obstacle.width / 2,
-              y: center.y - obstacle.height / 2,
-              width: obstacle.width,
-              height: obstacle.height,
-              class: "obstacle",
-            });
-      shape.dataset.obstacleId = obstacle.id;
-      shape.dataset.side = side;
-      if (side === "active") {
-        shape.setAttribute("tabindex", "0");
-        shape.setAttribute("aria-label", `Draggable obstacle ${index + 1}`);
-        shape.addEventListener("pointerdown", (event) =>
-          beginObstacleDrag(event, obstacle.id)
-        );
-      } else {
-        shape.classList.add("obstacle--mirrored");
-        shape.setAttribute("aria-hidden", "true");
-      }
-      elements.obstacleLayer.append(shape);
-    }
+    const selected = state.selectedFixtureId === obstacle.id;
+    const shape =
+      obstacle.type === "circle"
+        ? svgElement("circle", {
+            cx: obstacle.x,
+            cy: obstacle.y,
+            r: obstacle.radius,
+            class: "obstacle",
+          })
+        : svgElement("rect", {
+            x: obstacle.x - obstacle.width / 2,
+            y: obstacle.y - obstacle.height / 2,
+            width: obstacle.width,
+            height: obstacle.height,
+            class: "obstacle",
+          });
+    shape.dataset.obstacleId = obstacle.id;
+    shape.dataset.selected = selected;
+    shape.setAttribute("tabindex", "0");
+    shape.setAttribute(
+      "aria-label",
+      `${obstacle.name || `Fixture ${index + 1}`}, draggable`
+    );
+    shape.addEventListener("pointerdown", (event) =>
+      beginObstacleDrag(event, obstacle.id)
+    );
+    shape.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      state.selectedFixtureId = obstacle.id;
+      syncFixtureEditor();
+      render();
+    });
+    elements.obstacleLayer.append(shape);
+
+    const label = svgElement("g", {
+      class: "fixture-callout",
+      "data-selected": selected,
+      transform: `translate(${obstacle.x} ${
+        obstacle.y +
+        (obstacle.type === "circle" ? obstacle.radius : obstacle.height / 2) +
+        14
+      })`,
+    });
+    const text = svgElement("text", {
+      class: "fixture-label",
+      "text-anchor": "middle",
+      transform: "scale(1 -1)",
+    });
+    const size =
+      obstacle.type === "circle"
+        ? `Ø${Math.round(obstacle.radius * 2)}`
+        : `${Math.round(obstacle.width)}×${Math.round(obstacle.height)}`;
+    text.textContent = `${obstacle.name || `FIXTURE ${index + 1}`} / ${size} MM`;
+    label.append(text);
+    elements.obstacleLayer.append(label);
   });
 }
 
@@ -802,7 +1033,7 @@ function render(playbackPose = null) {
         pose: evaluatePoseCollision(
           state.linkLengths,
           playbackPose.joints,
-          state.obstacles
+          planningObstacles()
         ),
         reachable: true,
         message: "PLAYING THE SOLVED JOINT TRAJECTORY.",
@@ -858,13 +1089,20 @@ function canvasPoint(event) {
   if (!matrix) return projectPoint(state.target, "active");
   const local = point.matrixTransform(matrix.inverse());
   return {
-    x: Math.max(-340, Math.min(340, local.x)),
-    y: Math.max(-340, Math.min(340, local.y)),
+    x: Math.max(
+      -state.workcell.width / 2,
+      Math.min(state.workcell.width / 2, local.x)
+    ),
+    y: Math.max(
+      -state.workcell.height / 2,
+      Math.min(state.workcell.height / 2, local.y)
+    ),
   };
 }
 
 function beginTargetDrag(event) {
   event.preventDefault();
+  event.stopPropagation();
   elements.armCanvas.setPointerCapture(event.pointerId);
   if (state.mode !== "path") state.mode = "ik";
   const move = (moveEvent) => {
@@ -941,7 +1179,11 @@ function applyProfile(profileId) {
   state.target = { ...profileValue.target };
   state.elbow = profileValue.elbow;
   state.waypoints = structuredClone(profileValue.waypoints);
-  state.obstacles = structuredClone(profileValue.obstacles);
+  if (!state.environmentDirty) {
+    state.workcell = profileWorkcell(profileValue);
+    state.obstacles = state.workcell.fixtures;
+    state.selectedFixtureId = state.obstacles[0]?.id || null;
+  }
   state.pathStartJoints = jointsFromDegrees(profileValue.jointsDegrees);
   state.playbackProgress = 0;
   invalidateScene();
@@ -965,6 +1207,8 @@ function applyProfile(profileId) {
   elements.linkAOutput.value = `${profileValue.linkLengths[0]} mm`;
   elements.linkBOutput.value = `${profileValue.linkLengths[1]} mm`;
   elements.elbow.value = profileValue.elbow;
+  syncWorkcellControls();
+  syncFixtureEditor();
   document.querySelectorAll("[data-profile]").forEach((button) => {
     button.setAttribute(
       "aria-pressed",
@@ -1020,6 +1264,404 @@ function setTopology(topology) {
   applyProfile(profiles[0].id);
 }
 
+function workcellContext() {
+  return {
+    profileId: state.profileId,
+    topology: state.topology,
+    baseSeparation: isDualWorkcell() ? selectedProfile().baseSeparation : 0,
+  };
+}
+
+function setWorkcellMessage(message, stateName = "clear") {
+  elements.workcellMessage.textContent = message;
+  elements.workcellMessage.dataset.state = stateName;
+}
+
+function selectedFixture() {
+  return state.obstacles.find(
+    (fixture) => fixture.id === state.selectedFixtureId
+  );
+}
+
+function syncWorkcellControls() {
+  elements.workcellName.value = state.workcell.name;
+  elements.workcellWidth.value = String(Math.round(state.workcell.width));
+  elements.workcellHeight.value = String(Math.round(state.workcell.height));
+  elements.robotBaseX.value = String(Math.round(state.workcell.robotBase.x));
+  elements.robotBaseY.value = String(Math.round(state.workcell.robotBase.y));
+  elements.referenceOpacity.value = String(
+    Math.round(state.workcell.reference.opacity * 100)
+  );
+  elements.referenceOpacityOutput.value = `${Math.round(
+    state.workcell.reference.opacity * 100
+  )}%`;
+  elements.workspaceReadout.textContent = `CELL / ${Math.round(
+    state.workcell.width
+  )} × ${Math.round(state.workcell.height)} MM`;
+  const reference = state.workcell.reference;
+  elements.calibrationState.textContent = reference.fileName
+    ? `${reference.fileName} / ${reference.widthPx}×${reference.heightPx} PX`
+    : "NO REFERENCE / NUMERIC CELL";
+}
+
+function syncFixtureEditor() {
+  elements.fixtureList.replaceChildren();
+  state.obstacles.forEach((fixture, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "fixture-row";
+    button.dataset.fixtureId = fixture.id;
+    button.setAttribute(
+      "aria-pressed",
+      fixture.id === state.selectedFixtureId ? "true" : "false"
+    );
+    const number = document.createElement("span");
+    number.textContent = String(index + 1).padStart(2, "0");
+    const summary = document.createElement("span");
+    const name = document.createElement("strong");
+    name.textContent = fixture.name;
+    const metadata = document.createElement("small");
+    metadata.textContent = `${fixture.kind} / ${fixture.source}`;
+    summary.append(name, metadata);
+    const size = document.createElement("b");
+    size.textContent =
+      fixture.type === "circle"
+        ? `Ø${Math.round(fixture.radius * 2)}`
+        : `${Math.round(fixture.width)}×${Math.round(fixture.height)}`;
+    button.append(number, summary, size);
+    button.addEventListener("click", () => {
+      state.selectedFixtureId = fixture.id;
+      syncFixtureEditor();
+      render();
+    });
+    elements.fixtureList.append(button);
+  });
+
+  const fixture = selectedFixture();
+  elements.fixtureInspector.hidden = !fixture;
+  if (!fixture) return;
+  elements.fixtureName.value = fixture.name;
+  elements.fixtureX.value = String(Math.round(fixture.x));
+  elements.fixtureY.value = String(Math.round(fixture.y));
+  elements.fixtureSizeA.value = String(
+    Math.round(fixture.type === "circle" ? fixture.radius * 2 : fixture.width)
+  );
+  elements.fixtureSizeALabel.textContent =
+    fixture.type === "circle" ? "DIAMETER / MM" : "WIDTH / MM";
+  elements.fixtureSizeBField.hidden = fixture.type === "circle";
+  if (fixture.type !== "circle") {
+    elements.fixtureSizeB.value = String(Math.round(fixture.height));
+  }
+}
+
+function markEnvironmentChanged(message = "WORKCELL UPDATED") {
+  state.environmentDirty = true;
+  state.workcell.fixtures = state.obstacles;
+  invalidateScene();
+  setWorkcellMessage(message);
+}
+
+function applyWorkcell(workcell, message) {
+  state.workcell = workcell;
+  state.obstacles = state.workcell.fixtures;
+  state.selectedFixtureId = state.obstacles[0]?.id || null;
+  state.environmentDirty = true;
+  state.playbackProgress = 0;
+  invalidateScene();
+  syncWorkcellControls();
+  syncFixtureEditor();
+  setWorkcellMessage(message);
+  render();
+}
+
+function setToolMode(toolMode) {
+  state.toolMode = toolMode;
+  stopPlayback();
+  elements.motionTools.hidden = toolMode !== "motion";
+  elements.environmentTools.hidden = toolMode !== "environment";
+  elements.armCanvas.dataset.tool = toolMode;
+  document.querySelectorAll("[data-tool]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      button.dataset.tool === toolMode ? "true" : "false"
+    );
+  });
+  if (toolMode === "environment") {
+    syncWorkcellControls();
+    syncFixtureEditor();
+  }
+  render();
+}
+
+function addFixture(kind) {
+  const fixtureTemplates = {
+    table: {
+      name: "WORK TABLE",
+      kind: "table",
+      type: "rect",
+      width: 260,
+      height: 180,
+    },
+    wall: {
+      name: "WALL / GUARD",
+      kind: "wall",
+      type: "rect",
+      width: 320,
+      height: 30,
+    },
+    bin: {
+      name: "PARTS BIN",
+      kind: "bin",
+      type: "rect",
+      width: 130,
+      height: 95,
+    },
+    circle: {
+      name: "ROUND FIXTURE",
+      kind: "fixture",
+      type: "circle",
+      radius: 55,
+    },
+  };
+  const template = fixtureTemplates[kind];
+  if (!template) return;
+  const fixture = normalizeFixture({
+    ...template,
+    id: `fixture-${crypto.randomUUID()}`,
+    x: state.workcell.robotBase.x,
+    y: state.workcell.robotBase.y + 140,
+    source: "manual",
+  });
+  state.obstacles.push(fixture);
+  state.selectedFixtureId = fixture.id;
+  markEnvironmentChanged(`${fixture.name} ADDED / EDIT DIMENSIONS BELOW`);
+  syncFixtureEditor();
+  render();
+}
+
+function updateSelectedFixture() {
+  const fixture = selectedFixture();
+  if (!fixture) return;
+  const next = normalizeFixture({
+    ...fixture,
+    name: elements.fixtureName.value,
+    x: elements.fixtureX.value,
+    y: elements.fixtureY.value,
+    ...(fixture.type === "circle"
+      ? { radius: Number(elements.fixtureSizeA.value) / 2 }
+      : {
+          width: elements.fixtureSizeA.value,
+          height: elements.fixtureSizeB.value,
+        }),
+  });
+  Object.assign(fixture, next);
+  markEnvironmentChanged(`${fixture.name} / DIMENSIONS UPDATED`);
+  syncFixtureEditor();
+  render();
+}
+
+function deleteSelectedFixture() {
+  const index = state.obstacles.findIndex(
+    (fixture) => fixture.id === state.selectedFixtureId
+  );
+  if (index < 0) return;
+  const [removed] = state.obstacles.splice(index, 1);
+  state.selectedFixtureId =
+    state.obstacles[Math.min(index, state.obstacles.length - 1)]?.id || null;
+  markEnvironmentChanged(`${removed.name} REMOVED`);
+  syncFixtureEditor();
+  render();
+}
+
+function duplicateSelectedFixture() {
+  const fixture = selectedFixture();
+  if (!fixture) return;
+  const copy = normalizeFixture({
+    ...fixture,
+    id: `fixture-${crypto.randomUUID()}`,
+    name: `${fixture.name} COPY`,
+    x: fixture.x + 30,
+    y: fixture.y - 30,
+    source: "manual",
+  });
+  state.obstacles.push(copy);
+  state.selectedFixtureId = copy.id;
+  markEnvironmentChanged(`${copy.name} CREATED`);
+  syncFixtureEditor();
+  render();
+}
+
+function updateWorkcellBounds() {
+  const normalized = normalizeWorkcell({
+    ...state.workcell,
+    width: elements.workcellWidth.value,
+    height: elements.workcellHeight.value,
+    robotBase: {
+      x: elements.robotBaseX.value,
+      y: elements.robotBaseY.value,
+    },
+    fixtures: state.obstacles,
+  });
+  normalized.reference = {
+    ...normalized.reference,
+    imageDataUrl: state.workcell.reference.imageDataUrl,
+  };
+  state.workcell = normalized;
+  state.obstacles = normalized.fixtures;
+  markEnvironmentChanged(
+    `${Math.round(normalized.width)}×${Math.round(normalized.height)} MM CELL CALIBRATED`
+  );
+  syncWorkcellControls();
+  syncFixtureEditor();
+  render();
+}
+
+function handleReferencePhoto(file) {
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    setWorkcellMessage("REFERENCE MUST BE AN IMAGE FILE", "danger");
+    return;
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    setWorkcellMessage("REFERENCE IMAGE MUST BE 12 MB OR SMALLER", "danger");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onerror = () =>
+    setWorkcellMessage("COULD NOT READ THE REFERENCE IMAGE", "danger");
+  reader.onload = () => {
+    const image = new Image();
+    image.onerror = () =>
+      setWorkcellMessage("COULD NOT DECODE THE REFERENCE IMAGE", "danger");
+    image.onload = () => {
+      state.workcell.reference = {
+        fileName: file.name,
+        widthPx: image.naturalWidth,
+        heightPx: image.naturalHeight,
+        opacity: Number(elements.referenceOpacity.value) / 100,
+        imageDataUrl: reader.result,
+      };
+      state.environmentDirty = true;
+      syncWorkcellControls();
+      setWorkcellMessage(
+        `${file.name} LOADED / MAPPED TO ${Math.round(
+          state.workcell.width
+        )}×${Math.round(state.workcell.height)} MM / VERIFY BOUNDS`
+      );
+      render();
+    };
+    image.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeReferencePhoto() {
+  state.workcell.reference = {
+    fileName: null,
+    widthPx: 0,
+    heightPx: 0,
+    opacity: Number(elements.referenceOpacity.value) / 100,
+    imageDataUrl: null,
+  };
+  state.environmentDirty = true;
+  elements.referencePhoto.value = "";
+  syncWorkcellControls();
+  setWorkcellMessage("REFERENCE REMOVED / GEOMETRY RETAINED");
+  render();
+}
+
+function workcellJson() {
+  return serializeWorkcell(state.workcell, workcellContext());
+}
+
+function downloadWorkcell() {
+  const blob = new Blob([workcellJson()], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${state.workcell.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "robot-workcell"}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+  setWorkcellMessage("WORKCELL JSON DOWNLOADED / REFERENCE IMAGE EXCLUDED");
+}
+
+async function copyWorkcell() {
+  try {
+    await navigator.clipboard.writeText(workcellJson());
+    setWorkcellMessage("WORKCELL JSON COPIED");
+  } catch {
+    setWorkcellMessage("CLIPBOARD BLOCKED / USE DOWNLOAD JSON", "danger");
+  }
+}
+
+async function importWorkcell(file) {
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const imported = hydrateWorkcell(text);
+    imported.fixtures.forEach((fixture) => {
+      fixture.source = "imported";
+    });
+    applyWorkcell(imported, `${file.name} IMPORTED / PHOTO NOT EMBEDDED`);
+  } catch (error) {
+    setWorkcellMessage(`IMPORT FAILED / ${error.message}`, "danger");
+  } finally {
+    elements.importWorkcell.value = "";
+  }
+}
+
+function beginFixtureTrace(event) {
+  if (state.toolMode !== "environment" || !state.drawingFixture) return;
+  if (event.target.closest?.(".obstacle, .target-ring")) return;
+  event.preventDefault();
+  const start = canvasPoint(event);
+  const fixture = normalizeFixture({
+    id: `fixture-${crypto.randomUUID()}`,
+    name: `TRACED FIXTURE ${state.obstacles.length + 1}`,
+    kind: "traced",
+    type: "rect",
+    x: start.x,
+    y: start.y,
+    width: 10,
+    height: 10,
+    source: "traced",
+  });
+  state.obstacles.push(fixture);
+  state.selectedFixtureId = fixture.id;
+  elements.armCanvas.setPointerCapture(event.pointerId);
+
+  const move = (moveEvent) => {
+    const point = canvasPoint(moveEvent);
+    fixture.x = (start.x + point.x) / 2;
+    fixture.y = (start.y + point.y) / 2;
+    fixture.width = Math.max(10, Math.abs(point.x - start.x));
+    fixture.height = Math.max(10, Math.abs(point.y - start.y));
+    markEnvironmentChanged("TRACING FIXTURE / RELEASE TO FINISH");
+    render();
+  };
+  const end = () => {
+    state.drawingFixture = false;
+    elements.traceBox.setAttribute("aria-pressed", "false");
+    elements.traceBox.textContent = "TRACE BOX";
+    elements.armCanvas.removeEventListener("pointermove", move);
+    elements.armCanvas.removeEventListener("pointerup", end);
+    elements.armCanvas.removeEventListener("pointercancel", end);
+    syncFixtureEditor();
+    setWorkcellMessage(
+      `${fixture.name} / ${Math.round(fixture.width)}×${Math.round(
+        fixture.height
+      )} MM`
+    );
+  };
+  elements.armCanvas.addEventListener("pointermove", move);
+  elements.armCanvas.addEventListener("pointerup", end);
+  elements.armCanvas.addEventListener("pointercancel", end);
+}
+
 document.querySelectorAll("[data-mode]").forEach((button) => {
   button.addEventListener("click", () => setMode(button.dataset.mode));
 });
@@ -1031,6 +1673,79 @@ document.querySelectorAll("[data-planner]").forEach((button) => {
 document.querySelectorAll("[data-topology]").forEach((button) => {
   button.addEventListener("click", () => setTopology(button.dataset.topology));
 });
+
+document.querySelectorAll("[data-tool]").forEach((button) => {
+  button.addEventListener("click", () => setToolMode(button.dataset.tool));
+});
+
+document.querySelectorAll("[data-workcell-preset]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const workcell = workcellFromPreset(button.dataset.workcellPreset);
+    applyWorkcell(workcell, `${workcell.name} PRESET LOADED`);
+  });
+});
+
+document.querySelectorAll("[data-fixture-kind]").forEach((button) => {
+  button.addEventListener("click", () =>
+    addFixture(button.dataset.fixtureKind)
+  );
+});
+
+elements.referencePhoto.addEventListener("change", () =>
+  handleReferencePhoto(elements.referencePhoto.files?.[0])
+);
+elements.removeReference.addEventListener("click", removeReferencePhoto);
+elements.referenceOpacity.addEventListener("input", () => {
+  state.workcell.reference.opacity =
+    Number(elements.referenceOpacity.value) / 100;
+  elements.referenceOpacityOutput.value = `${elements.referenceOpacity.value}%`;
+  state.environmentDirty = true;
+  render();
+});
+elements.workcellName.addEventListener("input", () => {
+  state.workcell.name =
+    elements.workcellName.value.trim().slice(0, 64) || "UNTITLED WORKCELL";
+  state.environmentDirty = true;
+  setWorkcellMessage("WORKCELL NAME UPDATED");
+});
+[
+  elements.workcellWidth,
+  elements.workcellHeight,
+  elements.robotBaseX,
+  elements.robotBaseY,
+].forEach((input) => input.addEventListener("change", updateWorkcellBounds));
+
+elements.traceBox.addEventListener("click", () => {
+  state.drawingFixture = !state.drawingFixture;
+  elements.traceBox.setAttribute(
+    "aria-pressed",
+    state.drawingFixture ? "true" : "false"
+  );
+  elements.traceBox.textContent = state.drawingFixture
+    ? "DRAG ON STAGE…"
+    : "TRACE BOX";
+  setWorkcellMessage(
+    state.drawingFixture
+      ? "TRACE ARMED / DRAG ACROSS A FIXTURE"
+      : "TRACE CANCELLED"
+  );
+});
+elements.armCanvas.addEventListener("pointerdown", beginFixtureTrace);
+
+[
+  elements.fixtureName,
+  elements.fixtureX,
+  elements.fixtureY,
+  elements.fixtureSizeA,
+  elements.fixtureSizeB,
+].forEach((input) => input.addEventListener("change", updateSelectedFixture));
+elements.duplicateFixture.addEventListener("click", duplicateSelectedFixture);
+elements.deleteFixture.addEventListener("click", deleteSelectedFixture);
+elements.downloadWorkcell.addEventListener("click", downloadWorkcell);
+elements.copyWorkcell.addEventListener("click", copyWorkcell);
+elements.importWorkcell.addEventListener("change", () =>
+  importWorkcell(elements.importWorkcell.files?.[0])
+);
 
 [elements.linkA, elements.linkB].forEach((input, index) => {
   input.addEventListener("input", () => {
@@ -1104,34 +1819,49 @@ elements.transportProgress.addEventListener("input", () => {
 });
 
 elements.addCircle.addEventListener("click", () => {
-  state.obstacles.push({
+  const point = projectPoint(state.target, "active");
+  const fixture = normalizeFixture({
     id: `circle-${crypto.randomUUID()}`,
+    name: `ROUND FIXTURE ${state.obstacles.length + 1}`,
+    kind: "fixture",
     type: "circle",
-    x: state.target.x,
-    y: state.target.y,
+    x: point.x,
+    y: point.y,
     radius: 32,
+    source: "manual",
   });
-  invalidateScene();
+  state.obstacles.push(fixture);
+  state.selectedFixtureId = fixture.id;
+  markEnvironmentChanged(`${fixture.name} ADDED`);
+  syncFixtureEditor();
   render();
 });
 
 elements.addBox.addEventListener("click", () => {
-  state.obstacles.push({
+  const point = projectPoint(state.target, "active");
+  const fixture = normalizeFixture({
     id: `box-${crypto.randomUUID()}`,
+    name: `BOX FIXTURE ${state.obstacles.length + 1}`,
+    kind: "fixture",
     type: "rect",
-    x: state.target.x,
-    y: state.target.y,
+    x: point.x,
+    y: point.y,
     width: 74,
     height: 52,
+    source: "manual",
   });
-  invalidateScene();
+  state.obstacles.push(fixture);
+  state.selectedFixtureId = fixture.id;
+  markEnvironmentChanged(`${fixture.name} ADDED`);
+  syncFixtureEditor();
   render();
 });
 
 elements.removeObstacle.addEventListener("click", () => {
-  state.obstacles.pop();
-  invalidateScene();
-  render();
+  const fixture = state.obstacles.at(-1);
+  if (!fixture) return;
+  state.selectedFixtureId = fixture.id;
+  deleteSelectedFixture();
 });
 
 window.addEventListener("resize", () => render());

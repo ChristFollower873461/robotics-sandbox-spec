@@ -19,6 +19,12 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /data-planner="grid"/);
   assert.match(html, /id="add-circle"/);
   assert.match(html, /id="transport-progress"/);
+  assert.match(html, /data-tool="environment"/);
+  assert.match(html, /id="reference-photo"/);
+  assert.match(html, /id="workcell-width"/);
+  assert.match(html, /id="trace-box"/);
+  assert.match(html, /id="fixture-list"/);
+  assert.match(html, /id="download-workcell"/);
   assert.match(html, /src="\/src\/ui\/app\.js"/);
 });
 
@@ -34,4 +40,6 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(app, /manipulabilityMetrics/);
   assert.match(app, /buildConfigurationSpace/);
   assert.match(app, /getRobotProfilesByTopology/);
+  assert.match(app, /serializeWorkcell/);
+  assert.match(app, /hydrateWorkcell/);
 });
