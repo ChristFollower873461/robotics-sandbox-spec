@@ -1,8 +1,10 @@
 # Repository Status
 
 - Status: Active public reference/prototype
-- Last reviewed: 2026-04-26
-- Notes: Robotics sandbox spec and JavaScript examples for kinematics, path planning, and collision detection.
+- Last reviewed: 2026-07-30
+- Notes: Interactive open-robot platform lab with planar kinematics,
+  manipulability analysis, editable obstacles, and visible joint-space A*
+  planning.
 
 ## Cleanup Guidance
 

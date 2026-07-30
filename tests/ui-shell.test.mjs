@@ -10,6 +10,11 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /data-mode="ik"/);
   assert.match(html, /data-mode="path"/);
   assert.match(html, /id="add-waypoint"/);
+  assert.match(html, /id="bot-options"/);
+  assert.match(html, /id="cspace-canvas"/);
+  assert.match(html, /data-planner="grid"/);
+  assert.match(html, /id="add-circle"/);
+  assert.match(html, /id="transport-progress"/);
   assert.match(html, /src="\/src\/ui\/app\.js"/);
 });
 
@@ -22,4 +27,7 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(app, /inverseKinematics/);
   assert.match(app, /planWaypointTrajectory/);
   assert.match(app, /evaluatePoseCollision/);
+  assert.match(app, /manipulabilityMetrics/);
+  assert.match(app, /buildConfigurationSpace/);
+  assert.match(app, /ROBOT_PROFILES/);
 });

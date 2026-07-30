@@ -1,16 +1,20 @@
 # Robotics Sandbox / Robot Arm
 
-Interactive robotics sandbox focused on a 2-DOF planar robot arm.
-It pairs a dependency-free browser workbench with readable modules for kinematics, waypoint planning, obstacle checks, and scenario serialization.
+Interactive robotics sandbox focused on making robot-arm planning visible.
+Pick a real American or European open robotics ecosystem, then explore its
+normalized 2-DOF teaching profile in a dependency-free browser workbench.
 
 ## What this project demonstrates
 
 - Forward kinematics for a configurable 2-link planar arm.
 - Inverse kinematics with reachable/unreachable target handling and elbow-up/elbow-down preference.
-- Waypoint trajectory planning with sampled poses and simple timing/path metrics.
+- Direct interpolation and deterministic joint-space A* planning.
+- A live configuration-space map showing collision states, planned joint path, and current configuration.
+- Jacobian-based manipulability, condition number, singularity warnings, and an end-effector manipulability ellipse.
 - Obstacle awareness with circle/rectangle collision checks against arm link segments.
 - Scenario snapshot serialization and hydration for repeatable state loading.
-- An interactive SVG workbench with draggable IK targets, joint controls, waypoint playback, workspace bounds, and live collision telemetry.
+- Draggable targets and obstacles, editable scene primitives, waypoint playback, and timeline scrubbing.
+- Five sourced platform profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
 
 ## Why this is worth showing
 
@@ -21,6 +25,7 @@ It pairs a dependency-free browser workbench with readable modules for kinematic
 ## Repo artifacts
 
 - `docs/ARCHITECTURE.md` for a fast architecture walkthrough.
+- `docs/STATE_OF_THE_ART.md` for the technical research, product-profile sources, and explicit simulator boundaries.
 - `examples/scenarios/showcase-scenario.json` as an inspectable scenario payload.
 - `examples/outputs/inspect-summary.json` as a committed output snapshot from `npm run inspect:json`.
 - `.github/workflows/ci.yml` for automated verification (`npm run verify`) on push/PR.
@@ -71,7 +76,9 @@ It pairs a dependency-free browser workbench with readable modules for kinematic
    npm run dev
    ```
 
-   Open `http://127.0.0.1:4173/`. Drag the orange target, switch between FK/IK/path modes, add waypoints, and play the solved trajectory.
+   Open `http://127.0.0.1:4173/`. Pick a bot, compare both IK
+   branches, move an obstacle, inspect the A* search in configuration space,
+   and scrub or play the solved trajectory.
 
 ## Core API example
 
@@ -84,7 +91,9 @@ const plan = planWaypointTrajectory({
   linkLengths: [170, 130],
   startJoints: [0.52, 0.26],
   waypoints: [{ id: "wp-1", x: 200, y: 50 }],
-  obstacles: [],
+  obstacles: [{ id: "fixture", type: "circle", x: 80, y: 30, radius: 28 }],
+  planner: "grid",
+  gridResolution: 58,
 });
 ```
 
@@ -103,7 +112,8 @@ const plan = planWaypointTrajectory({
 ├── package.json
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   └── CODEX_SPEC.md
+│   ├── CODEX_SPEC.md
+│   └── STATE_OF_THE_ART.md
 ├── examples/
 │   ├── outputs/
 │   │   └── inspect-summary.json
@@ -129,11 +139,16 @@ const plan = planWaypointTrajectory({
 ## Current status
 
 - Core robotics modules are implemented and runnable.
-- Collision and path checks are present for simple 2D circle/rectangle obstacles.
+- Collision and path checks are present for editable 2D circle/rectangle obstacles.
 - Scenario save/load helpers are implemented.
-- The dependency-free browser UI supports FK, IK, target dragging, waypoint planning, playback, and live collision feedback.
+- The browser UI supports sourced robot profiles, FK/IK, alternate IK
+  branches, obstacle editing, direct/A* planning, C-space inspection,
+  manipulability diagnostics, and playback.
 
 ## Limitations and next steps
 
-- Expand tests to cover edge cases (workspace boundary, tangent collisions, interpolation edge cases).
-- Add editable obstacle placement and scenario import/export to the browser workbench.
+- This is a normalized two-link teaching model, not a vendor-accurate digital twin.
+- Collision checking is discretized and sampled, not continuous.
+- It does not model full high-DOF geometry, dynamics, torque, self-collision,
+  uncertainty, safety-rated controls, or hardware execution.
+- Scenario import/export remains a core API rather than a browser workflow.

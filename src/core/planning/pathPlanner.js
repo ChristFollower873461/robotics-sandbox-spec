@@ -1,30 +1,49 @@
-import { distance, interpolateAngle, lerpPoint, shortestAngleDelta } from "../geometry.js";
-import { obstacleContainsPoint, detectArmCollision } from "../collision/collision.js";
-import { forwardKinematics, inverseKinematics } from "../kinematics/planarArm.js";
+import {
+  distance,
+  interpolateAngle,
+  lerpPoint,
+  shortestAngleDelta,
+} from "../geometry.js";
+import {
+  obstacleContainsPoint,
+  detectArmCollision,
+} from "../collision/collision.js";
+import {
+  forwardKinematics,
+  inverseKinematics,
+} from "../kinematics/planarArm.js";
+import {
+  buildConfigurationSpace,
+  findConfigurationPath,
+  interpolateJointPath,
+} from "./configurationSpace.js";
 
-function buildSegmentSamples(fromJoints, toJoints, sampleCount, linkLengths, obstacles, segmentIndex) {
-  const samples = [];
-
-  for (let sampleIndex = 0; sampleIndex <= sampleCount; sampleIndex += 1) {
-    const t = sampleCount === 0 ? 1 : sampleIndex / sampleCount;
-    const joints = /** @type {[number, number]} */ ([
-      interpolateAngle(fromJoints[0], toJoints[0], t),
-      interpolateAngle(fromJoints[1], toJoints[1], t),
-    ]);
+function sampleJointPath(jointPath, linkLengths, obstacles, segmentIndex) {
+  const interpolated = interpolateJointPath(jointPath);
+  return interpolated.map((joints, sampleIndex) => {
     const pose = forwardKinematics(linkLengths, joints);
-    const collision = detectArmCollision(pose.joints, obstacles);
-
-    samples.push({
-      t,
+    return {
+      t:
+        interpolated.length < 2 ? 1 : sampleIndex / (interpolated.length - 1),
       joints,
       endEffector: pose.endEffector,
       jointPositions: pose.joints,
-      collision,
+      collision: detectArmCollision(pose.joints, obstacles),
       segmentIndex,
-    });
-  }
+    };
+  });
+}
 
-  return samples;
+function jointPathTravel(jointPath) {
+  let travel = 0;
+  jointPath.slice(0, -1).forEach((from, index) => {
+    const to = jointPath[index + 1];
+    travel += Math.max(
+      Math.abs(shortestAngleDelta(from[0], to[0])),
+      Math.abs(shortestAngleDelta(from[1], to[1]))
+    );
+  });
+  return travel;
 }
 
 export function planWaypointTrajectory({
@@ -33,6 +52,9 @@ export function planWaypointTrajectory({
   waypoints,
   elbow = "down",
   obstacles = [],
+  planner = "direct",
+  gridResolution = 56,
+  maxJointVelocity = 1.35,
 }) {
   const startPose = forwardKinematics(linkLengths, startJoints);
   const solvedWaypoints = [];
@@ -40,12 +62,16 @@ export function planWaypointTrajectory({
   const blockedWaypoints = [];
   const segments = [];
   const samples = [];
+  const jointPath = [[...startJoints]];
 
   let previousJoints = /** @type {[number, number]} */ ([...startJoints]);
   let previousPoint = startPose.endEffector;
   let totalPathLength = 0;
   let totalDuration = 0;
   let totalCollisionCount = 0;
+  let plannerExpanded = 0;
+  let plannerFailures = 0;
+  let configurationSpace = null;
 
   waypoints.forEach((waypoint, index) => {
     const ik = inverseKinematics(linkLengths, waypoint, elbow);
@@ -61,41 +87,78 @@ export function planWaypointTrajectory({
       return;
     }
 
-    const jointDelta = Math.max(
-      Math.abs(shortestAngleDelta(previousJoints[0], ik.joints[0])),
-      Math.abs(shortestAngleDelta(previousJoints[1], ik.joints[1]))
-    );
-    const cartesianDistance = distance(previousPoint, waypoint);
-    const sampleCount = Math.max(14, Math.ceil(jointDelta * 18), Math.ceil(cartesianDistance / 10));
-    const duration = Math.max(0.8, jointDelta / 1.35, cartesianDistance / 160);
     const segmentIndex = segments.length;
-    const segmentSamples = buildSegmentSamples(
-      previousJoints,
-      ik.joints,
-      sampleCount,
+    const directJointPath = [[...previousJoints], [...ik.joints]];
+    const directSamples = sampleJointPath(
+      directJointPath,
       linkLengths,
       obstacles,
       segmentIndex
     );
+    const directCollisionCount = directSamples.filter(
+      (sample) => sample.collision.colliding
+    ).length;
+    let solvedJointPath = directJointPath;
+    let plannerUsed = "direct";
+    let expanded = 0;
 
-    if (samples.length > 0) {
-      segmentSamples.shift();
+    if (planner === "grid" && directCollisionCount > 0) {
+      configurationSpace ||= buildConfigurationSpace({
+        linkLengths,
+        obstacles,
+        resolution: gridResolution,
+      });
+      const result = findConfigurationPath(
+        configurationSpace,
+        previousJoints,
+        ik.joints
+      );
+      plannerExpanded += result.expanded;
+      expanded = result.expanded;
+      if (result.found) {
+        solvedJointPath = result.joints;
+        plannerUsed = "joint-space-a-star";
+      } else {
+        plannerUsed = "direct-fallback";
+        plannerFailures += 1;
+      }
     }
 
-    const targetBlocked = obstacles.some((obstacle) => obstacleContainsPoint(waypoint, obstacle));
-    const collisionCount = segmentSamples.filter((sample) => sample.collision.colliding).length;
+    let segmentSamples = sampleJointPath(
+      solvedJointPath,
+      linkLengths,
+      obstacles,
+      segmentIndex
+    );
+    if (samples.length > 0) segmentSamples = segmentSamples.slice(1);
 
-    if (targetBlocked) {
-      blockedWaypoints.push(index);
-    }
+    const targetBlocked = obstacles.some((obstacle) =>
+      obstacleContainsPoint(waypoint, obstacle)
+    );
+    const collisionCount = segmentSamples.filter(
+      (sample) => sample.collision.colliding
+    ).length;
+    const jointTravel = jointPathTravel(solvedJointPath);
+    const cartesianDistance = distance(previousPoint, waypoint);
+    const duration = Math.max(
+      0.8,
+      jointTravel / Math.max(0.1, maxJointVelocity),
+      cartesianDistance / 160
+    );
+
+    if (targetBlocked) blockedWaypoints.push(index);
 
     for (const sample of segmentSamples) {
       if (samples.length > 0) {
-        totalPathLength += distance(samples[samples.length - 1].endEffector, sample.endEffector);
+        totalPathLength += distance(
+          samples.at(-1).endEffector,
+          sample.endEffector
+        );
       }
       samples.push(sample);
     }
 
+    solvedJointPath.slice(1).forEach((joints) => jointPath.push([...joints]));
     totalCollisionCount += collisionCount;
     totalDuration += duration;
     segments.push({
@@ -104,10 +167,14 @@ export function planWaypointTrajectory({
       from: previousPoint,
       to: { x: waypoint.x, y: waypoint.y },
       joints: ik.joints,
+      jointPath: solvedJointPath,
       sampleCount: segmentSamples.length,
       duration,
       collisionCount,
       blocked: targetBlocked || collisionCount > 0,
+      directWasBlocked: directCollisionCount > 0,
+      plannerUsed,
+      expanded,
     });
     solvedWaypoints.push({
       ...waypoint,
@@ -127,6 +194,11 @@ export function planWaypointTrajectory({
     blockedWaypoints,
     segments,
     samples,
+    jointPath,
+    configurationSpace,
+    plannerRequested: planner,
+    plannerExpanded,
+    plannerFailures,
     totalPathLength,
     totalDuration,
     totalCollisionCount,
@@ -134,15 +206,14 @@ export function planWaypointTrajectory({
       waypoints.length > 0 &&
       unreachableWaypoints.length === 0 &&
       blockedWaypoints.length === 0 &&
-      totalCollisionCount === 0,
+      totalCollisionCount === 0 &&
+      plannerFailures === 0,
     empty: waypoints.length === 0,
   };
 }
 
 export function samplePlannedPose(plan, progress) {
-  if (!plan.samples.length) {
-    return null;
-  }
+  if (!plan.samples.length) return null;
 
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
   const scaledIndex = clampedProgress * (plan.samples.length - 1);
