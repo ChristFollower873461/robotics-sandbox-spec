@@ -13,6 +13,11 @@ This repository is organized around a small but extendable split between robotic
   A* fallback, sampled trajectory generation, timing, and validity metrics.
 - `src/core/environment/workcell.js`: calibrated workcell bounds, fixture
   validation, presets, and versioned JSON serialization/hydration.
+- `src/core/environment/workcellContract.js`: the workcell v2 validator,
+  v1-to-v2 migration, explicit robot mounts, calibration evidence, and fixture
+  provenance adapters.
+- `src/core/robot/profile.js`: robot-profile v1 validation, provenance checks,
+  and portable record serialization.
 - `src/core/scenario/scenario.js`: state snapshot serialization/hydration for scenario save/load workflows.
 - `src/core/geometry.js`: shared numeric and interpolation utilities.
 

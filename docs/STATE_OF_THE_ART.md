@@ -100,9 +100,10 @@ The workcell editor can load a local overhead image or floor plan as a visual
 underlay. The user supplies the real cell width and depth, which calibrates the
 image bounds into millimeters. Rectangular fixtures can then be traced over the
 image or added from presets and refined with exact X/Y/width/depth inputs.
-Fixture geometry and provenance are exported in the versioned
-`basement-boys/robot-workcell/v1` JSON format; the source image itself is
-deliberately excluded.
+Fixture geometry and provenance are exported in the validated
+`basement-boys/robot-workcell/v2` JSON format; the source image itself is
+deliberately excluded. The importer migrates v1 workcells into the explicit v2
+coordinate-frame, robot-mount, calibration, and fixture-provenance structure.
 
 This is assisted reconstruction rather than photogrammetry. The browser does
 not infer scale from a photograph, correct lens or perspective distortion, or

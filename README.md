@@ -17,7 +17,10 @@ profile in a dependency-free browser workbench.
 - Draggable targets and obstacles, editable scene primitives, waypoint playback, and timeline scrubbing.
 - Photo-assisted workcell reconstruction: load a local overhead image or floor plan, enter real millimeter bounds, and trace collision fixtures on top.
 - A fixture ledger with exact names, positions, dimensions, provenance, and robot-base placement.
-- Versioned workcell JSON download, clipboard copy, and import for reproducible scenes.
+- Validated `robot-profile/v1` records with typed sources, reviewed claims,
+  explicit geometry status, and source-check dates.
+- Versioned `robot-workcell/v2` download, clipboard copy, and import for
+  reproducible scenes, with automatic v1 migration.
 - A credential-free Databricks bundle and governed asset manifest for moving
   approved robotics knowledge into the existing AIssisted Consulting workspace.
 - Five sourced single-arm profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
@@ -33,6 +36,8 @@ profile in a dependency-free browser workbench.
 ## Repo artifacts
 
 - `docs/ARCHITECTURE.md` for a fast architecture walkthrough.
+- `docs/CONTRACTS.md` for robot-profile and workcell schemas, validation, and
+  migration behavior.
 - `docs/STATE_OF_THE_ART.md` for the technical research, product-profile sources, and explicit simulator boundaries.
 - `examples/scenarios/showcase-scenario.json` as an inspectable scenario payload.
 - `examples/outputs/inspect-summary.json` as a committed output snapshot from `npm run inspect:json`.
@@ -126,7 +131,11 @@ const plan = planWaypointTrajectory({
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── CODEX_SPEC.md
+│   ├── CONTRACTS.md
 │   └── STATE_OF_THE_ART.md
+├── schemas/
+│   ├── robot-profile.v1.schema.json
+│   └── robot-workcell.v2.schema.json
 ├── databricks/
 │   ├── bootstrap/
 │   └── manifests/
@@ -163,7 +172,8 @@ const plan = planWaypointTrajectory({
 - The browser UI supports sourced robot profiles, FK/IK, alternate IK
   branches, obstacle editing, direct/A* planning, C-space inspection,
   manipulability diagnostics, dual-arm mirrored workcells, photo-calibrated
-  fixture tracing, workcell JSON import/export, and playback.
+  fixture tracing, validated v2 workcell import/export with v1 migration, and
+  playback.
 
 ## Limitations and next steps
 

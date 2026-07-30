@@ -1,7 +1,15 @@
-export const ROBOT_PROFILES = [
+import {
+  ROBOT_PROFILE_FORMAT,
+  defineRobotProfile,
+} from "../core/robot/profile.js";
+
+const PROFILE_DEFINITIONS = [
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "interbotix-wx250s",
     topology: "single",
+    systemType: "single-arm",
+    recordStatus: "reviewed",
     model: "WIDOWX 250S",
     company: "INTERBOTIX / TROSSEN",
     country: "USA",
@@ -15,6 +23,37 @@ export const ROBOT_PROFILES = [
       "https://docs.trossenrobotics.com/interbotix_xsarms_docs/",
     sourceReach: "679 MM TO FINGERTIP",
     geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Interbotix ROS manipulator packages",
+        url: "https://github.com/Interbotix/interbotix_ros_manipulators",
+      },
+      {
+        sourceId: "specifications",
+        kind: "manufacturer-specification",
+        label: "Interbotix X-Series specifications",
+        url: "https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications.html",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Interbotix X-Series documentation",
+        url: "https://docs.trossenrobotics.com/interbotix_xsarms_docs/",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "fingertip-reach",
+        label: "Published fingertip reach",
+        value: "679 mm",
+        status: "vendor-claimed",
+        sourceIds: ["specifications"],
+      },
+    ],
     linkLengths: [155, 150],
     jointsDegrees: [38, -54],
     target: { x: -100, y: 20 },
@@ -34,8 +73,11 @@ export const ROBOT_PROFILES = [
     ],
   },
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "niryo-ned2",
     topology: "single",
+    systemType: "single-arm",
+    recordStatus: "reviewed",
     model: "NED2",
     company: "NIRYO",
     country: "FRANCE",
@@ -47,6 +89,31 @@ export const ROBOT_PROFILES = [
     productUrl: "https://niryo.com/product/robotic-arm/",
     sourceReach: "490 MM",
     geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Niryo Ned ROS stack",
+        url: "https://github.com/NiryoRobotics/ned_ros",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Niryo robotic arm product page",
+        url: "https://niryo.com/product/robotic-arm/",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "published-reach",
+        label: "Published reach",
+        value: "490 mm",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+    ],
     linkLengths: [152, 132],
     jointsDegrees: [48, -62],
     target: { x: -100, y: 20 },
@@ -66,8 +133,11 @@ export const ROBOT_PROFILES = [
     ],
   },
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "franka-research-3",
     topology: "single",
+    systemType: "single-arm",
+    recordStatus: "reviewed",
     model: "FRANKA RESEARCH 3",
     company: "FRANKA ROBOTICS",
     country: "GERMANY",
@@ -79,6 +149,31 @@ export const ROBOT_PROFILES = [
     productUrl: "https://franka.de/research",
     sourceReach: "855 MM",
     geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Franka low-level control interface",
+        url: "https://github.com/frankarobotics/libfranka",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Franka Research 3 product page",
+        url: "https://franka.de/research",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "published-reach",
+        label: "Published reach",
+        value: "855 mm",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+    ],
     linkLengths: [174, 136],
     jointsDegrees: [26, -48],
     target: { x: -180, y: -100 },
@@ -98,8 +193,11 @@ export const ROBOT_PROFILES = [
     ],
   },
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "ur5e",
     topology: "single",
+    systemType: "single-arm",
+    recordStatus: "reviewed",
     model: "UR5E",
     company: "UNIVERSAL ROBOTS",
     country: "DENMARK",
@@ -112,6 +210,31 @@ export const ROBOT_PROFILES = [
     productUrl: "https://www.universal-robots.com/products/ur5-robot/",
     sourceReach: "850 MM",
     geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Universal Robots ROS 2 driver",
+        url: "https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Universal Robots UR5e product page",
+        url: "https://www.universal-robots.com/products/ur5-robot/",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "published-reach",
+        label: "Published reach",
+        value: "850 mm",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+    ],
     linkLengths: [168, 142],
     jointsDegrees: [33, -56],
     target: { x: -100, y: 20 },
@@ -131,8 +254,11 @@ export const ROBOT_PROFILES = [
     ],
   },
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "hello-stretch-4",
     topology: "single",
+    systemType: "single-arm",
+    recordStatus: "reviewed",
     model: "STRETCH 4",
     company: "HELLO ROBOT",
     country: "USA",
@@ -143,7 +269,32 @@ export const ROBOT_PROFILES = [
     sourceUrl: "https://github.com/hello-robot/stretch_ros2",
     productUrl: "https://hello-robot.com/stretch-4-product",
     sourceReach: "MOBILE MANIPULATOR",
-    geometryTruth: "ARCHITECTURE ABSTRACTED AS A 2-LINK ARM",
+    geometryTruth: "ARCHITECTURE ABSTRACTED AS A NORMALIZED 2-LINK ARM",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Hello Robot Stretch ROS 2 stack",
+        url: "https://github.com/hello-robot/stretch_ros2",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Hello Robot Stretch 4 product page",
+        url: "https://hello-robot.com/stretch-4-product",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "mobile-manipulator",
+        label: "Published system class",
+        value: "Mobile manipulator",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+    ],
     linkLengths: [142, 156],
     jointsDegrees: [58, -72],
     target: { x: -100, y: 20 },
@@ -163,8 +314,11 @@ export const ROBOT_PROFILES = [
     ],
   },
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "aloha-stationary",
     topology: "dual",
+    systemType: "published-dual",
+    recordStatus: "reviewed",
     dualStatus: "PUBLISHED DUAL SYSTEM",
     model: "ALOHA STATIONARY",
     company: "TROSSEN / INTERBOTIX",
@@ -178,6 +332,38 @@ export const ROBOT_PROFILES = [
       "https://docs.trossenrobotics.com/aloha_docs/1.0/specifications.html",
     sourceReach: "1225W × 1019D × 1066H MM CELL",
     geometryTruth: "SOURCE CELL ENVELOPE / NORMALIZED PER-ARM DRAWING",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "ALOHA hardware and teleoperation repository",
+        url: "https://github.com/tonyzhaozh/aloha",
+      },
+      {
+        sourceId: "specifications",
+        kind: "manufacturer-specification",
+        label: "ALOHA Stationary specifications",
+        url: "https://docs.trossenrobotics.com/aloha_docs/1.0/specifications.html",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "cell-envelope",
+        label: "Published cell envelope",
+        value: "1225W × 1019D × 1066H mm",
+        status: "vendor-claimed",
+        sourceIds: ["specifications"],
+      },
+      {
+        claimId: "follower-arms",
+        label: "Published follower-arm count",
+        value: "Two ViperX follower arms",
+        status: "vendor-claimed",
+        sourceIds: ["specifications"],
+      },
+    ],
     baseSeparation: 220,
     linkLengths: [126, 112],
     jointsDegrees: [48, -64],
@@ -198,8 +384,11 @@ export const ROBOT_PROFILES = [
     ],
   },
   {
+    format: ROBOT_PROFILE_FORMAT,
     id: "fr3-duo",
     topology: "dual",
+    systemType: "published-dual",
+    recordStatus: "reviewed",
     dualStatus: "PUBLISHED DUAL SYSTEM",
     model: "FR3 DUO",
     company: "FRANKA ROBOTICS",
@@ -212,6 +401,38 @@ export const ROBOT_PROFILES = [
     productUrl: "https://franka.de/fr3-duo",
     sourceReach: "2 × 7 DOF / 3 KG PER ARM",
     geometryTruth: "SOURCE ARM COUNT + PAYLOAD / NORMALIZED DRAWING",
+    geometryStatus: "normalized",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Franka low-level control interface",
+        url: "https://github.com/frankarobotics/libfranka",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Franka FR3 Duo product page",
+        url: "https://franka.de/fr3-duo",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "arm-count",
+        label: "Published arm count",
+        value: "Two 7-DOF FR3 arms",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+      {
+        claimId: "payload-per-arm",
+        label: "Published payload per arm",
+        value: "3 kg",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+    ],
     baseSeparation: 210,
     linkLengths: [132, 116],
     jointsDegrees: [36, -58],
@@ -232,6 +453,8 @@ export const ROBOT_PROFILES = [
     ],
   },
 ];
+
+export const ROBOT_PROFILES = PROFILE_DEFINITIONS.map(defineRobotProfile);
 
 export function getRobotProfile(id) {
   return ROBOT_PROFILES.find((profile) => profile.id === id) || ROBOT_PROFILES[0];

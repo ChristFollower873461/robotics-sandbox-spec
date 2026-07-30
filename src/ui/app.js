@@ -109,6 +109,8 @@ const elements = Object.fromEntries(
     "profile-source",
     "profile-product",
     "profile-geometry-truth",
+    "profile-geometry-status",
+    "profile-source-checked",
     "profile-count",
     "model-readout",
     "mode-readout",
@@ -1197,6 +1199,8 @@ function applyProfile(profileId) {
   elements.profileLicense.textContent = profileValue.license;
   elements.profileReach.textContent = profileValue.sourceReach;
   elements.profileGeometryTruth.textContent = profileValue.geometryTruth;
+  elements.profileGeometryStatus.textContent = profileValue.geometryStatus.toUpperCase();
+  elements.profileSourceChecked.textContent = profileValue.sourceCheckedAt;
   elements.profileSource.href = profileValue.sourceUrl;
   elements.profileProduct.href = profileValue.productUrl;
   elements.scenarioName.textContent = `${profileValue.model} / ${
@@ -1265,10 +1269,12 @@ function setTopology(topology) {
 }
 
 function workcellContext() {
+  const profileValue = selectedProfile();
   return {
     profileId: state.profileId,
     topology: state.topology,
-    baseSeparation: isDualWorkcell() ? selectedProfile().baseSeparation : 0,
+    baseSeparation: isDualWorkcell() ? profileValue.baseSeparation : 0,
+    geometryStatus: profileValue.geometryStatus,
   };
 }
 

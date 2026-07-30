@@ -14,6 +14,8 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /data-topology="single"/);
   assert.match(html, /data-topology="dual"/);
   assert.match(html, /id="profile-geometry-truth"/);
+  assert.match(html, /id="profile-geometry-status"/);
+  assert.match(html, /id="profile-source-checked"/);
   assert.match(html, /id="profile-product"/);
   assert.match(html, /id="cspace-canvas"/);
   assert.match(html, /data-planner="grid"/);

@@ -1,6 +1,21 @@
 import { clamp, round } from "../geometry.js";
+import {
+  LEGACY_WORKCELL_FORMAT,
+  WORKCELL_FORMAT,
+  assertWorkcellSnapshot,
+  createFixtureRecord,
+  createRobotSystems,
+  migrateWorkcellPayload,
+  validateWorkcellSnapshot,
+  workcellSnapshotToInput,
+} from "./workcellContract.js";
 
-export const WORKCELL_FORMAT = "basement-boys/robot-workcell/v1";
+export {
+  LEGACY_WORKCELL_FORMAT,
+  WORKCELL_FORMAT,
+  migrateWorkcellPayload,
+  validateWorkcellSnapshot,
+};
 
 export const WORKCELL_LIMITS = Object.freeze({
   minWidth: 300,
@@ -137,6 +152,12 @@ function fixtureId() {
 
 export function normalizeFixture(fixture = {}, index = 0) {
   const type = fixture.type === "circle" ? "circle" : "rect";
+  const source = ["manual", "traced", "preset", "imported", "proposed"].includes(
+    fixture.source
+  )
+    ? fixture.source
+    : "manual";
+  const confidence = Number(fixture.confidence);
   const base = {
     id: String(fixture.id || fixtureId()),
     name: String(fixture.name || `FIXTURE ${index + 1}`).slice(0, 48),
@@ -147,9 +168,24 @@ export function normalizeFixture(fixture = {}, index = 0) {
     type,
     x: finiteNumber(fixture.x, 0),
     y: finiteNumber(fixture.y, 0),
-    source: ["manual", "traced", "preset", "imported"].includes(fixture.source)
-      ? fixture.source
-      : "manual",
+    z: finiteNumber(fixture.z, 0),
+    yawDegrees: finiteNumber(fixture.yawDegrees, 0),
+    fixtureHeight:
+      fixture.fixtureHeight === null || fixture.fixtureHeight === undefined
+        ? null
+        : clamp(finiteNumber(fixture.fixtureHeight, 0), 0, 4000),
+    source,
+    reviewStatus: ["confirmed", "proposed", "rejected"].includes(
+      fixture.reviewStatus
+    )
+      ? fixture.reviewStatus
+      : source === "proposed"
+        ? "proposed"
+        : "confirmed",
+    confidence: Number.isFinite(confidence) ? clamp(confidence, 0, 1) : null,
+    sourceAssetId: fixture.sourceAssetId
+      ? String(fixture.sourceAssetId).slice(0, 160)
+      : null,
   };
 
   if (type === "circle") {
@@ -201,11 +237,16 @@ export function normalizeWorkcell(workcell = {}) {
     : [];
   const robotBase = workcell.robotBase || {};
   const reference = workcell.reference || {};
+  const calibration = workcell.calibration || {};
 
   return {
     name: String(workcell.name || "UNTITLED WORKCELL").slice(0, 64),
     width,
     height,
+    clearanceHeight:
+      workcell.clearanceHeight === null || workcell.clearanceHeight === undefined
+        ? null
+        : clamp(finiteNumber(workcell.clearanceHeight, 0), 0, 10000),
     robotBase: {
       x: clamp(finiteNumber(robotBase.x, 0), -width / 2, width / 2),
       y: clamp(finiteNumber(robotBase.y, 0), -height / 2, height / 2),
@@ -213,9 +254,47 @@ export function normalizeWorkcell(workcell = {}) {
     fixtures,
     reference: {
       fileName: reference.fileName ? String(reference.fileName).slice(0, 160) : null,
+      assetId: reference.assetId ? String(reference.assetId).slice(0, 160) : null,
+      checksumSha256:
+        typeof reference.checksumSha256 === "string"
+          ? reference.checksumSha256.toLowerCase().slice(0, 64)
+          : null,
       widthPx: Math.max(0, Math.round(finiteNumber(reference.widthPx, 0))),
       heightPx: Math.max(0, Math.round(finiteNumber(reference.heightPx, 0))),
       opacity: clamp(finiteNumber(reference.opacity, 0.42), 0.05, 0.9),
+    },
+    calibration: {
+      method: ["numeric-bounds", "photo-bounds", "homography"].includes(
+        calibration.method
+      )
+        ? calibration.method
+        : reference.fileName
+          ? "photo-bounds"
+          : "numeric-bounds",
+      anchors: Array.isArray(calibration.anchors)
+        ? structuredClone(calibration.anchors)
+        : [],
+      measurements: Array.isArray(calibration.measurements)
+        ? structuredClone(calibration.measurements)
+        : [],
+      transform:
+        Array.isArray(calibration.transform) && calibration.transform.length === 9
+          ? calibration.transform.map((value) => finiteNumber(value, 0))
+          : null,
+      residualMm:
+        calibration.residualMm === null || calibration.residualMm === undefined
+          ? null
+          : Math.max(0, finiteNumber(calibration.residualMm, 0)),
+      uncertaintyMm:
+        calibration.uncertaintyMm === null ||
+        calibration.uncertaintyMm === undefined
+          ? null
+          : Math.max(0, finiteNumber(calibration.uncertaintyMm, 0)),
+      confidence: ["unrated", "low", "medium", "high"].includes(
+        calibration.confidence
+      )
+        ? calibration.confidence
+        : "unrated",
     },
   };
 }
@@ -233,16 +312,39 @@ export function workcellFromPreset(presetId) {
 
 export function createWorkcellSnapshot(workcell, context = {}) {
   const normalized = normalizeWorkcell(workcell);
-  return {
+  const reference =
+    normalized.reference.fileName &&
+    normalized.reference.widthPx &&
+    normalized.reference.heightPx
+      ? {
+          fileName: normalized.reference.fileName,
+          assetId: normalized.reference.assetId,
+          checksumSha256: normalized.reference.checksumSha256,
+          pixels: {
+            width: normalized.reference.widthPx,
+            height: normalized.reference.heightPx,
+          },
+        }
+      : null;
+  const snapshot = {
     format: WORKCELL_FORMAT,
     savedAt: new Date().toISOString(),
     units: "mm",
     name: normalized.name,
+    coordinateFrame: {
+      frameId: "workcell",
+      handedness: "right",
+      axes: { x: "+right", y: "+forward", z: "+up" },
+    },
     bounds: {
       width: round(normalized.width, 3),
-      height: round(normalized.height, 3),
+      depth: round(normalized.height, 3),
+      clearanceHeight:
+        normalized.clearanceHeight === null
+          ? null
+          : round(normalized.clearanceHeight, 3),
     },
-    robot: {
+    robotSystems: createRobotSystems({
       profileId: String(context.profileId || "unknown"),
       topology: context.topology === "dual" ? "dual" : "single",
       base: {
@@ -250,39 +352,24 @@ export function createWorkcellSnapshot(workcell, context = {}) {
         y: round(normalized.robotBase.y, 3),
       },
       baseSeparation: round(finiteNumber(context.baseSeparation, 0), 3),
-      geometryStatus: "normalized-planar-teaching-model",
-    },
+      geometryStatus: context.geometryStatus || "normalized",
+    }),
     calibration: {
-      method: normalized.reference.fileName ? "photo-bounds" : "numeric-bounds",
-      referenceFile: normalized.reference.fileName,
-      referencePixels:
-        normalized.reference.widthPx && normalized.reference.heightPx
-          ? {
-              width: normalized.reference.widthPx,
-              height: normalized.reference.heightPx,
-            }
-          : null,
+      method: normalized.calibration.method,
+      reference,
+      anchors: structuredClone(normalized.calibration.anchors),
+      measurements: structuredClone(normalized.calibration.measurements),
+      transform: normalized.calibration.transform
+        ? [...normalized.calibration.transform]
+        : null,
+      residualMm: normalized.calibration.residualMm,
+      uncertaintyMm: normalized.calibration.uncertaintyMm,
+      confidence: normalized.calibration.confidence,
       imageEmbedded: false,
     },
-    fixtures: normalized.fixtures.map((fixture) => {
-      const common = {
-        id: fixture.id,
-        name: fixture.name,
-        kind: fixture.kind,
-        type: fixture.type,
-        x: round(fixture.x, 3),
-        y: round(fixture.y, 3),
-        source: fixture.source,
-      };
-      return fixture.type === "circle"
-        ? { ...common, radius: round(fixture.radius, 3) }
-        : {
-            ...common,
-            width: round(fixture.width, 3),
-            height: round(fixture.height, 3),
-          };
-    }),
+    fixtures: normalized.fixtures.map(createFixtureRecord),
   };
+  return assertWorkcellSnapshot(snapshot);
 }
 
 export function serializeWorkcell(workcell, context = {}) {
@@ -290,25 +377,5 @@ export function serializeWorkcell(workcell, context = {}) {
 }
 
 export function hydrateWorkcell(input) {
-  const payload = typeof input === "string" ? JSON.parse(input) : input;
-  if (!payload || typeof payload !== "object") {
-    throw new TypeError("Workcell file must contain a JSON object.");
-  }
-  if (payload.format && payload.format !== WORKCELL_FORMAT) {
-    throw new Error(
-      `Unsupported workcell format "${payload.format}". Expected "${WORKCELL_FORMAT}".`
-    );
-  }
-
-  return normalizeWorkcell({
-    name: payload.name,
-    bounds: payload.bounds,
-    robotBase: payload.robot?.base,
-    fixtures: payload.fixtures,
-    reference: {
-      fileName: payload.calibration?.referenceFile,
-      widthPx: payload.calibration?.referencePixels?.width,
-      heightPx: payload.calibration?.referencePixels?.height,
-    },
-  });
+  return normalizeWorkcell(workcellSnapshotToInput(input));
 }

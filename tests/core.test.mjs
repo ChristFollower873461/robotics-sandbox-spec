@@ -13,13 +13,22 @@ import {
 } from "../src/core/planning/configurationSpace.js";
 import { planWaypointTrajectory } from "../src/core/planning/pathPlanner.js";
 import {
+  LEGACY_WORKCELL_FORMAT,
   WORKCELL_FORMAT,
   createWorkcellSnapshot,
   hydrateWorkcell,
+  migrateWorkcellPayload,
   normalizeWorkcell,
   serializeWorkcell,
+  validateWorkcellSnapshot,
   workcellFromPreset,
 } from "../src/core/environment/workcell.js";
+import {
+  ROBOT_PROFILE_FORMAT,
+  hydrateRobotProfile,
+  serializeRobotProfile,
+  validateRobotProfile,
+} from "../src/core/robot/profile.js";
 import { ROBOT_PROFILES } from "../src/ui/robotProfiles.js";
 
 function approxEqual(actual, expected, tolerance = 1e-6) {
@@ -127,12 +136,35 @@ test("robot profiles identify their topology, region, and exact open layer", () 
   assert.ok(ROBOT_PROFILES.some((profile) => profile.region === "AMERICAN"));
   assert.ok(ROBOT_PROFILES.some((profile) => profile.region === "EUROPEAN"));
   for (const profile of ROBOT_PROFILES) {
+    assert.equal(profile.format, ROBOT_PROFILE_FORMAT);
+    assert.equal(profile.recordStatus, "reviewed");
+    assert.equal(profile.geometryStatus, "normalized");
+    assert.equal(profile.sourceCheckedAt, "2026-07-30");
+    assert.equal(validateRobotProfile(profile).valid, true);
     assert.match(profile.sourceUrl, /^https:\/\//);
     assert.ok(profile.openScope.length > 10);
     assert.ok(profile.license.length > 2);
     assert.ok(profile.geometryTruth.length > 10);
     assert.ok(["single", "dual"].includes(profile.topology));
+    assert.ok(profile.sources.length >= 2);
+    assert.ok(profile.publishedClaims.length >= 1);
   }
+});
+
+test("robot-profile/v1 round-trips and rejects broken provenance", () => {
+  const profile = ROBOT_PROFILES[0];
+  const hydrated = hydrateRobotProfile(serializeRobotProfile(profile));
+
+  assert.equal(hydrated.id, profile.id);
+  assert.equal(hydrated.sources[0].url, profile.sources[0].url);
+  assert.equal(Object.isFrozen(hydrated), true);
+
+  const invalid = structuredClone(profile);
+  invalid.publishedClaims[0].sourceIds = ["missing-source"];
+  const result = validateRobotProfile(invalid);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /unknown source/);
+  assert.throws(() => hydrateRobotProfile(invalid), /Invalid robot profile/);
 });
 
 test("every curated robot profile ships with a valid A* demo route", () => {
@@ -203,8 +235,14 @@ test("workcell JSON round-trips fixtures without embedding the reference image",
 
   assert.equal(snapshot.format, WORKCELL_FORMAT);
   assert.equal(snapshot.units, "mm");
-  assert.equal(snapshot.calibration.referenceFile, "shop-floor.jpg");
+  assert.equal(snapshot.coordinateFrame.axes.z, "+up");
+  assert.equal(snapshot.bounds.depth, 760);
+  assert.equal(snapshot.calibration.reference.fileName, "shop-floor.jpg");
   assert.equal(snapshot.calibration.imageEmbedded, false);
+  assert.equal(snapshot.robotSystems[0].mounts.length, 1);
+  assert.equal(snapshot.fixtures[0].geometry.type, "box");
+  assert.equal(snapshot.fixtures[0].geometry.width, 300);
+  assert.equal(snapshot.fixtures[0].provenance.method, "traced");
   assert.doesNotMatch(json, /not-exported/);
   assert.equal(hydrated.width, 1100);
   assert.equal(hydrated.robotBase.x, 40);
@@ -235,7 +273,75 @@ test("workcell normalization clamps unsafe bounds and fixture counts", () => {
   assert.equal(workcell.robotBase.y, -150);
   assert.equal(workcell.fixtures[0].x, 2000);
   assert.equal(workcell.fixtures[0].y, -150);
-  assert.equal(snapshot.fixtures[0].width, 10);
+  assert.equal(snapshot.fixtures[0].geometry.width, 10);
+});
+
+test("workcell v1 imports migrate deterministically to validated v2 geometry", () => {
+  const legacy = {
+    format: LEGACY_WORKCELL_FORMAT,
+    savedAt: "2026-07-30T00:00:00.000Z",
+    units: "mm",
+    name: "LEGACY DUAL CELL",
+    bounds: { width: 1200, height: 800 },
+    robot: {
+      profileId: "aloha-stationary",
+      topology: "dual",
+      base: { x: 20, y: -30 },
+      baseSeparation: 220,
+      geometryStatus: "normalized-planar-teaching-model",
+    },
+    calibration: {
+      method: "photo-bounds",
+      referenceFile: "cell.png",
+      referencePixels: { width: 2400, height: 1600 },
+      imageEmbedded: false,
+    },
+    fixtures: [
+      {
+        id: "guard",
+        name: "GUARD",
+        kind: "guard",
+        type: "rect",
+        x: 0,
+        y: 350,
+        width: 1100,
+        height: 20,
+        source: "traced",
+      },
+    ],
+  };
+
+  const migrated = migrateWorkcellPayload(legacy);
+  const hydrated = hydrateWorkcell(legacy);
+
+  assert.equal(migrated.format, WORKCELL_FORMAT);
+  assert.equal(migrated.migration.fromFormat, LEGACY_WORKCELL_FORMAT);
+  assert.equal(migrated.bounds.depth, 800);
+  assert.equal(migrated.robotSystems[0].mounts.length, 2);
+  assert.equal(migrated.robotSystems[0].mounts[0].pose.x, -90);
+  assert.equal(migrated.robotSystems[0].mounts[1].pose.x, 130);
+  assert.equal(migrated.fixtures[0].geometry.depth, 20);
+  assert.equal(validateWorkcellSnapshot(migrated).valid, true);
+  assert.equal(hydrated.robotBase.x, 20);
+  assert.equal(hydrated.fixtures[0].source, "traced");
+});
+
+test("workcell v2 validation rejects embedded images and invalid transforms", () => {
+  const snapshot = createWorkcellSnapshot(workcellFromPreset("bench"), {
+    profileId: "interbotix-wx250s",
+    topology: "single",
+    geometryStatus: "normalized",
+  });
+  const invalid = structuredClone(snapshot);
+  invalid.calibration.method = "homography";
+  invalid.calibration.imageEmbedded = true;
+  invalid.calibration.transform = [1, 0, 0];
+
+  const result = validateWorkcellSnapshot(invalid);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /imageEmbedded/);
+  assert.match(result.errors.join(" "), /3×3 matrix/);
+  assert.match(result.errors.join(" "), /homography calibration/);
 });
 
 test("workcell import rejects unknown file formats", () => {
