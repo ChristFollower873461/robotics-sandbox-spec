@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="An interactive, dependency-free sandbox for planar robot-arm kinematics, path planning, and collision checks."
+    />
+    <title>Robotics Sandbox / Planar Arm</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="workbench">
+      <header class="masthead">
+        <a class="brand" href="/" aria-label="Robotics Sandbox home">
+          <span class="brand-index">RS—01</span>
+          <strong>Robotics Sandbox</strong>
+        </a>
+        <p>2-DOF PLANAR ARM / LOCAL-FIRST</p>
+        <a href="https://github.com/ChristFollower873461/robotics-sandbox-spec">
+          SOURCE ↗
+        </a>
+      </header>
+
+      <section class="readout" aria-label="Simulation status">
+        <div>
+          <span>MODE</span>
+          <strong id="mode-readout">INVERSE KINEMATICS</strong>
+        </div>
+        <div>
+          <span>END EFFECTOR</span>
+          <strong id="position-readout">—</strong>
+        </div>
+        <div>
+          <span>PATH</span>
+          <strong id="path-readout">NO WAYPOINTS</strong>
+        </div>
+        <div>
+          <span>COLLISION</span>
+          <strong id="collision-readout" data-state="clear">CLEAR</strong>
+        </div>
+      </section>
+
+      <section class="instrument">
+        <aside class="control-panel" aria-label="Robot controls">
+          <div class="panel-heading">
+            <span>CONTROL / INPUT</span>
+            <strong id="scenario-name">SHOWCASE SCENARIO</strong>
+          </div>
+
+          <div class="mode-switch" role="group" aria-label="Control mode">
+            <button type="button" data-mode="fk">FK</button>
+            <button type="button" data-mode="ik" aria-pressed="true">IK</button>
+            <button type="button" data-mode="path">PATH</button>
+          </div>
+
+          <fieldset>
+            <legend>ARM GEOMETRY</legend>
+            <label>
+              <span>LINK A <output id="link-a-output">170 mm</output></span>
+              <input id="link-a" type="range" min="40" max="260" value="170" />
+            </label>
+            <label>
+              <span>LINK B <output id="link-b-output">130 mm</output></span>
+              <input id="link-b" type="range" min="40" max="260" value="130" />
+            </label>
+          </fieldset>
+
+          <fieldset id="fk-controls">
+            <legend>JOINT INPUT</legend>
+            <label>
+              <span>SHOULDER <output id="joint-a-output">35.0°</output></span>
+              <input id="joint-a" type="range" min="-180" max="180" value="35" />
+            </label>
+            <label>
+              <span>ELBOW <output id="joint-b-output">25.0°</output></span>
+              <input id="joint-b" type="range" min="-180" max="180" value="25" />
+            </label>
+          </fieldset>
+
+          <fieldset id="ik-controls">
+            <legend>TARGET INPUT</legend>
+            <div class="coordinate-grid">
+              <label>
+                <span>X / MM</span>
+                <input id="target-x" type="number" min="-320" max="320" value="210" />
+              </label>
+              <label>
+                <span>Y / MM</span>
+                <input id="target-y" type="number" min="-320" max="320" value="90" />
+              </label>
+            </div>
+            <label class="select-label">
+              <span>ELBOW SOLUTION</span>
+              <select id="elbow">
+                <option value="down">DOWN</option>
+                <option value="up">UP</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <div class="path-controls">
+            <button id="add-waypoint" type="button">ADD TARGET TO PATH</button>
+            <button id="play-path" type="button">PLAY PATH</button>
+            <button id="clear-path" type="button">CLEAR</button>
+          </div>
+
+          <p class="hint">
+            DRAG THE ORANGE TARGET. IN PATH MODE, ADD POSITIONS AND PLAY THE
+            SOLVED TRAJECTORY.
+          </p>
+        </aside>
+
+        <div class="viewport-shell">
+          <div class="viewport-meta">
+            <span>WORKSPACE / ±360 MM</span>
+            <span id="sample-readout">SAMPLE 000</span>
+          </div>
+          <svg
+            id="arm-canvas"
+            viewBox="-360 -360 720 720"
+            role="img"
+            aria-labelledby="canvas-title canvas-description"
+          >
+            <title id="canvas-title">Interactive planar robot arm</title>
+            <desc id="canvas-description">
+              A two-link robot arm with a draggable target, obstacles, and a
+              planned waypoint trajectory.
+            </desc>
+            <defs>
+              <pattern
+                id="minor-grid"
+                width="20"
+                height="20"
+                patternUnits="userSpaceOnUse"
+              >
+                <path d="M 20 0 L 0 0 0 20" class="minor-grid-line" />
+              </pattern>
+              <pattern
+                id="major-grid"
+                width="100"
+                height="100"
+                patternUnits="userSpaceOnUse"
+              >
+                <rect width="100" height="100" fill="url(#minor-grid)" />
+                <path d="M 100 0 L 0 0 0 100" class="major-grid-line" />
+              </pattern>
+            </defs>
+            <rect x="-360" y="-360" width="720" height="720" fill="url(#major-grid)" />
+            <g id="scene" transform="scale(1 -1)">
+              <g id="workspace-layer"></g>
+              <g id="obstacle-layer"></g>
+              <g id="path-layer"></g>
+              <g id="arm-layer"></g>
+              <g id="target-layer"></g>
+            </g>
+          </svg>
+          <p class="canvas-note">
+            POINTER INPUT IS LOCAL. NOTHING LEAVES THIS PAGE.
+          </p>
+        </div>
+
+        <aside class="telemetry" aria-label="Live telemetry">
+          <div class="panel-heading">
+            <span>TELEMETRY / OUTPUT</span>
+            <strong>LIVE</strong>
+          </div>
+          <dl>
+            <div>
+              <dt>SHOULDER</dt>
+              <dd id="shoulder-metric">—</dd>
+            </div>
+            <div>
+              <dt>ELBOW</dt>
+              <dd id="elbow-metric">—</dd>
+            </div>
+            <div>
+              <dt>REACH</dt>
+              <dd id="reach-metric">—</dd>
+            </div>
+            <div>
+              <dt>PATH LENGTH</dt>
+              <dd id="length-metric">—</dd>
+            </div>
+            <div>
+              <dt>DURATION</dt>
+              <dd id="duration-metric">—</dd>
+            </div>
+            <div>
+              <dt>SAMPLES</dt>
+              <dd id="samples-metric">—</dd>
+            </div>
+          </dl>
+          <div id="system-message" class="system-message" aria-live="polite">
+            TARGET SOLVED. DRAG TO INSPECT THE WORKSPACE.
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="/src/ui/app.js"></script>
+  </body>
+</html>

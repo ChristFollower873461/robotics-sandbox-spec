@@ -1,7 +1,7 @@
 # Robotics Sandbox / Robot Arm
 
-Lightweight robotics sandbox focused on the core logic for a 2-DOF planar robot arm.  
-This repo is a local-first, code-centric foundation for kinematics, waypoint planning, obstacle checks, and scenario serialization.
+Interactive robotics sandbox focused on a 2-DOF planar robot arm.
+It pairs a dependency-free browser workbench with readable modules for kinematics, waypoint planning, obstacle checks, and scenario serialization.
 
 ## What this project demonstrates
 
@@ -10,12 +10,13 @@ This repo is a local-first, code-centric foundation for kinematics, waypoint pla
 - Waypoint trajectory planning with sampled poses and simple timing/path metrics.
 - Obstacle awareness with circle/rectangle collision checks against arm link segments.
 - Scenario snapshot serialization and hydration for repeatable state loading.
+- An interactive SVG workbench with draggable IK targets, joint controls, waypoint playback, workspace bounds, and live collision telemetry.
 
 ## Why this is worth showing
 
 - The robotics math and planning code is cleanly separated from UI concerns.
 - It is small enough to read quickly, but complete enough to demonstrate real FK/IK/collision/planning behavior.
-- It is structured as a practical base for a future visual UI or hardware/ROS adapter layer.
+- The browser interface calls the same tested core modules used by the CLI inspection flow.
 
 ## Repo artifacts
 
@@ -64,13 +65,13 @@ This repo is a local-first, code-centric foundation for kinematics, waypoint pla
    npm run inspect:json
    ```
 
-6. Start the static server shell:
+6. Start the interactive browser workbench:
 
    ```bash
    npm run dev
    ```
 
-   Note: a full browser UI is not currently committed in this repo, so `dev` serves the project root but does not provide an interactive arm interface yet.
+   Open `http://127.0.0.1:4173/`. Drag the orange target, switch between FK/IK/path modes, add waypoints, and play the solved trajectory.
 
 ## Core API example
 
@@ -97,6 +98,8 @@ const plan = planWaypointTrajectory({
 ├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE
+├── index.html
+├── styles.css
 ├── package.json
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -117,8 +120,10 @@ const plan = planWaypointTrajectory({
 │   │   └── scenario/
 │   ├── types/
 │   └── ui/
+│       └── app.js
 └── tests/
-    └── core.test.mjs
+    ├── core.test.mjs
+    └── ui-shell.test.mjs
 ```
 
 ## Current status
@@ -126,10 +131,9 @@ const plan = planWaypointTrajectory({
 - Core robotics modules are implemented and runnable.
 - Collision and path checks are present for simple 2D circle/rectangle obstacles.
 - Scenario save/load helpers are implemented.
-- UI state helpers exist, but no complete frontend app shell is committed yet.
+- The dependency-free browser UI supports FK, IK, target dragging, waypoint planning, playback, and live collision feedback.
 
 ## Limitations and next steps
 
-- Add a minimal browser UI entrypoint (`index.html` + rendering layer) so the simulation is interactive.
 - Expand tests to cover edge cases (workspace boundary, tangent collisions, interpolation edge cases).
-- Add one or two fixed sample scenario JSON files for repeatable demos.
+- Add editable obstacle placement and scenario import/export to the browser workbench.

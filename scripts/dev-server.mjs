@@ -59,7 +59,7 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(`AIssisted Robotics Sandbox available at http://127.0.0.1:${port}`);
+  console.log(`Robotics Sandbox available at http://127.0.0.1:${port}`);
 });
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
