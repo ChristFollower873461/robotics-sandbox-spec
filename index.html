@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Describe your space and job, compare source-backed open robots, and understand what could fit before moving to a higher-fidelity simulation."
+      content="Play with rough, source-backed robot movement models, compare open platforms, and understand what could fit before moving to a higher-fidelity simulation."
     />
-    <title>Robot Field Guide / Find What Could Fit</title>
+    <title>Robot Field Guide / Play With the Possibilities</title>
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/range.css" />
   </head>
   <body>
     <main class="workbench">
@@ -18,7 +19,8 @@
           <span><small>BASEMENT BOYS / OPEN LAB</small><strong>Robot Field Guide</strong></span>
         </a>
         <nav aria-label="Primary navigation">
-          <a href="#decision-lab">Find a robot</a>
+          <a href="#test-range">Play</a>
+          <a href="#decision-lab">Compare</a>
           <a href="#robot-library">Browse the evidence</a>
         </nav>
         <div class="masthead-actions">
@@ -27,52 +29,144 @@
         </div>
       </header>
 
-      <section class="guide-hero" aria-labelledby="guide-title">
-        <div class="guide-hero-copy">
-          <p class="eyebrow">A practical guide to open robotics</p>
-          <h1 id="guide-title">See what could work<br />in <em>your</em> space.</h1>
-          <p class="guide-intro">
-            Describe the job, add a few measurements, and get a transparent
-            robot shortlist. We show what looks promising, what does not fit,
-            what is still unknown, and the source behind every important fact.
-          </p>
-          <div class="guide-actions">
-            <a class="primary-action" href="#decision-lab">Start with your job <span>↓</span></a>
-            <a class="secondary-action" href="#robot-library">Explore all 13 robots</a>
+      <section id="test-range" class="range-hero" aria-labelledby="range-title">
+        <header class="range-intro">
+          <div>
+            <p class="eyebrow">A playable rough simulator</p>
+            <h1 id="range-title">Pick a robot. Drop a target.<br /><em>Watch the limits show up.</em></h1>
           </div>
-          <dl class="guide-trust">
-            <div><dt>4</dt><dd>movement classes</dd></div>
-            <div><dt>13</dt><dd>open robot records</dd></div>
-            <div><dt>Local</dt><dd>photo processing</dd></div>
-            <div><dt>Honest</dt><dd>unknowns stay visible</dd></div>
-          </dl>
-        </div>
+          <div class="range-intro-copy">
+            <p>
+              Start moving in seconds. The friendly view explains what happened;
+              the engineer view exposes the geometry, evidence, and missing physics.
+            </p>
+            <div class="range-trust">
+              <span><i></i>Runs locally</span>
+              <span><i></i>13 reviewed records</span>
+              <span><i></i>Unknowns stay visible</span>
+            </div>
+          </div>
+        </header>
 
-        <div class="guide-hero-visual" aria-label="Illustrated robot movement field guide">
-          <div class="visual-heading"><span>Your robot landscape</span><small>Not to scale · movement classes</small></div>
-          <svg viewBox="0 0 720 540" role="img" aria-label="An arm, humanoid, quadruped, and drone shown inside a measured room">
-            <defs>
-              <pattern id="hero-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" /></pattern>
-            </defs>
-            <path class="hero-room" d="M52 92h616v368H52z" />
-            <path class="hero-grid" d="M52 92h616v368H52z" />
-            <path class="hero-zone" d="M80 348h178v82H80z" />
-            <text x="84" y="372">BENCH WORK</text>
-            <g class="hero-bot hero-bot--arm" transform="translate(118 260)">
-              <path d="M0 92h94M47 92V58l44-38 42 22" /><circle cx="47" cy="58" r="8" /><circle cx="91" cy="20" r="8" /><circle cx="133" cy="42" r="7" /><path class="hero-motion" d="M46 52Q92-30 150 8" />
-            </g>
-            <g class="hero-bot hero-bot--human" transform="translate(334 216)">
-              <circle cx="34" cy="20" r="17" /><path d="M34 38v78m0-54L3 91m31-29 34 28m-34 26-25 66m25-66 28 66" /><path class="hero-motion" d="M-18 190h108" />
-            </g>
-            <g class="hero-bot hero-bot--quad" transform="translate(464 330)">
-              <rect x="10" y="10" width="94" height="42" rx="14" /><path d="M28 51 12 94m35-43-3 43m40-43 3 43m7-43 19 43" /><path class="hero-motion" d="M-16 108h154" />
-            </g>
-            <g class="hero-bot hero-bot--drone" transform="translate(500 145)">
-              <path d="M52 34 8 8m44 26L96 8M52 34 8 61m44-27 44 27" /><circle cx="52" cy="34" r="13" /><circle cx="8" cy="8" r="15" /><circle cx="96" cy="8" r="15" /><circle cx="8" cy="61" r="15" /><circle cx="96" cy="61" r="15" /><path class="hero-motion" d="M-5 82Q48 128 115 78" />
-            </g>
-            <g class="hero-measure"><path d="M52 478h616m-616-8v16m616-16v16" /><text x="306" y="512">ROOM WIDTH</text></g>
-          </svg>
-          <div class="visual-legend"><span><i></i>Manipulate</span><span><i></i>Walk</span><span><i></i>Traverse</span><span><i></i>Fly</span></div>
+        <div id="range-app" class="range-console" data-platform="arm" data-playing="false">
+          <header class="range-console-bar">
+            <div class="range-console-title">
+              <span><i></i>LIVE TEST RANGE</span>
+              <small>2D GEOMETRIC SCREENING / 4.6 × 2.6 M FLOOR</small>
+            </div>
+            <div class="range-platform-tabs" role="tablist" aria-label="Robot movement class">
+              <button type="button" role="tab" data-range-platform="arm" aria-selected="true"><span>01</span>Arm</button>
+              <button type="button" role="tab" data-range-platform="humanoid" aria-selected="false"><span>02</span>Humanoid</button>
+              <button type="button" role="tab" data-range-platform="quadruped" aria-selected="false"><span>03</span>Quadruped</button>
+              <button type="button" role="tab" data-range-platform="drone" aria-selected="false"><span>04</span>Drone</button>
+            </div>
+            <button id="range-view-toggle" class="range-view-toggle" type="button" aria-pressed="false">Engineer view</button>
+          </header>
+
+          <div class="range-console-body">
+            <aside class="range-mission-panel" aria-label="Robot and mission controls">
+              <div class="range-step-heading"><span>01</span><strong>Pick a machine</strong></div>
+              <label class="range-select" for="range-robot-select">
+                <span>Open robot record</span>
+                <select id="range-robot-select"></select>
+              </label>
+
+              <div class="range-step-heading"><span>02</span><strong>Give it a job</strong></div>
+              <div id="range-missions" class="range-missions" role="group" aria-label="Test missions"></div>
+
+              <div class="range-tip">
+                <span>Try it yourself</span>
+                <strong>Drag the orange target anywhere on the floor.</strong>
+                <small id="range-control-hint">The arm can only reach inside its published-radius screening circle.</small>
+              </div>
+            </aside>
+
+            <div class="range-stage-shell">
+              <header class="range-stage-head">
+                <div id="range-status" class="range-status" data-state="ready"><i></i><span>Ready to test</span></div>
+                <div class="range-stage-actions">
+                  <button id="range-reset" type="button">Reset scene</button>
+                </div>
+              </header>
+
+              <svg id="range-stage" viewBox="0 0 920 650" role="img" aria-labelledby="range-stage-title range-stage-description" tabindex="0">
+                <title id="range-stage-title">Interactive robot test range</title>
+                <desc id="range-stage-description">A scaled two-dimensional room with draggable target, obstacles, planned route, and selected robot.</desc>
+                <defs>
+                  <pattern id="range-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" /></pattern>
+                  <pattern id="range-rough" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M-4 16 8 4m2 18L22 10" /></pattern>
+                  <filter id="range-shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".18" /></filter>
+                </defs>
+                <rect class="range-floor" width="920" height="650" rx="24" />
+                <rect class="range-floor-grid" width="920" height="650" rx="24" />
+                <g class="range-scene-labels" aria-hidden="true">
+                  <text x="34" y="42">OPEN LAB / FLOOR 01</text>
+                  <text x="750" y="492">5 MM / DISPLAY PX</text>
+                </g>
+                <g class="range-fixtures" aria-label="Room fixtures">
+                  <g class="range-fixture range-fixture--bench"><rect x="120" y="85" width="230" height="90" rx="12" /><path d="M142 104h82v52h-82zm101 0h84v18h-84zm0 29h84v23h-84z" /><text x="136" y="76">ASSEMBLY BENCH</text></g>
+                  <g class="range-fixture range-fixture--pallet"><rect x="420" y="220" width="150" height="110" rx="10" /><path d="M438 238h114v74H438zM458 238v74m74-74v74" /><text x="432" y="211">PALLET / KEEP CLEAR</text></g>
+                  <g class="range-fixture range-fixture--rack"><rect x="680" y="75" width="150" height="90" rx="10" /><path d="M698 93h114v17H698zm0 27h114v27H698z" /><text x="692" y="66">PARTS RACK</text></g>
+                  <g class="range-fixture range-fixture--divider"><rect x="650" y="340" width="35" height="125" rx="8" /><path d="m655 360 25 18m-25 12 25 18m-25 12 25 18" /></g>
+                  <g class="range-terrain"><path d="M282 370h245v112H282z" /><path d="M282 370h245v112H282z" fill="url(#range-rough)" /><text x="300" y="461">ROUGH PATCH / VISUAL ONLY</text></g>
+                </g>
+                <g class="range-model-boundary" aria-label="Model boundary summary">
+                  <path d="M26 520H894" />
+                  <text x="32" y="550">WHAT IS ACTUALLY RUNNING</text>
+                  <g transform="translate(32 568)"><rect width="258" height="58" rx="9" /><text x="16" y="23">GEOMETRY</text><text class="range-boundary-value" x="16" y="43">LIVE IN THIS BROWSER</text></g>
+                  <g transform="translate(331 568)"><rect width="258" height="58" rx="9" /><text x="16" y="23">CONTACT + TERRAIN</text><text class="range-boundary-value" x="16" y="43">NOT MODELED</text></g>
+                  <g transform="translate(630 568)"><rect width="258" height="58" rx="9" /><text x="16" y="23">REAL CONTROLLER</text><text class="range-boundary-value" x="16" y="43">UPSTREAM NEXT STEP</text></g>
+                </g>
+                <g id="range-reach-layer"></g>
+                <g id="range-route-layer"></g>
+                <g id="range-robot-layer"></g>
+                <g id="range-target-layer"></g>
+              </svg>
+
+              <div class="range-transport" aria-label="Simulation playback">
+                <button id="range-play" type="button"><span>▶</span> Run the route</button>
+                <output id="range-time">0.0 / 0.0 s</output>
+                <input id="range-progress" type="range" min="0" max="1000" value="0" aria-label="Route playback position" />
+                <span id="range-mode-label">NORMALIZED ARM REACH</span>
+              </div>
+            </div>
+
+            <aside class="range-inspector" aria-label="Live result and evidence">
+              <div class="range-step-heading"><span>03</span><strong>Read the result</strong></div>
+              <div class="range-identity">
+                <span id="range-platform-label">Robot arm</span>
+                <h2 id="range-model">—</h2>
+                <p id="range-maker">—</p>
+              </div>
+
+              <div class="range-metrics">
+                <div><span>Result</span><strong id="range-result">—</strong></div>
+                <div><span id="range-distance-label">Reach used</span><strong id="range-distance">—</strong></div>
+                <div><span>Route</span><strong id="range-route">—</strong></div>
+                <div><span>Evidence</span><strong id="range-evidence-score">—</strong></div>
+              </div>
+
+              <div id="range-explanation" class="range-explanation" data-state="unknown">
+                <span>What this means</span>
+                <strong>Choose a mission to begin.</strong>
+                <p>The range will explain the geometric result in plain language.</p>
+              </div>
+
+              <details class="range-why" open>
+                <summary>Why this result <span>+</span></summary>
+                <div id="range-why-content"></div>
+              </details>
+
+              <div class="range-engineer-detail" id="range-engineer-detail">
+                <div><span>Model fidelity</span><strong id="range-fidelity">—</strong></div>
+                <div><span>Planner output</span><strong id="range-planner-output">—</strong></div>
+                <div><span>Next simulator</span><strong id="range-upstream">—</strong></div>
+              </div>
+
+              <a id="range-source" class="range-source" href="#" target="_blank" rel="noreferrer">Open the source record ↗</a>
+            </aside>
+          </div>
+          <p id="range-live-summary" class="sr-only" aria-live="polite"></p>
         </div>
       </section>
 
@@ -669,6 +763,7 @@
       </details>
     </main>
 
+    <script type="module" src="/src/ui/testRangeApp.js"></script>
     <script type="module" src="/src/ui/decisionApp.js"></script>
     <script type="module" src="/src/ui/app.js"></script>
   </body>

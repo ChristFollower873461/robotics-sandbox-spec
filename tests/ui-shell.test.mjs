@@ -6,6 +6,18 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
   assert.match(html, /id="arm-canvas"/);
+  assert.match(html, /id="test-range"/);
+  assert.match(html, /id="range-stage"/);
+  assert.match(html, /id="range-robot-select"/);
+  assert.match(html, /id="range-missions"/);
+  assert.match(html, /id="range-view-toggle"/);
+  assert.match(html, /id="range-progress"/);
+  assert.match(html, /data-range-platform="arm"/);
+  assert.match(html, /data-range-platform="humanoid"/);
+  assert.match(html, /data-range-platform="quadruped"/);
+  assert.match(html, /data-range-platform="drone"/);
+  assert.match(html, /href="\/range\.css"/);
+  assert.match(html, /src="\/src\/ui\/testRangeApp\.js"/);
   assert.match(html, /id="decision-lab"/);
   assert.match(html, /id="decision-form"/);
   assert.match(html, /id="decision-reference-photo"/);
@@ -54,9 +66,10 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
 });
 
 test("browser workbench imports the tested core modules", async () => {
-  const [app, decisionApp] = await Promise.all([
+  const [app, decisionApp, testRangeApp] = await Promise.all([
     readFile(new URL("../src/ui/app.js", import.meta.url), "utf8"),
     readFile(new URL("../src/ui/decisionApp.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/ui/testRangeApp.js", import.meta.url), "utf8"),
   ]);
 
   assert.match(app, /inverseKinematics/);
@@ -77,4 +90,9 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(decisionApp, /applyScenarioPreset/);
   assert.match(decisionApp, /onlyDifferences/);
   assert.match(decisionApp, /renderMeasurementHints/);
+  assert.match(testRangeApp, /planArenaRoute/);
+  assert.match(testRangeApp, /sampleArenaRoute/);
+  assert.match(testRangeApp, /inverseKinematics/);
+  assert.match(testRangeApp, /getDecisionRecord/);
+  assert.match(testRangeApp, /prefers-reduced-motion/);
 });

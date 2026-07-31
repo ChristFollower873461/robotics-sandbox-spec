@@ -8,6 +8,26 @@ The public application performs its current calculations in the browser. A
 reference photo or floor plan is not uploaded; it remains on the user's device
 unless a future, separately consented workflow explicitly says otherwise.
 
+## Playable test range
+
+The landing experience begins with a dependency-free, in-browser test range.
+It is intentionally faster and friendlier than the full decision form:
+
+- choose any reviewed arm, humanoid, quadruped, or drone record;
+- start from a class-specific mission or drag a target directly on the floor;
+- play and scrub a normalized arm reach or footprint-aware 2D route;
+- read the geometric conclusion, source coverage, and missing-physics boundary
+  without opening the engineer view;
+- switch to the engineer view for the fidelity label, planner output, and
+  recommended upstream simulator.
+
+Arms use the tested planar inverse-kinematics core with a normalized two-link
+proxy. Ground platforms use the deterministic grid planner in
+`src/core/planning/arenaPlanner.js`, with reviewed footprint dimensions where
+available. Drones show an overhead study path and explicitly treat floor
+fixtures as overflown. The range does not claim gait, contact, flight,
+localization, controller, or safety fidelity.
+
 ## Decision loop
 
 1. Enter measured room width, depth, clear height, narrowest doorway, terrain,

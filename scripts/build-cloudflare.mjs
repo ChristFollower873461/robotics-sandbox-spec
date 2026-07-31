@@ -16,6 +16,7 @@ await Promise.all([
 await Promise.all([
   fs.copyFile(path.join(rootDir, "index.html"), path.join(clientDir, "index.html")),
   fs.copyFile(path.join(rootDir, "styles.css"), path.join(clientDir, "styles.css")),
+  fs.copyFile(path.join(rootDir, "range.css"), path.join(clientDir, "range.css")),
   fs.cp(path.join(rootDir, "src"), path.join(clientDir, "src"), { recursive: true }),
   fs.copyFile(path.join(rootDir, "worker", "index.js"), path.join(serverDir, "index.js")),
   fs.copyFile(path.join(rootDir, "worker", "wrangler.json"), path.join(serverDir, "wrangler.json")),

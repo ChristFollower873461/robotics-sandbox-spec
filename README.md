@@ -1,4 +1,4 @@
-# Robotics Sandbox / Robot Arm
+# Robotics Sandbox / Robot Field Guide
 
 Web-first, self-hostable robot decision workbench, source-backed catalog, and
 rough simulator. Enter a measured environment and task, compare American and European
@@ -19,6 +19,9 @@ workspace described below; it is infrastructure, not the frontend host.
 
 ## What this project demonstrates
 
+- A playable four-class test range with draggable targets, class-specific
+  missions, normalized arm IK, footprint-aware 2D routing, scrubbable
+  playback, and progressive friendly/engineer explanations.
 - A guided environment/task/candidate study across all 13 robot profiles.
 - Deterministic pass/caution/fail/unknown screening with calculations,
   assumptions, field-level evidence, confidence, and next validation steps.
@@ -206,8 +209,10 @@ const plan = planWaypointTrajectory({
 │   └── ui/
 │       ├── app.js
 │       ├── decisionApp.js
-│       └── decisionCatalog.js
+│       ├── decisionCatalog.js
+│       └── testRangeApp.js
 └── tests/
+    ├── arenaPlanner.test.mjs
     ├── core.test.mjs
     └── ui-shell.test.mjs
 ```
@@ -218,6 +223,9 @@ const plan = planWaypointTrajectory({
   complete field-level catalog records, deterministic findings, explicit
   unknowns, scaled/hatching-aware graphics, evidence drawers, and local
   JSON/HTML exports.
+- The landing test range is implemented for arms, humanoids, quadrupeds, and
+  drones; non-arm movement remains an explicitly geometric route proxy rather
+  than a dynamics claim.
 - Core robotics modules are implemented and runnable.
 - Collision and path checks are present for editable 2D circle/rectangle obstacles.
 - Scenario save/load helpers are implemented.

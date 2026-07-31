@@ -11,6 +11,8 @@ This repository is organized around a small but extendable split between robotic
   deterministic toroidal A* search over shoulder/elbow configuration space.
 - `src/core/planning/pathPlanner.js`: waypoint solving, direct-path checks,
   A* fallback, sampled trajectory generation, timing, and validity metrics.
+- `src/core/planning/arenaPlanner.js`: deterministic footprint-aware 2D route
+  planning and distance-based playback sampling for the friendly test range.
 - `src/core/environment/workcell.js`: calibrated workcell bounds, fixture
   validation, presets, and versioned JSON serialization/hydration.
 - `src/core/environment/workcellContract.js`: the workcell v2 validator,
@@ -38,6 +40,8 @@ This repository is organized around a small but extendable split between robotic
   capability boundaries, and upstream simulation paths for all 13 profiles.
 - `src/ui/decisionApp.js`: guided study form, scaled orthographic proxies,
   explainable comparison, evidence drawer, and local JSON/HTML export.
+- `src/ui/testRangeApp.js`: playable four-class range, mission presets,
+  draggable targets, animation, and progressive evidence disclosure.
 - `src/ui/app.js`: SVG scene and reference-photo overlay, fixture ledger,
   Canvas C-space renderer, platform/profile browsing, guarded arm-profile
   switching, direct manipulation, planning controls, telemetry, workcell file
@@ -85,10 +89,10 @@ The current engine matrix is:
 
 | Platform class | Declared engine | Browser behavior |
 | --- | --- | --- |
-| Arm | `planar-arm-v1` | Interactive normalized FK/IK, collision, and A* |
-| Humanoid | `locomotion-catalog` | Evidence catalog only |
-| Quadruped | `locomotion-catalog` | Evidence catalog only |
-| Drone | `flight-catalog` | Evidence catalog only |
+| Arm | `planar-arm-v1` | Normalized reach in the test range; interactive FK/IK, collision, and A* in the engineer lab |
+| Humanoid | `locomotion-catalog` | Evidence plus footprint-aware 2D route; no gait/contact dynamics |
+| Quadruped | `locomotion-catalog` | Evidence plus footprint-aware 2D route; no gait/terrain dynamics |
+| Drone | `flight-catalog` | Evidence plus overhead geometric path; no 3D collision or flight dynamics |
 
 ## Extension points
 
