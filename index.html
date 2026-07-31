@@ -5,172 +5,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Pick an open robotics stack, inspect planar kinematics, and watch collision-aware motion planning happen in configuration space."
+      content="Describe your space and job, compare source-backed open robots, and understand what could fit before moving to a higher-fidelity simulation."
     />
-    <title>Robotics Sandbox / Pick Your Bot</title>
+    <title>Robot Field Guide / Find What Could Fit</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <main class="workbench">
       <header class="masthead">
-        <a class="brand" href="/" aria-label="Robotics Sandbox home">
-          <span class="brand-mark" aria-hidden="true">
-            <i></i><i></i><i></i>
-          </span>
-          <span>
-            <small>BASEMENT BOYS / LAB 01</small>
-            <strong>Robotics Sandbox</strong>
-          </span>
+        <a class="brand" href="/" aria-label="Robot Field Guide home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span><small>BASEMENT BOYS / OPEN LAB</small><strong>Robot Field Guide</strong></span>
         </a>
-        <p>OPEN ROBOT INDEX / MOTION LAB / 2026</p>
-        <a href="https://github.com/ChristFollower873461/robotics-sandbox-spec">
-          SOURCE ↗
-        </a>
+        <nav aria-label="Primary navigation">
+          <a href="#decision-lab">Find a robot</a>
+          <a href="#robot-library">Browse the evidence</a>
+        </nav>
+        <div class="masthead-actions">
+          <span>13 sourced records</span>
+          <a href="https://github.com/ChristFollower873461/robotics-sandbox-spec">View source ↗</a>
+        </div>
       </header>
+
+      <section class="guide-hero" aria-labelledby="guide-title">
+        <div class="guide-hero-copy">
+          <p class="eyebrow">A practical guide to open robotics</p>
+          <h1 id="guide-title">See what could work<br />in <em>your</em> space.</h1>
+          <p class="guide-intro">
+            Describe the job, add a few measurements, and get a transparent
+            robot shortlist. We show what looks promising, what does not fit,
+            what is still unknown, and the source behind every important fact.
+          </p>
+          <div class="guide-actions">
+            <a class="primary-action" href="#decision-lab">Start with your job <span>↓</span></a>
+            <a class="secondary-action" href="#robot-library">Explore all 13 robots</a>
+          </div>
+          <dl class="guide-trust">
+            <div><dt>4</dt><dd>movement classes</dd></div>
+            <div><dt>13</dt><dd>open robot records</dd></div>
+            <div><dt>Local</dt><dd>photo processing</dd></div>
+            <div><dt>Honest</dt><dd>unknowns stay visible</dd></div>
+          </dl>
+        </div>
+
+        <div class="guide-hero-visual" aria-label="Illustrated robot movement field guide">
+          <div class="visual-heading"><span>Your robot landscape</span><small>Not to scale · movement classes</small></div>
+          <svg viewBox="0 0 720 540" role="img" aria-label="An arm, humanoid, quadruped, and drone shown inside a measured room">
+            <defs>
+              <pattern id="hero-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" /></pattern>
+            </defs>
+            <path class="hero-room" d="M52 92h616v368H52z" />
+            <path class="hero-grid" d="M52 92h616v368H52z" />
+            <path class="hero-zone" d="M80 348h178v82H80z" />
+            <text x="84" y="372">BENCH WORK</text>
+            <g class="hero-bot hero-bot--arm" transform="translate(118 260)">
+              <path d="M0 92h94M47 92V58l44-38 42 22" /><circle cx="47" cy="58" r="8" /><circle cx="91" cy="20" r="8" /><circle cx="133" cy="42" r="7" /><path class="hero-motion" d="M46 52Q92-30 150 8" />
+            </g>
+            <g class="hero-bot hero-bot--human" transform="translate(334 216)">
+              <circle cx="34" cy="20" r="17" /><path d="M34 38v78m0-54L3 91m31-29 34 28m-34 26-25 66m25-66 28 66" /><path class="hero-motion" d="M-18 190h108" />
+            </g>
+            <g class="hero-bot hero-bot--quad" transform="translate(464 330)">
+              <rect x="10" y="10" width="94" height="42" rx="14" /><path d="M28 51 12 94m35-43-3 43m40-43 3 43m7-43 19 43" /><path class="hero-motion" d="M-16 108h154" />
+            </g>
+            <g class="hero-bot hero-bot--drone" transform="translate(500 145)">
+              <path d="M52 34 8 8m44 26L96 8M52 34 8 61m44-27 44 27" /><circle cx="52" cy="34" r="13" /><circle cx="8" cy="8" r="15" /><circle cx="96" cy="8" r="15" /><circle cx="8" cy="61" r="15" /><circle cx="96" cy="61" r="15" /><path class="hero-motion" d="M-5 82Q48 128 115 78" />
+            </g>
+            <g class="hero-measure"><path d="M52 478h616m-616-8v16m616-16v16" /><text x="306" y="512">ROOM WIDTH</text></g>
+          </svg>
+          <div class="visual-legend"><span><i></i>Manipulate</span><span><i></i>Walk</span><span><i></i>Traverse</span><span><i></i>Fly</span></div>
+        </div>
+      </section>
 
       <section id="decision-lab" class="decision-lab" aria-labelledby="decision-title">
         <header class="decision-header">
           <div>
-            <span>ROUGH FEASIBILITY / STUDY 001</span>
-            <h1 id="decision-title">BUILD A ROBOT<br /><em>SHORTLIST.</em></h1>
+            <p class="eyebrow">A guided rough-fit study</p>
+            <h2 id="decision-title">What should the robot<br />help you <em>do?</em></h2>
           </div>
           <div class="decision-positioning">
-            <strong>DECIDE WHAT DESERVES A REAL SIMULATION.</strong>
-            <p>
-              Enter the room and job. Compare source-backed facts, scaled
-              proxies, calculations, missing data, and upstream next steps.
-            </p>
-          </div>
-          <div class="fidelity-stamp">
-            <span>CURRENT BROWSER FIDELITY</span>
-            <strong>LEVEL 1–2</strong>
-            <small>GEOMETRIC / KINEMATIC APPROXIMATION</small>
+            <p>Start with a familiar job. You can change every measurement and candidate before running the comparison.</p>
+            <div class="fidelity-stamp"><span>Current fidelity</span><strong>Rough fit</strong><small>Geometry + published facts, not a digital twin</small></div>
           </div>
         </header>
 
-        <div class="decision-shell">
-          <nav class="decision-steps" aria-label="Decision study steps">
-            <a href="#study-environment"><b>01</b><span>MEASURE<small>ROOM + ACCESS</small></span></a>
-            <a href="#study-task"><b>02</b><span>DEFINE<small>JOB + LOAD</small></span></a>
-            <a href="#study-candidates"><b>03</b><span>SHORTLIST<small>UP TO SIX</small></span></a>
-            <a href="#study-results"><b>04</b><span>REVIEW<small>FINDINGS + RECEIPTS</small></span></a>
-          </nav>
+        <nav class="decision-steps" aria-label="Decision study steps">
+          <a href="#study-task"><b>1</b><span>Choose a job<small>Start in plain English</small></span></a>
+          <a href="#study-environment"><b>2</b><span>Size the space<small>A few real measurements</small></span></a>
+          <a href="#study-candidates"><b>3</b><span>Review the shortlist<small>Up to six robots</small></span></a>
+          <a href="#study-results"><b>4</b><span>Understand the result<small>Reasons, sources, next steps</small></span></a>
+        </nav>
 
+        <div class="decision-shell">
           <form id="decision-form" class="decision-form">
-            <section id="study-environment" class="study-block">
-              <header><span>01 / ENVIRONMENT</span><strong>MEASURE THE SPACE</strong></header>
+            <section id="study-task" class="study-block study-block--intent">
+              <header><span>Step 1</span><strong>Choose the closest job</strong></header>
+              <div class="scenario-presets" role="group" aria-label="Common robot jobs">
+                <button type="button" data-scenario-preset="bench" aria-pressed="true"><span class="scenario-number">01</span><strong>Move parts on a bench</strong><small>Pick, place, sort, or test objects</small></button>
+                <button type="button" data-scenario-preset="bimanual"><span class="scenario-number">02</span><strong>Use two arms together</strong><small>Research coordinated, two-handed work</small></button>
+                <button type="button" data-scenario-preset="inspect"><span class="scenario-number">03</span><strong>Inspect an indoor space</strong><small>Move through rooms and collect data</small></button>
+                <button type="button" data-scenario-preset="terrain"><span class="scenario-number">04</span><strong>Travel over rough ground</strong><small>Explore legged mobility outdoors</small></button>
+                <button type="button" data-scenario-preset="aerial"><span class="scenario-number">05</span><strong>Inspect from the air</strong><small>Compare small open flight platforms</small></button>
+              </div>
               <div class="study-field study-field--wide">
-                <label for="study-name">STUDY NAME</label>
-                <input id="study-name" type="text" value="Workshop handling study" />
+                <label for="task-kind">Closest technical task</label>
+                <select id="task-kind">
+                  <option value="pick-place">Pick and place objects</option>
+                  <option value="bench-research">Bench research</option>
+                  <option value="indoor-inspection">Indoor inspection</option>
+                  <option value="ground-traverse">Travel over ground</option>
+                  <option value="aerial-inspection">Aerial inspection</option>
+                </select>
               </div>
-              <div class="measurement-grid">
-                <div class="study-field"><label for="room-width">WIDTH <small>MM</small></label><input id="room-width" type="number" min="100" step="10" value="5000" /></div>
-                <div class="study-field"><label for="room-depth">DEPTH <small>MM</small></label><input id="room-depth" type="number" min="100" step="10" value="4000" /></div>
-                <div class="study-field"><label for="room-height">CLEAR HEIGHT <small>MM</small></label><input id="room-height" type="number" min="100" step="10" value="2600" /></div>
-                <div class="study-field"><label for="door-width">NARROWEST DOOR <small>MM</small></label><input id="door-width" type="number" min="100" step="10" value="900" /></div>
-              </div>
-              <div class="study-field-row">
-                <div class="study-field"><label for="terrain-type">SURFACE / TERRAIN</label><select id="terrain-type"><option value="level-hard">LEVEL / HARD</option><option value="mixed-indoor">MIXED INDOOR</option><option value="rough">ROUGH / IRREGULAR</option><option value="unknown">UNKNOWN</option></select></div>
-                <label class="study-toggle"><input id="indoor-environment" type="checkbox" checked /><span>INDOOR ENVIRONMENT</span></label>
+            </section>
+
+            <section id="study-environment" class="study-block study-block--environment">
+              <header><span>Step 2</span><strong>Give the room a real scale</strong></header>
+              <p class="block-intro">Two measurements are enough to begin. Millimeters keep the math honest; we translate them to feet for quick checking.</p>
+              <div class="measurement-grid measurement-grid--primary">
+                <div class="study-field"><label for="room-width">Room width <small>millimeters</small></label><input id="room-width" type="number" min="100" step="10" value="5000" /><small id="width-hint" class="measurement-hint">About 16.4 ft</small></div>
+                <div class="study-field"><label for="room-depth">Room depth <small>millimeters</small></label><input id="room-depth" type="number" min="100" step="10" value="4000" /><small id="depth-hint" class="measurement-hint">About 13.1 ft</small></div>
               </div>
               <label class="photo-capture" for="decision-reference-photo">
                 <input id="decision-reference-photo" type="file" accept="image/*" />
-                <span>ADD A PHOTO OR FLOOR PLAN</span>
-                <strong id="decision-photo-state">OPTIONAL / KEPT LOCAL</strong>
+                <span><strong>Add a room photo or floor plan</strong><small>Optional · stays in this browser</small></span>
+                <b id="decision-photo-state">Choose image</b>
               </label>
-              <p class="study-note">
-                A photo supplies visual context only. Your measurements set
-                scale. No perspective correction or inferred dimensions.
-              </p>
-            </section>
-
-            <section id="study-task" class="study-block">
-              <header><span>02 / TASK</span><strong>DEFINE THE JOB</strong></header>
-              <div class="study-field study-field--wide">
-                <label for="task-kind">PRIMARY TASK</label>
-                <select id="task-kind">
-                  <option value="pick-place">PICK + PLACE</option>
-                  <option value="bench-research">BENCH RESEARCH</option>
-                  <option value="indoor-inspection">INDOOR INSPECTION</option>
-                  <option value="ground-traverse">GROUND TRAVERSE</option>
-                  <option value="aerial-inspection">AERIAL INSPECTION</option>
-                </select>
-              </div>
-              <div class="measurement-grid">
-                <div class="study-field"><label for="required-reach">REQUIRED REACH <small>MM</small></label><input id="required-reach" type="number" min="0" step="10" value="500" /></div>
-                <div class="study-field"><label for="target-height">TARGET HEIGHT <small>MM</small></label><input id="target-height" type="number" min="0" step="10" value="900" /></div>
-                <div class="study-field"><label for="payload-kg">PAYLOAD <small>KG</small></label><input id="payload-kg" type="number" min="0" step="0.1" value="0.5" /></div>
-                <div class="study-field"><label for="flight-minutes">MIN FLIGHT <small>MIN</small></label><input id="flight-minutes" type="number" min="0" step="1" value="5" /></div>
-              </div>
-              <div class="study-requirements">
-                <label class="study-toggle"><input id="requires-mobility" type="checkbox" /><span>BASE MUST MOVE</span></label>
-                <label class="study-toggle"><input id="requires-bimanual" type="checkbox" /><span>TWO ARMS REQUIRED</span></label>
-              </div>
-              <div class="study-field study-field--wide"><label for="task-notes">TASK NOTES</label><textarea id="task-notes" rows="3" placeholder="Objects, route, duty cycle, tools, sensors, constraints…"></textarea></div>
+              <details class="advanced-details">
+                <summary><span>Add precise measurements</span><small>Door clearance, payload, reach, terrain, and notes</small></summary>
+                <div class="advanced-grid">
+                  <div class="study-field study-field--wide"><label for="study-name">Study name</label><input id="study-name" type="text" value="Workshop handling study" /></div>
+                  <div class="study-field"><label for="room-height">Clear height <small>mm</small></label><input id="room-height" type="number" min="100" step="10" value="2600" /></div>
+                  <div class="study-field"><label for="door-width">Narrowest doorway <small>mm</small></label><input id="door-width" type="number" min="100" step="10" value="900" /></div>
+                  <div class="study-field"><label for="required-reach">Required reach <small>mm</small></label><input id="required-reach" type="number" min="0" step="10" value="500" /></div>
+                  <div class="study-field"><label for="target-height">Target height <small>mm</small></label><input id="target-height" type="number" min="0" step="10" value="900" /></div>
+                  <div class="study-field"><label for="payload-kg">Object weight <small>kg</small></label><input id="payload-kg" type="number" min="0" step="0.1" value="0.5" /></div>
+                  <div class="study-field"><label for="flight-minutes">Minimum flight <small>minutes</small></label><input id="flight-minutes" type="number" min="0" step="1" value="5" /></div>
+                  <div class="study-field"><label for="terrain-type">Floor or terrain</label><select id="terrain-type"><option value="level-hard">Level and hard</option><option value="mixed-indoor">Mixed indoor surfaces</option><option value="rough">Rough or irregular</option><option value="unknown">Not sure yet</option></select></div>
+                  <div class="study-requirements">
+                    <label class="study-toggle"><input id="indoor-environment" type="checkbox" checked /><span>Indoors</span></label>
+                    <label class="study-toggle"><input id="requires-mobility" type="checkbox" /><span>Robot must move</span></label>
+                    <label class="study-toggle"><input id="requires-bimanual" type="checkbox" /><span>Two arms required</span></label>
+                  </div>
+                  <div class="study-field study-field--wide"><label for="task-notes">Anything else?</label><textarea id="task-notes" rows="3" placeholder="Describe the objects, route, duty cycle, tools, sensors, or constraints."></textarea></div>
+                </div>
+              </details>
+              <p class="study-note">Photos provide visual context only. Measurements set the scale; the browser does not infer dimensions from the image.</p>
             </section>
 
             <section id="study-candidates" class="study-block study-block--candidates">
-              <header><span>03 / CANDIDATES</span><strong>PICK UP TO SIX</strong></header>
-              <div id="decision-candidate-list" class="decision-candidate-list"></div>
-              <div class="decision-actions">
-                <button id="run-decision-study" type="submit">RUN ROUGH SCREEN →</button>
-                <button id="open-cell-builder" type="button">TRACE THE ROOM BELOW</button>
-              </div>
+              <header><span>Step 3</span><strong>Review your starter shortlist</strong></header>
+              <p class="block-intro">We picked a useful starting set for the job above. Keep it, or compare up to six robots across arms, humanoids, quadrupeds, and drones.</p>
+              <div id="selected-candidate-summary" class="selected-candidate-summary"></div>
+              <details class="candidate-browser">
+                <summary><span>Change the shortlist</span><small>Browse every sourced record</small></summary>
+                <div id="decision-candidate-list" class="decision-candidate-list"></div>
+              </details>
               <p id="candidate-message" class="study-note" aria-live="polite"></p>
+              <div class="decision-actions">
+                <button id="run-decision-study" type="submit">Show me what could fit <span>→</span></button>
+                <button id="open-cell-builder" type="button">Open the precise workcell builder</button>
+              </div>
             </section>
           </form>
 
-          <aside class="decision-viewport" aria-label="Scaled environment proxy">
-            <header>
-              <span>ORTHOGRAPHIC FIT PROXY</span>
-              <strong id="proxy-scale-label">SCALED TO ENTERED ROOM</strong>
-            </header>
-            <svg id="decision-proxy" viewBox="0 0 760 430" role="img" aria-label="Scaled room and robot proxy"></svg>
+          <aside class="decision-viewport" aria-label="Scaled environment preview">
+            <header><div><span>Your space at scale</span><strong id="proxy-scale-label">Using the measurements above</strong></div><small>Plan + side view</small></header>
+            <svg id="decision-proxy" viewBox="0 0 760 430" role="img" aria-label="Scaled room and robot preview"></svg>
             <div class="proxy-legend">
-              <span><i data-state="pass"></i>PASS</span>
-              <span><i data-state="caution"></i>CAUTION</span>
-              <span><i data-state="fail"></i>FAIL</span>
-              <span><i data-state="unknown"></i>UNKNOWN</span>
+              <span><i data-state="pass"></i>Promising</span>
+              <span><i data-state="caution"></i>Check closely</span>
+              <span><i data-state="fail"></i>Poor fit</span>
+              <span><i data-state="unknown"></i>Missing data</span>
             </div>
-            <p>
-              Plan + elevation proxies expose scale and movement class. They
-              are not collision meshes, swept volumes, gait, or flight dynamics.
-            </p>
+            <details class="measure-guide">
+              <summary>How to read this drawing</summary>
+              <dl>
+                <div><dt>Solid shape</dt><dd>Published dimensions are available.</dd></div>
+                <div><dt>Striped shape</dt><dd>We use a clearly labeled proxy because dimensions are missing.</dd></div>
+                <div><dt>Movement line</dt><dd>Shows the movement class, not a simulated path.</dd></div>
+              </dl>
+            </details>
+            <p>Useful for scale and early questions—not collision certification, gait physics, flight dynamics, or safety approval.</p>
           </aside>
         </div>
 
         <section id="study-results" class="decision-results" aria-live="polite">
           <header class="results-header">
-            <div><span>04 / SCREENING REPORT</span><strong id="results-title">READY TO SCREEN</strong></div>
+            <div><span>Your rough-fit report</span><strong id="results-title">Ready when you are</strong></div>
             <div id="result-counts" class="result-counts"></div>
+            <div class="result-view-actions">
+              <button id="show-result-differences" type="button" aria-pressed="false" disabled>Show differences only</button>
+              <button id="show-engineer-detail" type="button" aria-pressed="false" disabled>Show engineer detail</button>
+            </div>
             <div class="export-actions">
-              <button id="export-decision-json" type="button" disabled>EXPORT JSON</button>
-              <button id="export-decision-html" type="button" disabled>EXPORT REPORT</button>
+              <button id="export-decision-json" type="button" disabled>Download data</button>
+              <button id="export-decision-html" type="button" disabled>Download report</button>
             </div>
           </header>
           <div id="decision-result-list" class="decision-result-list">
-            <div class="results-empty">
-              <span>NO SCREENING RUN YET</span>
-              <strong>YOUR FIRST RESULT WILL SHOW THE MATH, THE RECEIPTS, AND WHAT IS STILL UNKNOWN.</strong>
-            </div>
+            <div class="results-empty"><span>No comparison yet</span><strong>Choose a job, check the room size, and we will explain what looks plausible—and what still needs proof.</strong></div>
           </div>
           <aside id="evidence-drawer" class="evidence-drawer" hidden>
-            <button id="close-evidence" type="button" aria-label="Close evidence details">CLOSE ×</button>
+            <button id="close-evidence" type="button" aria-label="Close evidence details">Close <span>×</span></button>
             <div id="evidence-content"></div>
           </aside>
-          <footer class="decision-disclosure">
-            <strong>SCREENING, NOT CERTIFICATION.</strong>
-            <p>No digital-twin, safety, purchase, deployment, or sim-to-real claim is made. A pass means “plausible enough to investigate upstream.”</p>
-          </footer>
+          <footer class="decision-disclosure"><strong>Screening, not certification.</strong><p>A promising result means “worth investigating in a higher-fidelity simulator.” It is not a safety, purchase, deployment, or sim-to-real claim.</p></footer>
         </section>
       </section>
 
+      <details id="engineering-lab" class="engineering-lab-shell">
+        <summary><span><small>Want the math?</small><strong>Open the engineer lab</strong></span><p>Inspect source records, planar kinematics, collision checks, configuration space, and the workcell builder.</p><b>Open lab ↓</b></summary>
+        <div class="engineering-lab-content">
       <div class="deep-dive-divider">
         <span>DEEP DIVE / SOURCE CATALOG + PLANAR ARM TEACHING ENGINE</span>
         <strong>INSPECT THE DATA. THEN OPEN THE MOTION LAB.</strong>
       </div>
 
-      <section class="bot-dock" aria-labelledby="bot-dock-title">
+      <section id="robot-library" class="bot-dock" aria-labelledby="bot-dock-title">
         <div class="bot-dock-heading">
           <span>OPEN ROBOT WORKCELL INDEX</span>
           <h1 id="bot-dock-title">CHOOSE<br />A <em>ROBOT.</em></h1>
@@ -614,6 +665,8 @@
           </p>
         </aside>
       </section>
+        </div>
+      </details>
     </main>
 
     <script type="module" src="/src/ui/decisionApp.js"></script>

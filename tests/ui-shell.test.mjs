@@ -10,8 +10,15 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /id="decision-form"/);
   assert.match(html, /id="decision-reference-photo"/);
   assert.match(html, /id="decision-candidate-list"/);
+  assert.match(html, /id="selected-candidate-summary"/);
   assert.match(html, /id="decision-proxy"/);
   assert.match(html, /id="decision-result-list"/);
+  assert.match(html, /id="show-result-differences"/);
+  assert.match(html, /id="show-engineer-detail"/);
+  assert.match(html, /data-scenario-preset="bench"/);
+  assert.match(html, /data-scenario-preset="aerial"/);
+  assert.match(html, /id="engineering-lab"/);
+  assert.match(html, /Show me what could fit/);
   assert.match(html, /id="evidence-drawer"/);
   assert.match(html, /id="export-decision-json"/);
   assert.match(html, /src="\/src\/ui\/decisionApp\.js"/);
@@ -66,4 +73,8 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(decisionApp, /validateDecisionScenario/);
   assert.match(decisionApp, /DECISION_CATALOG/);
   assert.match(decisionApp, /getEvidenceSourceLinks/);
+  assert.match(decisionApp, /SCENARIO_PRESETS/);
+  assert.match(decisionApp, /applyScenarioPreset/);
+  assert.match(decisionApp, /onlyDifferences/);
+  assert.match(decisionApp, /renderMeasurementHints/);
 });
