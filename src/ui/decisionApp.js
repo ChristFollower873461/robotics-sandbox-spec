@@ -2,13 +2,31 @@ import { getEvidenceSourceLinks } from "../core/decision/catalog.js";
 import {
   evaluateDecisionStudy,
 } from "../core/decision/evaluator.js";
+import { createRecommendationReceipt } from "../core/decision/foundation.js";
 import {
   DECISION_SCENARIO_FORMAT,
   createDecisionScenario,
   validateDecisionScenario,
 } from "../core/decision/scenario.js";
-import { DECISION_CATALOG, getDecisionRecord } from "./decisionCatalog.js";
-import { ROBOT_PROFILES, getRobotProfile } from "./robotProfiles.js";
+import { loadDecisionFoundation } from "./decisionData.js";
+
+const decisionFoundation = await loadDecisionFoundation();
+const ROBOT_PROFILES = decisionFoundation.snapshot.profiles;
+const DECISION_CATALOG = decisionFoundation.snapshot.records;
+const profileMap = new Map(ROBOT_PROFILES.map((profile) => [profile.id, profile]));
+const recordMap = new Map(DECISION_CATALOG.map((record) => [record.profileId, record]));
+
+function getRobotProfile(profileId) {
+  const profile = profileMap.get(profileId);
+  if (!profile) throw new TypeError(`Unknown robot profile "${profileId}"`);
+  return profile;
+}
+
+function getDecisionRecord(profileId) {
+  const record = recordMap.get(profileId);
+  if (!record) throw new TypeError(`Unknown decision record "${profileId}"`);
+  return record;
+}
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MAX_CANDIDATES = 6;
@@ -109,6 +127,7 @@ const elements = Object.fromEntries(
 const state = {
   candidateIds: new Set(DEFAULT_CANDIDATES),
   report: null,
+  receipt: null,
   photoUrl: null,
   photoMeta: null,
   activePreset: "bench",
@@ -262,6 +281,7 @@ function renderSelectedCandidateSummary() {
         state.candidateIds.delete(button.dataset.removeCandidate);
         state.activePreset = null;
         state.report = null;
+        state.receipt = null;
         renderCandidateList();
         renderProxy();
         syncPresetButtons();
@@ -284,6 +304,7 @@ function applyScenarioPreset(presetId) {
   state.activePreset = presetId;
   state.candidateIds = new Set(preset.candidateIds);
   state.report = null;
+  state.receipt = null;
   state.onlyDifferences = false;
   elements.taskKind.value = preset.taskKind;
   elements.requiresMobility.checked = preset.mobility;
@@ -334,6 +355,7 @@ function renderCandidateList() {
         else state.candidateIds.delete(input.value);
         state.activePreset = null;
         state.report = null;
+        state.receipt = null;
         renderCandidateList();
         renderProxy();
         syncPresetButtons();
@@ -532,6 +554,15 @@ function verdictSummary(evaluation) {
   return "The rough checks we can run did not expose an immediate fit problem.";
 }
 
+function reviewedDate(value) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00.000Z`));
+}
+
 function renderResults(report) {
   const outcomeRank = { pass: 0, caution: 1, unknown: 2, fail: 3 };
   const evaluations = [...report.evaluations].sort(
@@ -549,6 +580,9 @@ function renderResults(report) {
       .filter(([, statuses]) => statuses.size > 1)
       .map(([label]) => label)
   );
+  const receiptByProfile = new Map(
+    state.receipt.recommendations.map((item) => [item.profileId, item])
+  );
 
   elements.resultsTitle.textContent = `${report.evaluations.length} robots compared for “${report.scenario.name}”`;
   elements.resultCounts.innerHTML = statusCountMarkup(report);
@@ -556,6 +590,7 @@ function renderResults(report) {
     .map((evaluation, index) => {
       const profile = getRobotProfile(evaluation.profileId);
       const record = getDecisionRecord(evaluation.profileId);
+      const recommendation = receiptByProfile.get(evaluation.profileId);
       const unknownCount = evaluation.findings.filter((finding) => finding.status === "unknown").length;
       const knownFacts = Object.values(record.facts).filter(
         (field) => field.value !== null && field.status === "sourced"
@@ -573,11 +608,11 @@ function renderResults(report) {
             </div>
             <div class="result-verdict"><span>${escapeHtml(verdictLabel(evaluation.outcome))}</span><i aria-hidden="true"></i></div>
           </header>
-          <p class="result-summary">${escapeHtml(verdictSummary(evaluation))}</p>
+          <p class="result-summary"><span>Why it landed here</span>${escapeHtml(recommendation?.rationale.headline || verdictSummary(evaluation))}</p>
           <div class="result-meta">
             <span><b>${knownFacts}</b> sourced fact${knownFacts === 1 ? "" : "s"}</span>
             <span><b>${unknownCount}</b> open question${unknownCount === 1 ? "" : "s"}</span>
-            <span>${escapeHtml(fidelitySummary(profile, record))}</span>
+            <span><b>${recommendation.evidence.sourceCount}</b> sources · checked ${escapeHtml(reviewedDate(recommendation.evidence.reviewedAt))}</span>
           </div>
           <details class="result-findings" open>
             <summary><span>Why this result</span><small>${visibleFindings.length} check${visibleFindings.length === 1 ? "" : "s"}${state.onlyDifferences ? " that differ" : ""}</small></summary>
@@ -596,7 +631,7 @@ function renderResults(report) {
             </div>
           </details>
           <footer class="result-card-actions">
-            <button type="button" data-evidence-profile="${profile.id}">Check the facts and next steps <span>→</span></button>
+            <button type="button" data-evidence-profile="${profile.id}">Open evidence + decision receipt <span>→</span></button>
             <a href="${escapeHtml(profile.sourceUrl)}" target="_blank" rel="noreferrer">Open-source record ↗</a>
           </footer>
         </article>`;
@@ -623,6 +658,7 @@ function openEvidence(profileId) {
   const profile = getRobotProfile(profileId);
   const record = getDecisionRecord(profileId);
   const evaluation = state.report?.evaluations.find((item) => item.profileId === profileId);
+  const recommendation = state.receipt?.recommendations.find((item) => item.profileId === profileId);
   const factRows = Object.entries(record.facts)
     .map(([key, field]) => {
       const sources = getEvidenceSourceLinks(profile, field);
@@ -648,6 +684,25 @@ function openEvidence(profileId) {
       <h2>${escapeHtml(titleize(profile.model))}</h2>
       <p><strong>What this result can tell you:</strong> ${escapeHtml(record.evaluatorBoundary)}</p>
     </header>
+    <section class="decision-receipt">
+      <h3>Decision receipt</h3>
+      <p>The same effective measurements, requirements, candidates, catalog, and evaluator version reproduce this result. Notes and photo metadata are not recommendation inputs.</p>
+      <dl>
+        <div><dt>Input</dt><dd><code>${escapeHtml(state.receipt.inputFingerprint)}</code></dd></div>
+        <div><dt>Catalog</dt><dd><code>${escapeHtml(state.receipt.datasetFingerprint)}</code></dd></div>
+        <div><dt>Evaluator</dt><dd>${escapeHtml(state.receipt.evaluatorVersion)}</dd></div>
+        <div><dt>Data source</dt><dd>${escapeHtml(state.receipt.dataSource.mode)}${state.receipt.dataSource.fallbackUsed ? " · safe fallback" : ""}</dd></div>
+        <div><dt>Evidence review</dt><dd>${escapeHtml(reviewedDate(recommendation.evidence.reviewedAt))} · ${recommendation.evidence.sourceCount} linked sources</dd></div>
+        <div><dt>Current model</dt><dd>${escapeHtml(fidelitySummary(profile, record))}</dd></div>
+      </dl>
+      ${recommendation.higherFidelity.required ? `
+        <div class="simulation-route">
+          <span>When 2D is not enough</span>
+          <strong>${escapeHtml(recommendation.higherFidelity.adapter?.engine || "Upstream adapter required")}</strong>
+          <p>${escapeHtml(recommendation.higherFidelity.reason)}</p>
+          <small>${escapeHtml(recommendation.higherFidelity.domains.join(" · "))} · NOT RUN</small>
+        </div>` : ""}
+    </section>
     <section><h3>What we know—and where it came from</h3><div class="evidence-facts">${factRows}</div></section>
     <section><h3>What this platform is built to do</h3><ul class="capability-list">${capabilities}</ul></section>
     <section><h3>Where a real simulation should happen next</h3><ul class="upstream-list">${record.upstreamSimulation.map((item) => `<li><strong>${escapeHtml(item.engine)}</strong><span>${escapeHtml(item.label)}</span><small>${humanize(item.readiness)}</small></li>`).join("")}</ul></section>
@@ -674,6 +729,11 @@ function runStudy(event) {
     profiles: ROBOT_PROFILES,
     records: DECISION_CATALOG,
   });
+  state.receipt = createRecommendationReceipt({
+    report: state.report,
+    snapshot: decisionFoundation.snapshot,
+    dataSource: decisionFoundation.dataSource,
+  });
   state.onlyDifferences = false;
   state.engineerDetail = false;
   renderResults(state.report);
@@ -693,7 +753,8 @@ function downloadBlob(fileName, type, content) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function reportHtml(report) {
+function reportHtml(receipt) {
+  const report = receipt.report;
   const cards = report.evaluations
     .map((evaluation) => `
       <section class="candidate ${evaluation.outcome}">
@@ -706,7 +767,7 @@ function reportHtml(report) {
     .join("");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escapeHtml(report.scenario.name)} / Robot decision report</title><style>
     body{font:14px/1.45 Arial,sans-serif;color:#171a19;margin:32px;max-width:1200px}h1{font-size:34px}h2{display:flex;justify-content:space-between;border-top:4px solid #171a19;padding-top:12px}.candidate{break-inside:avoid;margin:38px 0}.candidate.fail h2{border-color:#c3263f}.candidate.caution h2{border-color:#b76118}.candidate.pass h2{border-color:#087564}.candidate.unknown h2{border-color:#737977}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px;border:1px solid #b8b3b0;text-align:left;vertical-align:top}th{background:#eee}footer{margin-top:48px;padding:16px;border:2px solid #ef6f2e}@media print{body{margin:12mm}.candidate{break-inside:avoid}}
-  </style></head><body><p>BASEMENT BOYS / ROBOTICS SANDBOX</p><h1>${escapeHtml(report.scenario.name)}</h1><p>Generated ${escapeHtml(report.generatedAt)} · ${escapeHtml(report.disclosure)}</p><h2>Scenario</h2><pre>${escapeHtml(JSON.stringify(report.scenario, null, 2))}</pre>${cards}<footer><strong>SCREENING, NOT CERTIFICATION.</strong><p>${escapeHtml(report.disclosure)}</p></footer></body></html>`;
+  </style></head><body><p>BASEMENT BOYS / ROBOTICS SANDBOX</p><h1>${escapeHtml(report.scenario.name)}</h1><p>Generated ${escapeHtml(report.generatedAt)} · ${escapeHtml(report.disclosure)}</p><p>Input ${escapeHtml(receipt.inputFingerprint)} · Catalog ${escapeHtml(receipt.datasetFingerprint)} · Evaluator ${escapeHtml(receipt.evaluatorVersion)}</p><h2>Scenario</h2><pre>${escapeHtml(JSON.stringify(receipt.effectiveInput, null, 2))}</pre>${cards}<footer><strong>SCREENING, NOT CERTIFICATION.</strong><p>${escapeHtml(report.disclosure)}</p></footer></body></html>`;
 }
 
 function attachEvents() {
@@ -721,6 +782,7 @@ function attachEvents() {
       syncPresetButtons();
     }
     state.report = null;
+    state.receipt = null;
     renderMeasurementHints();
     renderProxy();
   });
@@ -748,12 +810,12 @@ function attachEvents() {
     document.querySelector(".instrument")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   elements.exportDecisionJson.addEventListener("click", () => {
-    if (!state.report) return;
-    downloadBlob(`${state.report.scenario.id}-robot-screen.json`, "application/json", JSON.stringify(state.report, null, 2));
+    if (!state.receipt) return;
+    downloadBlob(`${state.report.scenario.id}-recommendation-receipt.json`, "application/json", JSON.stringify(state.receipt, null, 2));
   });
   elements.exportDecisionHtml.addEventListener("click", () => {
-    if (!state.report) return;
-    downloadBlob(`${state.report.scenario.id}-robot-screen.html`, "text/html", reportHtml(state.report));
+    if (!state.receipt) return;
+    downloadBlob(`${state.report.scenario.id}-robot-screen.html`, "text/html", reportHtml(state.receipt));
   });
   elements.showResultDifferences.addEventListener("click", () => {
     if (!state.report) return;

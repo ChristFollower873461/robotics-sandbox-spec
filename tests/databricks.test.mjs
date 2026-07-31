@@ -38,6 +38,20 @@ test("Robotics catalog bootstrap is idempotent and does not create compute", asy
   assert.doesNotMatch(sql, /CREATE\s+(?:WAREHOUSE|CLUSTER|JOB)/i);
 });
 
+test("Decision serving storage is bounded, privacy labeled, and compute free", async () => {
+  const sql = await read("databricks/bootstrap/01_create_decision_foundation.sql");
+  const guide = await read("databricks/README.md");
+
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS knowledge\.robot_decision_snapshots/);
+  assert.match(sql, /CREATE OR REPLACE VIEW knowledge\.robot_decision_snapshot_current/);
+  assert.match(sql, /catalog-only-no-scenario-upload/);
+  assert.doesNotMatch(sql, /CREATE\s+(?:WAREHOUSE|CLUSTER|JOB)/i);
+  assert.match(guide, /browser never connects to Databricks/i);
+  assert.match(guide, /SELECT ON VIEW aissisted_robotics\.knowledge\.robot_decision_snapshot_current/);
+  assert.doesNotMatch(`${sql}\n${guide}`, /825955\d+/);
+  assert.doesNotMatch(`${sql}\n${guide}`, /client_secret\s*=/i);
+});
+
 test("Asset transfer manifest requires provenance and privacy classification", async () => {
   const schema = JSON.parse(
     await read("databricks/manifests/asset-manifest.schema.json")

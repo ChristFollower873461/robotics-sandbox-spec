@@ -35,6 +35,13 @@ workspace described below; it is infrastructure, not the frontend host.
   images or pretending to infer scale and perspective.
 - Portable, versioned decision scenario, catalog, and report contracts, plus
   browser-side JSON and printable HTML export.
+- Versioned catalog snapshots and deterministic recommendation/mission
+  receipts. Each receipt identifies its effective input, catalog version,
+  evaluator, evidence freshness, rationale, and any higher-fidelity model that
+  is still required—not run.
+- A read-only data-source boundary that can consume an authorized same-origin
+  catalog endpoint and safely falls back to the reviewed repository snapshot.
+  Facility measurements, notes, and photo metadata are never sent through it.
 - Forward kinematics for a configurable 2-link planar arm.
 - Inverse kinematics with reachable/unreachable target handling and elbow-up/elbow-down preference.
 - Direct interpolation and deterministic joint-space A* planning.
@@ -186,6 +193,9 @@ const plan = planWaypointTrajectory({
 │   ├── robot-decision-catalog.v1.schema.json
 │   ├── robot-decision-report.v1.schema.json
 │   ├── robot-decision-scenario.v1.schema.json
+│   ├── robot-decision-snapshot.v1.schema.json
+│   ├── robot-mission-outcome.v1.schema.json
+│   ├── robot-recommendation-receipt.v1.schema.json
 │   ├── robot-profile.v1.schema.json
 │   └── robot-workcell.v2.schema.json
 ├── databricks/
@@ -230,6 +240,10 @@ const plan = planWaypointTrajectory({
   complete field-level catalog records, deterministic findings, explicit
   unknowns, scaled/hatching-aware graphics, evidence drawers, and local
   JSON/HTML exports.
+- Recommendation and Challenge Mode results now include reproducible decision
+  receipts. The production UI currently uses the reviewed local snapshot;
+  remote catalog reads remain disabled until a separately deployed,
+  credentialed server adapter is available.
 - The landing test range is implemented for arms, humanoids, quadrupeds, and
   drones; non-arm movement remains an explicitly geometric route proxy rather
   than a dynamics claim.

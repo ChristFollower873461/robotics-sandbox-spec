@@ -29,6 +29,16 @@ This repository is organized around a small but extendable split between robotic
 - `src/core/decision/scenario.js`: portable environment/task/candidate inputs.
 - `src/core/decision/evaluator.js`: deterministic class-aware findings and
   versioned comparison reports.
+- `src/core/decision/foundation.js`: governed snapshot and recommendation
+  receipt contracts, effective-input privacy boundary, evidence freshness,
+  rationale, and evaluator versioning.
+- `src/core/decision/dataSource.js`: validated local and read-only HTTP
+  adapters with time/size limits and a sanitized local fallback.
+- `src/core/decision/fingerprint.js`: canonical JSON and deterministic input
+  and dataset fingerprints.
+- `src/core/decision/missionOutcome.js`: reproducible Challenge Mode outcomes.
+- `src/core/decision/simulationRouter.js`: explicit, not-run routing from a
+  screening gap to the relevant simulation domains.
 - `src/core/scenario/scenario.js`: state snapshot serialization/hydration for scenario save/load workflows.
 - `src/core/geometry.js`: shared numeric and interpolation utilities.
 
@@ -41,6 +51,8 @@ This repository is organized around a small but extendable split between robotic
   and repeatable arm demo routes.
 - `src/ui/decisionCatalog.js`: field-level screening facts, explicit unknowns,
   capability boundaries, and upstream simulation paths for all 13 profiles.
+- `src/ui/decisionData.js`: the reviewed repository snapshot plus opt-in
+  same-origin remote endpoint configuration.
 - `src/ui/decisionApp.js`: guided study form, scaled orthographic proxies,
   explainable comparison, evidence drawer, and local JSON/HTML export.
 - `src/ui/testRangeApp.js`: playable four-class range, mission presets,
@@ -57,25 +69,32 @@ These modules are intentionally light so they can be reused by either a browser 
 ## Data flow at a glance
 
 1. The decision form creates a versioned environment/task scenario.
-2. The evaluator joins selected robot profiles to complete decision records
-   and emits deterministic pass/caution/fail/unknown findings.
-3. The UI renders sourced or hatched plan/elevation proxies, calculations,
-   evidence, and next steps, then exports the complete report locally.
-4. The platform drawer selects a source-backed record for deeper inspection.
-5. `canLaunchPlanarWorkbench()` admits only records declared as
+2. The active adapter supplies one fully validated and fingerprinted profile
+   and decision-record snapshot. A rejected remote snapshot cannot partially
+   replace the local catalog.
+3. The evaluator joins selected profiles to decision records and emits
+   deterministic pass/caution/fail/unknown findings.
+4. The foundation turns the report into a receipt containing the
+   recommendation-effective input fingerprint, dataset fingerprint, rationale,
+   evidence basis, and targeted not-run simulation route. Notes and photo
+   metadata are excluded from the effective input.
+5. The UI renders proxies, calculations, evidence, and next steps, then
+   exports the complete receipt locally.
+6. The platform drawer selects a source-backed record for deeper inspection.
+7. `canLaunchPlanarWorkbench()` admits only records declared as
    `arm` + `interactive` + `planar-arm-v1`.
-6. Catalog-only humanoid, quadruped, and drone records update the evidence
+8. Catalog-only humanoid, quadruped, and drone records update the evidence
    brief and capability warning without mutating the active simulator.
-7. For an admitted arm, a workcell defines calibrated millimeter bounds, robot
+9. For an admitted arm, a workcell defines calibrated millimeter bounds, robot
    mounts, and fixtures in world coordinates.
-8. The active robot base converts world fixtures into robot-local collision
+10. The active robot base converts world fixtures into robot-local collision
    geometry.
-9. User state defines arm config, target, and waypoints.
-10. Kinematics solve poses (`forwardKinematics`, `inverseKinematics`).
-11. Direct interpolation is sampled and checked for collision.
-12. When requested and needed, A* searches a generated 2D joint-space grid.
-13. The UI renders Cartesian motion and joint-space search side by side.
-14. Workcell and scenario modules persist/restore portable state snapshots.
+11. User state defines arm config, target, and waypoints.
+12. Kinematics solve poses (`forwardKinematics`, `inverseKinematics`).
+13. Direct interpolation is sampled and checked for collision.
+14. When requested and needed, A* searches a generated 2D joint-space grid.
+15. The UI renders Cartesian motion and joint-space search side by side.
+16. Workcell and scenario modules persist/restore portable state snapshots.
 
 ## Capability boundary
 

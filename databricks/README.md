@@ -13,7 +13,10 @@ start compute, or contain credentials.
   - `landing`: unchanged incoming files and their transfer manifest
   - `knowledge`: reviewed robot, company, component, and source records
   - `simulation`: workcell definitions, assets, and run results
-  - `research`: sourced findings and benchmark records
+- `research`: sourced findings and benchmark records
+- Decision serving boundary:
+  - `knowledge.robot_decision_snapshots`: append-only validated catalog snapshots
+  - `knowledge.robot_decision_snapshot_current`: latest published snapshot only
 - Managed volumes:
   - `landing.inbox`
   - `landing.archive`
@@ -30,9 +33,11 @@ production bundle root.
 2. Confirm the operator has `CREATE CATALOG` on the metastore.
 3. Open an existing SQL warehouse only for the setup run.
 4. Run `bootstrap/00_create_robotics_workspace.sql`.
-5. Create the collaboration folder and restrict its write ACL to the Robotics
+5. Run `bootstrap/01_create_decision_foundation.sql` for the bounded decision
+   snapshot table and read-only current-snapshot view.
+6. Create the collaboration folder and restrict its write ACL to the Robotics
    maintainers.
-6. Stop the warehouse after readback unless another workload needs it.
+7. Stop the warehouse after readback unless another workload needs it.
 
 The bootstrap SQL is idempotent. It creates no jobs, clusters, model endpoints,
 or scheduled workloads.
@@ -126,6 +131,40 @@ not promote an extracted statement into a trusted robot specification.
   application database.
 - Source licenses and geometry truth status are required before a record becomes
   curated.
+
+## Decision adapter connection contract
+
+The browser never connects to Databricks and never receives a Databricks token.
+An authorized same-origin server endpoint may read the single current-snapshot
+view, validate the complete `robot-decision-snapshot/v1` payload, and return it
+to the site with `Cache-Control: no-store`. If that read is unavailable,
+oversized, slow, or invalid, the app falls back to its reviewed repository
+snapshot and identifies the fallback in the decision receipt.
+
+Required server-side configuration is limited to the workspace host, an
+existing SQL warehouse HTTP path, and an OAuth M2M client ID and secret stored
+in the deployment secret manager. No workspace ID, credential, or customer
+scenario belongs in source control. The adapter is catalog-read-only: scenario
+measurements, notes, reference-photo metadata, and results stay in the browser.
+
+Use two separate service principals and substitute their real application IDs
+at grant time:
+
+```sql
+-- Curation identity: append and publish reviewed snapshots only.
+GRANT USE CATALOG ON CATALOG aissisted_robotics TO `<curation-principal>`;
+GRANT USE SCHEMA ON SCHEMA aissisted_robotics.knowledge TO `<curation-principal>`;
+GRANT SELECT, MODIFY ON TABLE aissisted_robotics.knowledge.robot_decision_snapshots TO `<curation-principal>`;
+
+-- Runtime identity: one read-only published view; no base-table write access.
+GRANT USE CATALOG ON CATALOG aissisted_robotics TO `<runtime-principal>`;
+GRANT USE SCHEMA ON SCHEMA aissisted_robotics.knowledge TO `<runtime-principal>`;
+GRANT SELECT ON VIEW aissisted_robotics.knowledge.robot_decision_snapshot_current TO `<runtime-principal>`;
+```
+
+Do not grant the runtime identity access to `landing`, `simulation`, `research`,
+managed volumes, or the underlying snapshot table. The curation identity needs
+no permissions outside the one snapshot table for this application slice.
 
 References:
 
