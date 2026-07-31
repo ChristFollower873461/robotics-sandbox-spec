@@ -32,7 +32,7 @@ localization, controller, or safety fidelity.
 
 Challenge Mode is the default plain-language entry to the same screening
 models. Its starter missions are immutable definitions evaluated by
-`src/core/challenge/challengeEngine.js`:
+`src/core/missions/challengeEngine.js`:
 
 - **Bring the Part Home** solves a bench handoff and user-positioned drop bin
   against normalized planar reach and a fixture-clearance halo.
