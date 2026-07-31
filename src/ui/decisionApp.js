@@ -14,11 +14,51 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const MAX_CANDIDATES = 6;
 const DEFAULT_CANDIDATES = [
   "interbotix-wx250s",
+  "niryo-ned2",
   "aloha-stationary",
-  "toddlerbot-2",
-  "pupper-v3",
-  "crazyflie-2-1-plus",
 ];
+const SCENARIO_PRESETS = {
+  bench: {
+    taskKind: "pick-place",
+    candidateIds: ["interbotix-wx250s", "niryo-ned2", "aloha-stationary"],
+    mobility: false,
+    bimanual: false,
+    terrain: "level-hard",
+    indoor: true,
+  },
+  bimanual: {
+    taskKind: "pick-place",
+    candidateIds: ["aloha-stationary", "fr3-duo", "franka-research-3"],
+    mobility: false,
+    bimanual: true,
+    terrain: "level-hard",
+    indoor: true,
+  },
+  inspect: {
+    taskKind: "indoor-inspection",
+    candidateIds: ["hello-stretch-4", "toddlerbot-2", "pupper-v3", "crazyflie-2-1-plus"],
+    mobility: true,
+    bimanual: false,
+    terrain: "mixed-indoor",
+    indoor: true,
+  },
+  terrain: {
+    taskKind: "ground-traverse",
+    candidateIds: ["pupper-v3", "solo-12", "toddlerbot-2"],
+    mobility: true,
+    bimanual: false,
+    terrain: "rough",
+    indoor: false,
+  },
+  aerial: {
+    taskKind: "aerial-inspection",
+    candidateIds: ["crazyflie-2-1-plus", "agilicious"],
+    mobility: true,
+    bimanual: false,
+    terrain: "unknown",
+    indoor: true,
+  },
+};
 
 const elements = Object.fromEntries(
   [
@@ -41,6 +81,7 @@ const elements = Object.fromEntries(
     "requires-bimanual",
     "task-notes",
     "decision-candidate-list",
+    "selected-candidate-summary",
     "candidate-message",
     "run-decision-study",
     "open-cell-builder",
@@ -48,12 +89,17 @@ const elements = Object.fromEntries(
     "proxy-scale-label",
     "results-title",
     "result-counts",
+    "show-result-differences",
+    "show-engineer-detail",
     "decision-result-list",
     "evidence-drawer",
     "evidence-content",
     "close-evidence",
     "export-decision-json",
     "export-decision-html",
+    "width-hint",
+    "depth-hint",
+    "engineering-lab",
   ].map((id) => [
     id.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()),
     document.querySelector(`#${id}`),
@@ -65,6 +111,9 @@ const state = {
   report: null,
   photoUrl: null,
   photoMeta: null,
+  activePreset: "bench",
+  onlyDifferences: false,
+  engineerDetail: false,
 };
 
 function escapeHtml(value) {
@@ -132,6 +181,120 @@ function humanize(value) {
     .toUpperCase();
 }
 
+function titleize(value) {
+  return String(value)
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function platformLabel(platformClass) {
+  return {
+    arm: "Robot arm",
+    humanoid: "Humanoid",
+    quadruped: "Four-legged robot",
+    drone: "Drone",
+  }[platformClass];
+}
+
+function platformDescription(platformClass) {
+  return {
+    arm: "Best for reaching, handling, and repeatable bench work",
+    humanoid: "Useful for embodied research in human-shaped spaces",
+    quadruped: "Built to study movement over ground and obstacles",
+    drone: "Useful for aerial sensing and agile flight research",
+  }[platformClass];
+}
+
+function fidelitySummary(profile, record) {
+  return profile.simulationSupport === "interactive"
+    ? "Interactive rough model"
+    : `Evidence catalog · level ${record.currentFidelity}`;
+}
+
+function bestKnownFact(record) {
+  const candidates = [
+    ["reachMm", "published reach"],
+    ["payloadKg", "published payload"],
+    ["flightTimeMin", "published flight time"],
+    ["heightMm", "published height"],
+    ["widthMm", "published width"],
+    ["massKg", "published mass"],
+  ];
+  const known = candidates.find(([key]) => record.facts[key]?.value !== null);
+  if (!known) return "Dimensions still need source review";
+  const [key, label] = known;
+  const field = record.facts[key];
+  return `${field.value} ${field.unit || ""} ${label}`.trim();
+}
+
+function renderMeasurementHints() {
+  const feet = (element) => (numberValue(element, 0) / 304.8).toFixed(1);
+  elements.widthHint.textContent = `About ${feet(elements.roomWidth)} ft`;
+  elements.depthHint.textContent = `About ${feet(elements.roomDepth)} ft`;
+}
+
+function renderSelectedCandidateSummary() {
+  elements.selectedCandidateSummary.innerHTML = [...state.candidateIds]
+    .map((profileId) => {
+      const profile = getRobotProfile(profileId);
+      const record = getDecisionRecord(profileId);
+      return `
+        <article class="selected-candidate" data-platform="${profile.platformClass}">
+          <div class="selected-candidate-glyph" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="selected-candidate-copy">
+            <span>${escapeHtml(platformLabel(profile.platformClass))}</span>
+            <strong>${escapeHtml(titleize(profile.model))}</strong>
+            <small>${escapeHtml(titleize(profile.company))} · ${escapeHtml(profile.country)}</small>
+          </div>
+          <div class="selected-candidate-fact">
+            <span>${escapeHtml(bestKnownFact(record))}</span>
+            <small>${escapeHtml(fidelitySummary(profile, record))}</small>
+          </div>
+          <button type="button" data-remove-candidate="${profile.id}" aria-label="Remove ${escapeHtml(profile.model)} from shortlist">Remove</button>
+        </article>`;
+    })
+    .join("");
+
+  elements.selectedCandidateSummary
+    .querySelectorAll("[data-remove-candidate]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        state.candidateIds.delete(button.dataset.removeCandidate);
+        state.activePreset = null;
+        state.report = null;
+        renderCandidateList();
+        renderProxy();
+        syncPresetButtons();
+      });
+    });
+}
+
+function syncPresetButtons() {
+  document.querySelectorAll("[data-scenario-preset]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      String(button.dataset.scenarioPreset === state.activePreset)
+    );
+  });
+}
+
+function applyScenarioPreset(presetId) {
+  const preset = SCENARIO_PRESETS[presetId];
+  if (!preset) return;
+  state.activePreset = presetId;
+  state.candidateIds = new Set(preset.candidateIds);
+  state.report = null;
+  state.onlyDifferences = false;
+  elements.taskKind.value = preset.taskKind;
+  elements.requiresMobility.checked = preset.mobility;
+  elements.requiresBimanual.checked = preset.bimanual;
+  elements.terrainType.value = preset.terrain;
+  elements.indoorEnvironment.checked = preset.indoor;
+  renderCandidateList();
+  renderProxy();
+  syncPresetButtons();
+}
+
 function renderCandidateList() {
   const groups = ["arm", "humanoid", "quadruped", "drone"];
   elements.decisionCandidateList.innerHTML = groups
@@ -141,7 +304,7 @@ function renderCandidateList() {
       );
       return `
         <fieldset class="candidate-group">
-          <legend>${classLabel(platformClass)} / ${String(profiles.length).padStart(2, "0")}</legend>
+          <legend><span>${escapeHtml(platformLabel(platformClass))}</span><small>${escapeHtml(platformDescription(platformClass))}</small></legend>
           <div>
             ${profiles
               .map((profile) => {
@@ -151,7 +314,8 @@ function renderCandidateList() {
                 return `
                   <label class="candidate-chip" data-selected="${selected}" data-disabled="${disabled}">
                     <input type="checkbox" value="${profile.id}" ${selected ? "checked" : ""} ${disabled ? "disabled" : ""} />
-                    <span><b>${escapeHtml(profile.model)}</b><small>${escapeHtml(record.fidelityLabel.replace("LEVEL ", "L"))}</small></span>
+                    <span><b>${escapeHtml(titleize(profile.model))}</b><small>${escapeHtml(titleize(profile.company))} · ${escapeHtml(profile.country)}</small></span>
+                    <em>${escapeHtml(fidelitySummary(profile, record))}</em>
                   </label>`;
               })
               .join("")}
@@ -161,15 +325,18 @@ function renderCandidateList() {
     .join("");
 
   elements.candidateMessage.textContent = `${state.candidateIds.size} / ${MAX_CANDIDATES} SELECTED`;
+  renderSelectedCandidateSummary();
   elements.decisionCandidateList
     .querySelectorAll('input[type="checkbox"]')
     .forEach((input) => {
       input.addEventListener("change", () => {
         if (input.checked) state.candidateIds.add(input.value);
         else state.candidateIds.delete(input.value);
+        state.activePreset = null;
         state.report = null;
         renderCandidateList();
         renderProxy();
+        syncPresetButtons();
       });
     });
 }
@@ -333,48 +500,105 @@ function renderProxy() {
 }
 
 function statusCountMarkup(report) {
-  const statuses = ["pass", "caution", "fail", "unknown"];
+  const statuses = [
+    ["pass", "Promising"],
+    ["caution", "Check closely"],
+    ["fail", "Poor fit"],
+    ["unknown", "Missing data"],
+  ];
   return statuses
-    .map((status) => {
+    .map(([status, label]) => {
       const count = report.evaluations.filter((item) => item.outcome === status).length;
-      return `<span data-state="${status}"><b>${String(count).padStart(2, "0")}</b>${status.toUpperCase()}</span>`;
+      return `<span data-state="${status}"><b>${count}</b>${label}</span>`;
     })
     .join("");
 }
 
+function verdictLabel(outcome) {
+  return {
+    pass: "Promising fit",
+    caution: "Worth a closer look",
+    fail: "Poor fit for this setup",
+    unknown: "Not enough data yet",
+  }[outcome];
+}
+
+function verdictSummary(evaluation) {
+  const priority = ["fail", "caution", "unknown"];
+  const important = priority
+    .map((status) => evaluation.findings.find((finding) => finding.status === status))
+    .find(Boolean);
+  if (important) return important.summary;
+  return "The rough checks we can run did not expose an immediate fit problem.";
+}
+
 function renderResults(report) {
-  elements.resultsTitle.textContent = `${report.evaluations.length} CANDIDATES / ${report.scenario.name.toUpperCase()}`;
+  const outcomeRank = { pass: 0, caution: 1, unknown: 2, fail: 3 };
+  const evaluations = [...report.evaluations].sort(
+    (a, b) => outcomeRank[a.outcome] - outcomeRank[b.outcome]
+  );
+  const findingStatuses = new Map();
+  report.evaluations.forEach((evaluation) => {
+    evaluation.findings.forEach((finding) => {
+      if (!findingStatuses.has(finding.label)) findingStatuses.set(finding.label, new Set());
+      findingStatuses.get(finding.label).add(finding.status);
+    });
+  });
+  const differingLabels = new Set(
+    [...findingStatuses.entries()]
+      .filter(([, statuses]) => statuses.size > 1)
+      .map(([label]) => label)
+  );
+
+  elements.resultsTitle.textContent = `${report.evaluations.length} robots compared for “${report.scenario.name}”`;
   elements.resultCounts.innerHTML = statusCountMarkup(report);
-  elements.decisionResultList.innerHTML = report.evaluations
+  elements.decisionResultList.innerHTML = evaluations
     .map((evaluation, index) => {
       const profile = getRobotProfile(evaluation.profileId);
       const record = getDecisionRecord(evaluation.profileId);
       const unknownCount = evaluation.findings.filter((finding) => finding.status === "unknown").length;
+      const knownFacts = Object.values(record.facts).filter(
+        (field) => field.value !== null && field.status === "sourced"
+      ).length;
+      const visibleFindings = state.onlyDifferences
+        ? evaluation.findings.filter((finding) => differingLabels.has(finding.label))
+        : evaluation.findings;
       return `
         <article class="decision-result-card" data-state="${evaluation.outcome}">
           <header>
-            <span>${String(index + 1).padStart(2, "0")} / ${escapeHtml(profile.platformClass.toUpperCase())}</span>
-            <strong>${escapeHtml(profile.model)}</strong>
-            <b>${evaluation.outcome.toUpperCase()}</b>
+            <div class="result-identity">
+              <span>${index === 0 ? "Best current match" : `Option ${index + 1}`} · ${escapeHtml(platformLabel(profile.platformClass))}</span>
+              <strong>${escapeHtml(titleize(profile.model))}</strong>
+              <small>${escapeHtml(titleize(profile.company))} · ${escapeHtml(profile.country)}</small>
+            </div>
+            <div class="result-verdict"><span>${escapeHtml(verdictLabel(evaluation.outcome))}</span><i aria-hidden="true"></i></div>
           </header>
+          <p class="result-summary">${escapeHtml(verdictSummary(evaluation))}</p>
           <div class="result-meta">
-            <span>${escapeHtml(record.fidelityLabel)}</span>
-            <span>${unknownCount} UNKNOWN CHECK${unknownCount === 1 ? "" : "S"}</span>
+            <span><b>${knownFacts}</b> sourced fact${knownFacts === 1 ? "" : "s"}</span>
+            <span><b>${unknownCount}</b> open question${unknownCount === 1 ? "" : "s"}</span>
+            <span>${escapeHtml(fidelitySummary(profile, record))}</span>
           </div>
-          <div class="finding-list">
-            ${evaluation.findings
+          <details class="result-findings" open>
+            <summary><span>Why this result</span><small>${visibleFindings.length} check${visibleFindings.length === 1 ? "" : "s"}${state.onlyDifferences ? " that differ" : ""}</small></summary>
+            <div class="finding-list">
+            ${visibleFindings
               .map(
                 (item) => `
                   <div class="finding-row" data-state="${item.status}">
                     <i></i>
-                    <strong>${escapeHtml(item.label)}</strong>
-                    <span>${escapeHtml(item.summary)}</span>
-                    <code>${escapeHtml(item.calculation)}</code>
+                    <div><strong>${escapeHtml(titleize(item.label))}</strong><span>${escapeHtml(item.summary)}</span></div>
+                    <code class="engineer-calculation">${escapeHtml(item.calculation)}</code>
                   </div>`
               )
               .join("")}
-          </div>
-          <button type="button" data-evidence-profile="${profile.id}">OPEN EVIDENCE + NEXT STEPS →</button>
+            ${visibleFindings.length === 0 ? '<p class="no-differences">These checks are the same across the selected robots.</p>' : ""}
+            </div>
+          </details>
+          <footer class="result-card-actions">
+            <button type="button" data-evidence-profile="${profile.id}">Check the facts and next steps <span>→</span></button>
+            <a href="${escapeHtml(profile.sourceUrl)}" target="_blank" rel="noreferrer">Open-source record ↗</a>
+          </footer>
         </article>`;
     })
     .join("");
@@ -383,6 +607,11 @@ function renderResults(report) {
   });
   elements.exportDecisionJson.disabled = false;
   elements.exportDecisionHtml.disabled = false;
+  elements.showResultDifferences.disabled = report.evaluations.length < 2;
+  elements.showEngineerDetail.disabled = false;
+  elements.showResultDifferences.setAttribute("aria-pressed", String(state.onlyDifferences));
+  elements.showEngineerDetail.setAttribute("aria-pressed", String(state.engineerDetail));
+  document.querySelector("#study-results").classList.toggle("show-engineer-detail", state.engineerDetail);
 }
 
 function formatEvidenceValue(field) {
@@ -415,14 +644,14 @@ function openEvidence(profileId) {
     : "";
   elements.evidenceContent.innerHTML = `
     <header class="evidence-heading">
-      <span>${escapeHtml(profile.company)} / ${escapeHtml(profile.country)}</span>
-      <h2>${escapeHtml(profile.model)}</h2>
-      <p>${escapeHtml(record.evaluatorBoundary)}</p>
+      <span>${escapeHtml(platformLabel(profile.platformClass))} · ${escapeHtml(titleize(profile.company))} · ${escapeHtml(profile.country)}</span>
+      <h2>${escapeHtml(titleize(profile.model))}</h2>
+      <p><strong>What this result can tell you:</strong> ${escapeHtml(record.evaluatorBoundary)}</p>
     </header>
-    <section><h3>FIELD-LEVEL EVIDENCE</h3><div class="evidence-facts">${factRows}</div></section>
-    <section><h3>CAPABILITY BOUNDARY</h3><ul class="capability-list">${capabilities}</ul></section>
-    <section><h3>UPSTREAM SIMULATION PATH</h3><ul class="upstream-list">${record.upstreamSimulation.map((item) => `<li><strong>${escapeHtml(item.engine)}</strong><span>${escapeHtml(item.label)}</span><small>${humanize(item.readiness)}</small></li>`).join("")}</ul></section>
-    ${evaluation ? `<section><h3>NEXT VALIDATION STEPS</h3><ul class="next-step-list">${nextSteps}</ul></section>` : ""}
+    <section><h3>What we know—and where it came from</h3><div class="evidence-facts">${factRows}</div></section>
+    <section><h3>What this platform is built to do</h3><ul class="capability-list">${capabilities}</ul></section>
+    <section><h3>Where a real simulation should happen next</h3><ul class="upstream-list">${record.upstreamSimulation.map((item) => `<li><strong>${escapeHtml(item.engine)}</strong><span>${escapeHtml(item.label)}</span><small>${humanize(item.readiness)}</small></li>`).join("")}</ul></section>
+    ${evaluation ? `<section><h3>What to verify before making a decision</h3><ul class="next-step-list">${nextSteps}</ul></section>` : ""}
   `;
   elements.evidenceDrawer.hidden = false;
   elements.evidenceDrawer.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -445,6 +674,8 @@ function runStudy(event) {
     profiles: ROBOT_PROFILES,
     records: DECISION_CATALOG,
   });
+  state.onlyDifferences = false;
+  state.engineerDetail = false;
   renderResults(state.report);
   renderProxy();
   elements.evidenceDrawer.hidden = true;
@@ -479,10 +710,18 @@ function reportHtml(report) {
 }
 
 function attachEvents() {
+  document.querySelectorAll("[data-scenario-preset]").forEach((button) => {
+    button.addEventListener("click", () => applyScenarioPreset(button.dataset.scenarioPreset));
+  });
   elements.decisionForm.addEventListener("submit", runStudy);
   elements.decisionForm.addEventListener("input", (event) => {
     if (event.target.closest("#decision-candidate-list")) return;
+    if (event.target === elements.taskKind) {
+      state.activePreset = null;
+      syncPresetButtons();
+    }
     state.report = null;
+    renderMeasurementHints();
     renderProxy();
   });
   elements.decisionReferencePhoto.addEventListener("change", () => {
@@ -491,7 +730,7 @@ function attachEvents() {
     if (!file) {
       state.photoUrl = null;
       state.photoMeta = null;
-      elements.decisionPhotoState.textContent = "OPTIONAL / KEPT LOCAL";
+      elements.decisionPhotoState.textContent = "Choose image";
     } else {
       state.photoUrl = URL.createObjectURL(file);
       state.photoMeta = { fileName: file.name, mediaType: file.type || "unknown", byteSize: file.size };
@@ -503,6 +742,7 @@ function attachEvents() {
     elements.evidenceDrawer.hidden = true;
   });
   elements.openCellBuilder.addEventListener("click", () => {
+    elements.engineeringLab.open = true;
     const environmentButton = document.querySelector('[data-tool="environment"]');
     environmentButton?.click();
     document.querySelector(".instrument")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -515,8 +755,20 @@ function attachEvents() {
     if (!state.report) return;
     downloadBlob(`${state.report.scenario.id}-robot-screen.html`, "text/html", reportHtml(state.report));
   });
+  elements.showResultDifferences.addEventListener("click", () => {
+    if (!state.report) return;
+    state.onlyDifferences = !state.onlyDifferences;
+    renderResults(state.report);
+  });
+  elements.showEngineerDetail.addEventListener("click", () => {
+    if (!state.report) return;
+    state.engineerDetail = !state.engineerDetail;
+    renderResults(state.report);
+  });
 }
 
 renderCandidateList();
+renderMeasurementHints();
 renderProxy();
 attachEvents();
+syncPresetButtons();
