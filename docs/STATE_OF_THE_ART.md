@@ -57,14 +57,22 @@ The workbench also renders the alternate analytical IK branch and a
 Jacobian-derived manipulability ellipse. These make otherwise hidden choices
 and failure modes inspectable.
 
-## Pick-your-bot source matrix
+## Platform catalog and evidence model
 
-Each profile is a normalized planar teaching slice. The source link and
-license label describe the open layer named below; they do not imply that all
-hardware, firmware, CAD, safety systems, or commercial software for every
-robot are open.
+The catalog contains two deliberately different kinds of record:
 
-| Profile | Topology | Region | Open layer represented | Source |
+- seven arm records with normalized two-link teaching geometry and access to
+  the live `planar-arm-v1` workbench;
+- six catalog-only locomotion and flight records whose measurements are
+  displayed as source facts but never fed to IK, collision, or A*.
+
+The source and license labels describe the exact published layer named below.
+They do not imply that every component, dependency, CAD file, safety system,
+commercial application, or manufactured unit is open.
+
+### Interactive arm matrix
+
+| Profile | Topology | Region | Open layer represented | Sources |
 | --- | --- | --- | --- | --- |
 | Interbotix WidowX 250S | Single arm | United States | ROS 1/ROS 2 manipulator packages, BSD-3-Clause | [Interbotix ROS manipulators](https://github.com/Interbotix/interbotix_ros_manipulators), [X-Series documentation](https://docs.trossenrobotics.com/interbotix_xsarms_docs/) |
 | Niryo Ned2 | Single arm | France | Ned ROS stack, GPL-3.0 | [Ned ROS](https://github.com/NiryoRobotics/ned_ros), [Niryo company/product context](https://niryo.com/about-us/) |
@@ -89,10 +97,58 @@ two-arm platform with two seven-axis FR3 arms and a stated 3 kg payload per
 arm. Unlike ALOHA, the Franka hardware is commercial; the open layer is its
 FCI/`libfranka` tooling and the LABS reference workflows.
 
-The UI keeps these source facts separate from the drawing. Every on-screen
-arm uses normalized two-link geometry chosen for a legible ±360 mm teaching
-workspace. The numbers on the link sliders are simulation inputs, not
-measurements copied from vendor CAD.
+Every on-screen arm uses normalized two-link geometry chosen for a legible
+±360 mm teaching workspace. The numbers on the link sliders are simulation
+inputs, not measurements copied from vendor CAD.
+
+### Humanoid, quadruped, and drone matrix
+
+| Profile | Class | Project origin | Published open layer and license boundary | Source-backed facts | Sources |
+| --- | --- | --- | --- | --- | --- |
+| ToddlerBot 2.0 | Humanoid | Stanford University, United States | MIT software; hardware under non-commercial CC BY-NC-SA 4.0 terms | 30 active DOF; 0.56 m; 3.4 kg | [Repository](https://github.com/hshi74/toddlerbot), [project](https://hshi74.github.io/toddlerbot/), [paper](https://arxiv.org/abs/2409.16658) |
+| Poppy Humanoid | Humanoid | Poppy Project / Inria, France | Open CAD and CC BY-SA hardware; GPL-3.0 software | 83 cm; 3.5 kg; 25 actuators | [Repository](https://github.com/poppy-project/poppy-humanoid), [project](https://www.poppy-project.org/en/robots/poppy-humanoid/) |
+| Pupper v3 | Quadruped | Stanford-rooted project, United States | Public CAD/build files and GPL-3.0 software; separate hardware terms are not stated | 12 DOF; 3 kg; 25 × 22 × 20 cm crouched | [Repository](https://github.com/Nate711/pupperv3-monorepo), [documentation](https://pupper-v3-documentation.readthedocs.io/en/latest/), [specifications](https://pupper-v3-documentation.readthedocs.io/en/latest/learn_more/tech_specs.html) |
+| Solo 12 | Quadruped | European-led Open Dynamic Robot Initiative | Open mechanics, electronics, and control software under BSD-3-Clause | 12 DOF; commercial kit discontinued, self-build sources remain | [Repository](https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware), [Inria project record](https://inria-paris-robotics-lab.github.io/Robots/Solo.html) |
+| Crazyflie 2.1+ | Drone | Bitcraze AB, Sweden | LGPL-3.0 firmware; semi-open hardware whose terms vary by revision | 29 g; 92 × 92 × 29 mm; published 7-minute flight time | [Firmware](https://github.com/bitcraze/crazyflie-firmware), [product](https://www.bitcraze.io/products/crazyflie-2-1-plus/), [open-source policy](https://www.bitcraze.io/open-source-philosophy/) |
+| Agilicious | Drone | University of Zurich, Switzerland | Published software/hardware source under an academic non-commercial license | Research demonstrations up to 5 g and 70 km/h | [Repository](https://github.com/uzh-rpg/agilicious), [project](https://rpg.ifi.uzh.ch/agilicious.html), [license](https://github.com/uzh-rpg/agilicious/blob/main/LICENSE) |
+
+The catalog uses `open-platform`, `open-component`,
+`mixed-open-restricted`, and `source-available-restricted` labels rather than
+flattening these materially different releases into one “open source” badge.
+Agilicious, for example, is intentionally labeled source-available and
+restricted—not OSI-open—because its published license limits use to academic,
+non-commercial purposes.
+
+Project origin and supply chain are also separate. “American” or “European”
+describes the documented project or organization basis, not a guarantee that
+every actuator, fastener, board, battery, sensor, or manufacturing step avoids
+China. Pupper v3 is explicitly marked `mixed` because its official sourcing
+guidance includes options from more than one country; records without adequate
+evidence remain `not-assessed`.
+
+## Locomotion and flight state of the art
+
+Contemporary mobile-robot simulation is built around articulated robot
+descriptions, contact-rich dynamics, sensors, controllers, and repeatable
+world assets—not a resized arm diagram:
+
+- [MuJoCo](https://mujoco.readthedocs.io/en/stable/overview.html) provides
+  contact-rich rigid-body dynamics and an MJCF modeling format commonly used
+  for legged-robot research.
+- [Gazebo Sim](https://gazebosim.org/docs/latest/getstarted/) combines physics,
+  rendering, sensors, plugins, and ROS integration for robot/world simulation.
+- [PX4 Simulation](https://docs.px4.io/main/en/simulation/) supports
+  software-in-the-loop and hardware-in-the-loop flight workflows across
+  multiple simulators.
+- [CrazySim](https://github.com/bitcraze/crazyflie-simulation) is Bitcraze's
+  published simulation path for Crazyflie systems rather than a feature
+  silently approximated by this browser.
+
+A future locomotion or flight adapter should ingest an authoritative robot
+description, map its license and geometry provenance, select an appropriate
+dynamics backend, define environment/sensor assets, and return engine-specific
+telemetry. Until that exists, the browser shows an explicit catalog warning
+and leaves the last valid arm workbench untouched.
 
 ## Photo-assisted workcell reconstruction
 
@@ -115,6 +171,8 @@ This browser sandbox is not:
 
 - a URDF/SRDF loader or vendor-accurate digital twin;
 - a dynamics, torque, payload, thermal, or controller model;
+- a humanoid or quadruped locomotion simulator;
+- a drone flight-dynamics, autopilot, or sensor simulator;
 - a self-collision-aware full high-DOF planner;
 - a coordinated bimanual planner or inter-arm collision model;
 - a photogrammetry, automatic object-recognition, or perspective-correction

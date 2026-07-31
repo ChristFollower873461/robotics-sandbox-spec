@@ -39,31 +39,43 @@
         </div>
 
         <div class="topology-panel">
-          <span>01 / ARM COUNT</span>
-          <div class="topology-switch" role="group" aria-label="Arm count">
-            <button type="button" data-topology="single" aria-pressed="true">
-              <b>1</b>
-              <span>
-                <strong>SINGLE ARM</strong>
-                <small>5 OPEN SOFTWARE ECOSYSTEMS</small>
-              </span>
-              <i class="topology-glyph topology-glyph--single" aria-hidden="true"></i>
+          <span>01 / PLATFORM CLASS</span>
+          <div class="platform-switch" role="group" aria-label="Platform class">
+            <button type="button" data-platform-class="arm" aria-pressed="true">
+              <b>01</b>
+              <span><strong>ARM</strong><small>07 / LIVE ENGINE</small></span>
+              <i class="platform-glyph platform-glyph--arm" aria-hidden="true"><i></i><i></i></i>
             </button>
-            <button type="button" data-topology="dual">
-              <b>2</b>
-              <span>
-                <strong>TWO ARM</strong>
-                <small>2 PUBLISHED DUAL SYSTEMS</small>
-              </span>
-              <i class="topology-glyph topology-glyph--dual" aria-hidden="true"></i>
+            <button type="button" data-platform-class="humanoid">
+              <b>02</b>
+              <span><strong>HUMANOID</strong><small>02 / CATALOG</small></span>
+              <i class="platform-glyph platform-glyph--humanoid" aria-hidden="true"><i></i><i></i></i>
+            </button>
+            <button type="button" data-platform-class="quadruped">
+              <b>03</b>
+              <span><strong>QUADRUPED</strong><small>02 / CATALOG</small></span>
+              <i class="platform-glyph platform-glyph--quadruped" aria-hidden="true"><i></i><i></i></i>
+            </button>
+            <button type="button" data-platform-class="drone">
+              <b>04</b>
+              <span><strong>DRONE</strong><small>02 / CATALOG</small></span>
+              <i class="platform-glyph platform-glyph--drone" aria-hidden="true"><i></i><i></i></i>
             </button>
           </div>
         </div>
 
         <div class="profile-index">
           <div class="profile-index-heading">
-            <span>02 / PLATFORM</span>
-            <strong id="profile-count">05 AVAILABLE</strong>
+            <span>02 / SPECIMEN DRAWER</span>
+            <strong id="profile-count">05 INDEXED</strong>
+          </div>
+          <div id="arm-topology-filter" class="arm-topology-filter" role="group" aria-label="Arm count">
+            <button type="button" data-topology="single" aria-pressed="true">
+              SINGLE / 05
+            </button>
+            <button type="button" data-topology="dual">
+              DUAL / 02
+            </button>
           </div>
           <div id="bot-options" class="bot-options" role="list"></div>
         </div>
@@ -75,20 +87,32 @@
           </div>
           <p id="profile-open-scope">ROS 1 + ROS 2 MANIPULATOR PACKAGES</p>
           <dl>
-            <div><dt>OPEN LAYER LICENSE</dt><dd id="profile-license">BSD-3-CLAUSE</dd></div>
+            <div><dt>OPENNESS</dt><dd id="profile-openness">OPEN COMPONENT</dd></div>
+            <div><dt>LICENSE / TERMS</dt><dd id="profile-license">BSD-3-CLAUSE</dd></div>
             <div><dt>SOURCE FACT</dt><dd id="profile-reach">679 MM TO FINGERTIP</dd></div>
-            <div><dt>GEOMETRY STATUS</dt><dd id="profile-geometry-status">NORMALIZED</dd></div>
+            <div><dt>SIM ENGINE</dt><dd id="profile-engine">PLANAR ARM V1 / LIVE</dd></div>
+            <div><dt>AVAILABILITY</dt><dd id="profile-availability">COMMERCIAL PRODUCT</dd></div>
+            <div><dt>SUPPLY CHAIN</dt><dd id="profile-supply-chain">NOT ASSESSED</dd></div>
             <div><dt>SOURCE CHECKED</dt><dd id="profile-source-checked">2026-07-30</dd></div>
           </dl>
           <div class="truth-label">
-            <span>SIM GEOMETRY</span>
+            <span id="profile-truth-label">SIM GEOMETRY</span>
             <strong id="profile-geometry-truth">SOURCE REACH / NORMALIZED 2-LINK DRAWING</strong>
+            <small id="profile-origin-basis">INTERBOTIX / TROSSEN PROJECT OR COMPANY RECORD / USA</small>
           </div>
           <div class="profile-links">
             <a id="profile-source" href="#" target="_blank" rel="noreferrer">SOURCE ↗</a>
             <a id="profile-product" href="#" target="_blank" rel="noreferrer">PRODUCT / DOCS ↗</a>
           </div>
         </article>
+      </section>
+
+      <section id="simulation-boundary" class="simulation-boundary" hidden aria-live="polite">
+        <span>CATALOG INSPECTION / ENGINE BOUNDARY</span>
+        <strong id="simulation-boundary-title">LOCOMOTION ENGINE NOT CONNECTED</strong>
+        <p id="simulation-boundary-note">
+          This record is source-backed catalog data. The arm workbench below remains on the last interactive arm.
+        </p>
       </section>
 
       <section class="readout" aria-label="Simulation status">

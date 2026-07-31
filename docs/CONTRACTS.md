@@ -12,7 +12,11 @@ Schema: `schemas/robot-profile.v1.schema.json`
 Every profile records:
 
 - a stable lower-kebab-case ID;
-- single, published-dual, or composed-pair system type;
+- a platform class (`arm`, `humanoid`, `quadruped`, or `drone`) and mobility
+  type;
+- `interactive` or `catalog-only` simulation support and an explicit engine;
+- openness, availability, origin basis, and independently stated supply-chain
+  status;
 - manufacturer country and American/European region;
 - the exact software or hardware layer represented as open;
 - source and product URLs;
@@ -20,11 +24,30 @@ Every profile records:
 - the date sources were checked;
 - two or more typed source records;
 - source-linked claims with review status;
-- normalized teaching geometry and a deterministic demo scene.
+- a visual kind for the specimen drawer.
 
 Geometry status is one of `vendor-cad`, `source-dimensioned`, `normalized`,
-`inferred`, or `unverified`. The seven bundled records are `normalized`; their
-teaching link lengths must not be presented as manufacturer dimensions.
+`inferred`, or `unverified`.
+
+The teaching model is conditional. Interactive records must be arm profiles
+using `planar-arm-v1`; they additionally require single/dual topology, system
+type, link lengths, joint seed, target, IK branch, obstacles, and waypoints.
+Catalog-only records must not contain those fields. Humanoid and quadruped
+records use `locomotion-catalog`; drones use `flight-catalog`. This makes it a
+contract error—not merely a UI convention—to feed a catalog record into the
+planar solver.
+
+The seven bundled arm records are `normalized`; their teaching link lengths
+must not be presented as manufacturer dimensions. The six locomotion and
+flight records are `unverified` for simulation geometry because their picker
+silhouettes are illustrative. Their source-backed physical claims remain
+separate.
+
+`opennessStatus` distinguishes a fully open platform from an open component,
+mixed open/restricted releases, and research source with restrictive terms.
+`originBasis` records why a platform is classified as American or European.
+`supplyChainStatus` is separate: a U.S. or European project must not be
+described as a wholly non-Chinese supply chain without evidence.
 
 `defineRobotProfile()` fails at module load when a bundled record violates the
 contract. `hydrateRobotProfile()` and `serializeRobotProfile()` apply the same

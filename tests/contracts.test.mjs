@@ -27,6 +27,16 @@ test("published JSON schemas match the runtime contract identifiers", async () =
   assert.equal(workcellSchema.value.properties.format.const, WORKCELL_FORMAT);
   assert.equal(robotSchema.value.additionalProperties, false);
   assert.equal(workcellSchema.value.additionalProperties, false);
+  assert.deepEqual(robotSchema.value.properties.platformClass.enum, [
+    "arm",
+    "humanoid",
+    "quadruped",
+    "drone",
+  ]);
+  assert.deepEqual(robotSchema.value.properties.simulationSupport.enum, [
+    "interactive",
+    "catalog-only",
+  ]);
 });
 
 test("all bundled robot records carry resolvable source-backed claims", () => {

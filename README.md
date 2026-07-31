@@ -1,9 +1,10 @@
 # Robotics Sandbox / Robot Arm
 
-Interactive robotics sandbox focused on making robot-arm planning visible.
-Pick a real American or European robotics ecosystem, compare the open software
-or hardware layer it publishes, then explore a normalized planar teaching
-profile in a dependency-free browser workbench.
+Interactive robotics catalog and sandbox focused on making platform evidence
+and robot-arm planning visible. Compare reviewed American and European arm,
+humanoid, quadruped, and drone projects, inspect the exact layer each project
+publishes, then launch the normalized planar teaching engine for supported arm
+profiles.
 
 ## What this project demonstrates
 
@@ -17,14 +18,21 @@ profile in a dependency-free browser workbench.
 - Draggable targets and obstacles, editable scene primitives, waypoint playback, and timeline scrubbing.
 - Photo-assisted workcell reconstruction: load a local overhead image or floor plan, enter real millimeter bounds, and trace collision fixtures on top.
 - A fixture ledger with exact names, positions, dimensions, provenance, and robot-base placement.
-- Validated `robot-profile/v1` records with typed sources, reviewed claims,
-  explicit geometry status, and source-check dates.
+- Validated `robot-profile/v1` records with platform class, mobility,
+  simulation support, openness, origin basis, supply-chain caveats, typed
+  sources, reviewed claims, explicit geometry status, and source-check dates.
 - Versioned `robot-workcell/v2` download, clipboard copy, and import for
   reproducible scenes, with automatic v1 migration.
 - A credential-free Databricks bundle and governed asset manifest for moving
   approved robotics knowledge into the existing AIssisted Consulting workspace.
 - Five sourced single-arm profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
 - Two sourced, published dual systems: ALOHA Stationary and Franka FR3 Duo.
+- Two sourced humanoids: Stanford ToddlerBot 2.0 and Poppy Humanoid.
+- Two sourced quadrupeds: Pupper v3 and Open Dynamic Robot Initiative Solo 12.
+- Two sourced drones: Bitcraze Crazyflie 2.1+ and UZH Agilicious.
+- Explicit engine gating: humanoid, quadruped, and drone records are
+  catalog-only until a locomotion or flight adapter exists, so they cannot
+  enter planar IK, collision, or A*.
 - Explicit source-fact versus simulation-geometry labeling so normalized link lengths are never presented as vendor dimensions.
 
 ## Why this is worth showing
@@ -89,11 +97,14 @@ profile in a dependency-free browser workbench.
    npm run dev
    ```
 
-   Open `http://127.0.0.1:4173/`. Choose single- or dual-arm mode, pick a
-   platform, compare both IK branches, or open **Build Cell** to calibrate a
-   reference photo, trace fixtures, and export a portable workcell. Then
-   inspect the A* search in configuration space and scrub or play the solved
-   trajectory.
+   Open `http://localhost:4173/`. Browse Arm, Humanoid, Quadruped, and Drone
+   specimen drawers. Arm records marked **LIVE** launch the planar workbench;
+   records marked **CATALOG** expose sources, licenses, claims, availability,
+   and caveats without changing the active simulator. In the arm workbench,
+   choose single or dual mode, compare both IK branches, or open **Build Cell**
+   to calibrate a reference photo, trace fixtures, and export a portable
+   workcell. Then inspect the A* search in configuration space and scrub or
+   play the solved trajectory.
 
    A matching reference image and portable scene are available in
    `examples/environments/` for testing the photo-assisted workflow.
@@ -169,15 +180,21 @@ const plan = planWaypointTrajectory({
 - Core robotics modules are implemented and runnable.
 - Collision and path checks are present for editable 2D circle/rectangle obstacles.
 - Scenario save/load helpers are implemented.
-- The browser UI supports sourced robot profiles, FK/IK, alternate IK
-  branches, obstacle editing, direct/A* planning, C-space inspection,
-  manipulability diagnostics, dual-arm mirrored workcells, photo-calibrated
-  fixture tracing, validated v2 workcell import/export with v1 migration, and
-  playback.
+- The browser UI supports a 13-platform evidence catalog plus sourced
+  interactive arm profiles, FK/IK, alternate IK branches, obstacle editing,
+  direct/A* planning, C-space inspection, manipulability diagnostics,
+  dual-arm mirrored workcells, photo-calibrated fixture tracing, validated v2
+  workcell import/export with v1 migration, and playback.
 
 ## Limitations and next steps
 
 - This is a normalized two-link teaching model, not a vendor-accurate digital twin.
+- Humanoid and quadruped records do not yet have a locomotion engine; drone
+  records do not yet have a flight-dynamics engine. They are deliberately
+  catalog-only.
+- Project origin does not prove a wholly American or European supply chain.
+  Supply-chain status is shown separately and remains `not-assessed` unless
+  primary documentation supports a stronger statement.
 - Dual mode mirrors one per-arm plan; it does not yet coordinate independent
   goals or detect inter-arm collision.
 - Photo calibration maps the image bounds to user-entered cell dimensions. It

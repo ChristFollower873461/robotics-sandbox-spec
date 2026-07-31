@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Local-first robotics sandbox for planar arm kinematics, path planning, and obstacle awareness.",
+  "description": "Source-backed multi-platform robotics catalog with a guarded planar-arm teaching workbench.",
   "scripts": {
     "start": "node scripts/dev-server.mjs",
     "dev": "node scripts/dev-server.mjs",

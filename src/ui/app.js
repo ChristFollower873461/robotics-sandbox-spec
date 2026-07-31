@@ -20,7 +20,9 @@ import {
 } from "../core/planning/pathPlanner.js";
 import { formatDegrees, formatDistance, formatPoint } from "./format.js";
 import {
+  canLaunchPlanarWorkbench,
   getRobotProfile,
+  getRobotProfilesByPlatformClass,
   getRobotProfilesByTopology,
 } from "./robotProfiles.js";
 
@@ -65,6 +67,8 @@ const initialWorkcell = profileWorkcell(profile);
 
 const state = {
   profileId: profile.id,
+  inspectedProfileId: profile.id,
+  platformClass: "arm",
   topology: profile.topology,
   toolMode: "motion",
   mode: "ik",
@@ -104,14 +108,23 @@ const elements = Object.fromEntries(
     "profile-region",
     "profile-company",
     "profile-open-scope",
+    "profile-openness",
     "profile-license",
     "profile-reach",
+    "profile-engine",
+    "profile-availability",
+    "profile-supply-chain",
     "profile-source",
     "profile-product",
     "profile-geometry-truth",
-    "profile-geometry-status",
+    "profile-truth-label",
+    "profile-origin-basis",
     "profile-source-checked",
     "profile-count",
+    "arm-topology-filter",
+    "simulation-boundary",
+    "simulation-boundary-title",
+    "simulation-boundary-note",
     "model-readout",
     "mode-readout",
     "position-readout",
@@ -1170,10 +1183,103 @@ function resetProfileRoute() {
   setMode("path");
 }
 
+function formatProfileToken(value) {
+  return String(value || "")
+    .replaceAll("-", " ")
+    .toUpperCase();
+}
+
+function syncPlatformControls(profileValue) {
+  document.querySelectorAll("[data-platform-class]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      button.dataset.platformClass === state.platformClass ? "true" : "false"
+    );
+  });
+  document.querySelectorAll("[data-topology]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      button.dataset.topology === state.topology ? "true" : "false"
+    );
+  });
+  elements.armTopologyFilter.hidden = state.platformClass !== "arm";
+  document.querySelectorAll("[data-profile]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      button.dataset.profile === profileValue.id ? "true" : "false"
+    );
+  });
+}
+
+function syncProfileBrief(profileValue) {
+  if (profileValue.simulationSupport === "interactive") {
+    document.documentElement.style.setProperty(
+      "--robot-primary",
+      profileValue.visual.primary
+    );
+    document.documentElement.style.setProperty(
+      "--robot-secondary",
+      profileValue.visual.secondary
+    );
+    document.documentElement.style.setProperty(
+      "--robot-shell",
+      profileValue.visual.shell
+    );
+  }
+  elements.profileRegion.textContent = `${profileValue.region} / ${profileValue.countryCode}`;
+  elements.profileCompany.textContent = profileValue.company;
+  elements.profileOpenScope.textContent = profileValue.openScope;
+  elements.profileOpenness.textContent = formatProfileToken(
+    profileValue.opennessStatus
+  );
+  elements.profileLicense.textContent = profileValue.license;
+  elements.profileReach.textContent = profileValue.sourceReach;
+  elements.profileEngine.textContent = `${formatProfileToken(
+    profileValue.simulationEngine
+  )} / ${
+    profileValue.simulationSupport === "interactive" ? "LIVE" : "NOT CONNECTED"
+  }`;
+  elements.profileAvailability.textContent = formatProfileToken(
+    profileValue.availabilityStatus
+  );
+  elements.profileSupplyChain.textContent = formatProfileToken(
+    profileValue.supplyChainStatus
+  );
+  elements.profileGeometryTruth.textContent = profileValue.geometryTruth;
+  elements.profileTruthLabel.textContent =
+    profileValue.simulationSupport === "interactive"
+      ? "SIM GEOMETRY"
+      : "CATALOG GEOMETRY";
+  elements.profileOriginBasis.textContent = `ORIGIN BASIS / ${profileValue.originBasis}`;
+  elements.profileSourceChecked.textContent = profileValue.sourceCheckedAt;
+  elements.profileSource.href = profileValue.sourceUrl;
+  elements.profileProduct.href = profileValue.productUrl;
+}
+
+function inspectCatalogProfile(profileValue) {
+  state.inspectedProfileId = profileValue.id;
+  state.platformClass = profileValue.platformClass;
+  syncProfileBrief(profileValue);
+  syncPlatformControls(profileValue);
+  elements.simulationBoundary.hidden = false;
+  elements.simulationBoundaryTitle.textContent =
+    profileValue.platformClass === "drone"
+      ? "FLIGHT ENGINE NOT CONNECTED"
+      : "LOCOMOTION ENGINE NOT CONNECTED";
+  elements.simulationBoundaryNote.textContent = `${profileValue.simulationNote}. THE LIVE WORKBENCH REMAINS ON ${selectedProfile().model}; NO CATALOG VALUES ENTER IK, COLLISION, OR A*.`;
+}
+
 function applyProfile(profileId) {
   const profileValue = getRobotProfile(profileId);
+  if (!canLaunchPlanarWorkbench(profileValue)) {
+    inspectCatalogProfile(profileValue);
+    return;
+  }
+
   stopPlayback();
   state.profileId = profileValue.id;
+  state.inspectedProfileId = profileValue.id;
+  state.platformClass = "arm";
   state.topology = profileValue.topology;
   state.mode = "ik";
   state.linkLengths = [...profileValue.linkLengths];
@@ -1190,19 +1296,8 @@ function applyProfile(profileId) {
   state.playbackProgress = 0;
   invalidateScene();
 
-  document.documentElement.style.setProperty("--robot-primary", profileValue.visual.primary);
-  document.documentElement.style.setProperty("--robot-secondary", profileValue.visual.secondary);
-  document.documentElement.style.setProperty("--robot-shell", profileValue.visual.shell);
-  elements.profileRegion.textContent = `${profileValue.region} / ${profileValue.countryCode}`;
-  elements.profileCompany.textContent = profileValue.company;
-  elements.profileOpenScope.textContent = profileValue.openScope;
-  elements.profileLicense.textContent = profileValue.license;
-  elements.profileReach.textContent = profileValue.sourceReach;
-  elements.profileGeometryTruth.textContent = profileValue.geometryTruth;
-  elements.profileGeometryStatus.textContent = profileValue.geometryStatus.toUpperCase();
-  elements.profileSourceChecked.textContent = profileValue.sourceCheckedAt;
-  elements.profileSource.href = profileValue.sourceUrl;
-  elements.profileProduct.href = profileValue.productUrl;
+  syncProfileBrief(profileValue);
+  elements.simulationBoundary.hidden = true;
   elements.scenarioName.textContent = `${profileValue.model} / ${
     profileValue.topology === "dual" ? "PAIRED CELL" : "SINGLE ARM"
   }`;
@@ -1213,47 +1308,60 @@ function applyProfile(profileId) {
   elements.elbow.value = profileValue.elbow;
   syncWorkcellControls();
   syncFixtureEditor();
-  document.querySelectorAll("[data-profile]").forEach((button) => {
-    button.setAttribute(
-      "aria-pressed",
-      button.dataset.profile === profileValue.id ? "true" : "false"
-    );
-  });
-  document.querySelectorAll("[data-topology]").forEach((button) => {
-    button.setAttribute(
-      "aria-pressed",
-      button.dataset.topology === profileValue.topology ? "true" : "false"
-    );
-  });
+  syncPlatformControls(profileValue);
   setMode("ik");
 }
 
-function buildProfilePicker(topology = state.topology) {
-  const profiles = getRobotProfilesByTopology(topology);
+function buildProfilePicker(
+  platformClass = state.platformClass,
+  topology = state.topology
+) {
+  const profiles =
+    platformClass === "arm"
+      ? getRobotProfilesByTopology(topology)
+      : getRobotProfilesByPlatformClass(platformClass);
   elements.botOptions.replaceChildren();
-  elements.botOptions.style.setProperty("--profile-count", profiles.length);
+  elements.botOptions.style.setProperty(
+    "--profile-card-width",
+    profiles.length <= 2 ? "220px" : "142px"
+  );
   elements.profileCount.textContent = `${String(profiles.length).padStart(
     2,
     "0"
-  )} AVAILABLE`;
+  )} INDEXED`;
   profiles.forEach((profileValue, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "bot-option";
     button.dataset.profile = profileValue.id;
+    button.dataset.simulationSupport = profileValue.simulationSupport;
     button.style.setProperty("--profile-color", profileValue.visual.primary);
     button.setAttribute(
       "aria-pressed",
-      profileValue.id === state.profileId ? "true" : "false"
+      profileValue.id === state.inspectedProfileId ? "true" : "false"
     );
+    const restricted = [
+      "mixed-open-restricted",
+      "source-available-restricted",
+    ].includes(profileValue.opennessStatus);
     button.innerHTML = `
       <span class="bot-number">${String(index + 1).padStart(2, "0")}</span>
-      <span class="bot-silhouette bot-silhouette--${profileValue.visual.kind} bot-silhouette--${profileValue.topology}">
+      <span class="bot-silhouette bot-silhouette--${profileValue.visual.kind} ${
+        profileValue.topology
+          ? `bot-silhouette--${profileValue.topology}`
+          : ""
+      }">
         <i></i><i></i><i></i>
       </span>
       <span><strong>${profileValue.model}</strong><small>${
         profileValue.dualStatus || `${profileValue.countryCode} / ${profileValue.company}`
-      }</small></span>
+      }</small><span class="bot-badges"><i class="bot-badge" data-state="${
+        profileValue.simulationSupport === "interactive" ? "live" : "catalog"
+      }">${
+        profileValue.simulationSupport === "interactive" ? "LIVE" : "CATALOG"
+      }</i><i class="bot-badge" data-state="${
+        restricted ? "restricted" : "open"
+      }">${restricted ? "RESTRICTED" : "OPEN"}</i></span></span>
     `;
     button.addEventListener("click", () => applyProfile(profileValue.id));
     elements.botOptions.append(button);
@@ -1263,8 +1371,22 @@ function buildProfilePicker(topology = state.topology) {
 function setTopology(topology) {
   const profiles = getRobotProfilesByTopology(topology);
   if (profiles.length === 0) return;
+  state.platformClass = "arm";
   state.topology = topology;
-  buildProfilePicker(topology);
+  state.inspectedProfileId = profiles[0].id;
+  buildProfilePicker("arm", topology);
+  applyProfile(profiles[0].id);
+}
+
+function setPlatformClass(platformClass) {
+  const profiles =
+    platformClass === "arm"
+      ? getRobotProfilesByTopology(state.topology)
+      : getRobotProfilesByPlatformClass(platformClass);
+  if (profiles.length === 0) return;
+  state.platformClass = platformClass;
+  state.inspectedProfileId = profiles[0].id;
+  buildProfilePicker(platformClass, state.topology);
   applyProfile(profiles[0].id);
 }
 
@@ -1678,6 +1800,12 @@ document.querySelectorAll("[data-planner]").forEach((button) => {
 
 document.querySelectorAll("[data-topology]").forEach((button) => {
   button.addEventListener("click", () => setTopology(button.dataset.topology));
+});
+
+document.querySelectorAll("[data-platform-class]").forEach((button) => {
+  button.addEventListener("click", () =>
+    setPlatformClass(button.dataset.platformClass)
+  );
 });
 
 document.querySelectorAll("[data-tool]").forEach((button) => {

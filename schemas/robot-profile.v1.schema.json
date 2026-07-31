@@ -7,9 +7,16 @@
   "required": [
     "format",
     "id",
-    "topology",
-    "systemType",
     "recordStatus",
+    "platformClass",
+    "mobilityType",
+    "simulationSupport",
+    "simulationEngine",
+    "simulationNote",
+    "opennessStatus",
+    "originBasis",
+    "supplyChainStatus",
+    "availabilityStatus",
     "model",
     "company",
     "country",
@@ -25,13 +32,7 @@
     "sourceCheckedAt",
     "sources",
     "publishedClaims",
-    "linkLengths",
-    "jointsDegrees",
-    "target",
-    "elbow",
-    "visual",
-    "obstacles",
-    "waypoints"
+    "visual"
   ],
   "properties": {
     "format": {
@@ -40,6 +41,51 @@
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "platformClass": {
+      "enum": ["arm", "humanoid", "quadruped", "drone"]
+    },
+    "mobilityType": {
+      "enum": [
+        "fixed-base",
+        "mobile-manipulator",
+        "biped",
+        "quadruped",
+        "multirotor"
+      ]
+    },
+    "simulationSupport": {
+      "enum": ["interactive", "catalog-only"]
+    },
+    "simulationEngine": {
+      "enum": ["planar-arm-v1", "locomotion-catalog", "flight-catalog"]
+    },
+    "simulationNote": {
+      "type": "string",
+      "minLength": 10
+    },
+    "opennessStatus": {
+      "enum": [
+        "open-component",
+        "open-platform",
+        "mixed-open-restricted",
+        "source-available-restricted"
+      ]
+    },
+    "originBasis": {
+      "type": "string",
+      "minLength": 10
+    },
+    "supplyChainStatus": {
+      "enum": ["not-assessed", "mixed"]
+    },
+    "availabilityStatus": {
+      "enum": [
+        "commercial-product",
+        "self-build",
+        "research-release",
+        "commercial-kit-discontinued"
+      ]
     },
     "topology": {
       "enum": ["single", "dual"]
@@ -205,10 +251,143 @@
     {
       "if": {
         "properties": {
+          "platformClass": {
+            "const": "arm"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "mobilityType": {
+            "enum": ["fixed-base", "mobile-manipulator"]
+          },
+          "simulationSupport": {
+            "const": "interactive"
+          },
+          "simulationEngine": {
+            "const": "planar-arm-v1"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "platformClass": {
+            "const": "humanoid"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "mobilityType": {
+            "const": "biped"
+          },
+          "simulationSupport": {
+            "const": "catalog-only"
+          },
+          "simulationEngine": {
+            "const": "locomotion-catalog"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "platformClass": {
+            "const": "quadruped"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "mobilityType": {
+            "const": "quadruped"
+          },
+          "simulationSupport": {
+            "const": "catalog-only"
+          },
+          "simulationEngine": {
+            "const": "locomotion-catalog"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "platformClass": {
+            "const": "drone"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "mobilityType": {
+            "const": "multirotor"
+          },
+          "simulationSupport": {
+            "const": "catalog-only"
+          },
+          "simulationEngine": {
+            "const": "flight-catalog"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "simulationSupport": {
+            "const": "interactive"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "topology",
+          "systemType",
+          "linkLengths",
+          "jointsDegrees",
+          "target",
+          "elbow",
+          "obstacles",
+          "waypoints"
+        ],
+        "properties": {
+          "platformClass": {
+            "const": "arm"
+          },
+          "simulationEngine": {
+            "const": "planar-arm-v1"
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            { "required": ["topology"] },
+            { "required": ["systemType"] },
+            { "required": ["baseSeparation"] },
+            { "required": ["linkLengths"] },
+            { "required": ["jointsDegrees"] },
+            { "required": ["target"] },
+            { "required": ["elbow"] },
+            { "required": ["obstacles"] },
+            { "required": ["waypoints"] }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
           "topology": {
             "const": "dual"
           }
-        }
+        },
+        "required": ["topology"]
       },
       "then": {
         "required": ["baseSeparation"]
@@ -240,6 +419,8 @@
         "kind": {
           "enum": [
             "source-repository",
+            "project-documentation",
+            "research-paper",
             "manufacturer-product",
             "manufacturer-specification",
             "manufacturer-about"

@@ -29,7 +29,12 @@ import {
   serializeRobotProfile,
   validateRobotProfile,
 } from "../src/core/robot/profile.js";
-import { ROBOT_PROFILES } from "../src/ui/robotProfiles.js";
+import {
+  ROBOT_PROFILES,
+  canLaunchPlanarWorkbench,
+  getInteractiveRobotProfiles,
+  getRobotProfilesByPlatformClass,
+} from "../src/ui/robotProfiles.js";
 
 function approxEqual(actual, expected, tolerance = 1e-6) {
   assert.ok(Math.abs(actual - expected) <= tolerance, `Expected ${actual} to be within ${tolerance} of ${expected}`);
@@ -123,8 +128,12 @@ test("configuration-space occupancy and direct A* API are deterministic", () => 
   assert.deepEqual(result.joints.at(-1), goal);
 });
 
-test("robot profiles identify their topology, region, and exact open layer", () => {
-  assert.equal(ROBOT_PROFILES.length, 7);
+test("robot profiles separate interactive arms from the multi-platform catalog", () => {
+  assert.equal(ROBOT_PROFILES.length, 13);
+  assert.equal(getRobotProfilesByPlatformClass("arm").length, 7);
+  assert.equal(getRobotProfilesByPlatformClass("humanoid").length, 2);
+  assert.equal(getRobotProfilesByPlatformClass("quadruped").length, 2);
+  assert.equal(getRobotProfilesByPlatformClass("drone").length, 2);
   assert.equal(
     ROBOT_PROFILES.filter((profile) => profile.topology === "single").length,
     5
@@ -138,16 +147,29 @@ test("robot profiles identify their topology, region, and exact open layer", () 
   for (const profile of ROBOT_PROFILES) {
     assert.equal(profile.format, ROBOT_PROFILE_FORMAT);
     assert.equal(profile.recordStatus, "reviewed");
-    assert.equal(profile.geometryStatus, "normalized");
     assert.equal(profile.sourceCheckedAt, "2026-07-30");
     assert.equal(validateRobotProfile(profile).valid, true);
     assert.match(profile.sourceUrl, /^https:\/\//);
     assert.ok(profile.openScope.length > 10);
     assert.ok(profile.license.length > 2);
     assert.ok(profile.geometryTruth.length > 10);
-    assert.ok(["single", "dual"].includes(profile.topology));
+    assert.ok(
+      ["arm", "humanoid", "quadruped", "drone"].includes(
+        profile.platformClass
+      )
+    );
     assert.ok(profile.sources.length >= 2);
     assert.ok(profile.publishedClaims.length >= 1);
+    if (canLaunchPlanarWorkbench(profile)) {
+      assert.equal(profile.geometryStatus, "normalized");
+      assert.ok(["single", "dual"].includes(profile.topology));
+      assert.equal(profile.linkLengths.length, 2);
+    } else {
+      assert.equal(profile.simulationSupport, "catalog-only");
+      assert.equal(profile.geometryStatus, "unverified");
+      assert.equal(profile.topology, undefined);
+      assert.equal(profile.linkLengths, undefined);
+    }
   }
 });
 
@@ -167,8 +189,10 @@ test("robot-profile/v1 round-trips and rejects broken provenance", () => {
   assert.throws(() => hydrateRobotProfile(invalid), /Invalid robot profile/);
 });
 
-test("every curated robot profile ships with a valid A* demo route", () => {
-  for (const profile of ROBOT_PROFILES) {
+test("every interactive arm profile ships with a valid A* demo route", () => {
+  const interactiveProfiles = getInteractiveRobotProfiles();
+  assert.equal(interactiveProfiles.length, 7);
+  for (const profile of interactiveProfiles) {
     const plan = planWaypointTrajectory({
       linkLengths: profile.linkLengths,
       startJoints: jointsFromDegrees(profile.jointsDegrees),
@@ -187,6 +211,31 @@ test("every curated robot profile ships with a valid A* demo route", () => {
       `${profile.model} should demonstrate an A* detour`
     );
   }
+});
+
+test("catalog profiles cannot cross the planar teaching-model boundary", () => {
+  const catalogProfile = getRobotProfilesByPlatformClass("humanoid")[0];
+
+  assert.equal(canLaunchPlanarWorkbench(catalogProfile), false);
+
+  const withFakeTeachingGeometry = {
+    ...structuredClone(catalogProfile),
+    linkLengths: [100, 100],
+  };
+  const geometryResult = validateRobotProfile(withFakeTeachingGeometry);
+  assert.equal(geometryResult.valid, false);
+  assert.match(
+    geometryResult.errors.join(" "),
+    /catalog-only profiles must not define linkLengths/
+  );
+
+  const withWrongEngine = {
+    ...structuredClone(catalogProfile),
+    simulationEngine: "planar-arm-v1",
+  };
+  const engineResult = validateRobotProfile(withWrongEngine);
+  assert.equal(engineResult.valid, false);
+  assert.match(engineResult.errors.join(" "), /locomotion-catalog/);
 });
 
 test("workcell presets expose calibrated millimeter geometry", () => {

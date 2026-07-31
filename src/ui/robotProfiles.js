@@ -452,9 +452,429 @@ const PROFILE_DEFINITIONS = [
       { id: "fr3d-b", label: "P2", x: -84, y: 24 },
     ],
   },
+  {
+    format: ROBOT_PROFILE_FORMAT,
+    id: "toddlerbot-2",
+    recordStatus: "reviewed",
+    platformClass: "humanoid",
+    mobilityType: "biped",
+    simulationSupport: "catalog-only",
+    simulationEngine: "locomotion-catalog",
+    simulationNote:
+      "SOURCE-BACKED CATALOG RECORD; NO BIPED DYNAMICS ENGINE IS CONNECTED",
+    opennessStatus: "mixed-open-restricted",
+    originBasis: "STANFORD UNIVERSITY PROJECT / UNITED STATES",
+    supplyChainStatus: "not-assessed",
+    availabilityStatus: "self-build",
+    model: "TODDLERBOT 2.0",
+    company: "STANFORD ROBOTICS",
+    country: "USA",
+    countryCode: "US",
+    region: "AMERICAN",
+    openScope:
+      "MIT SOFTWARE / CC BY-NC-SA 4.0 NON-COMMERCIAL HARDWARE",
+    license: "MIT SOFTWARE + CC BY-NC-SA 4.0 HARDWARE",
+    sourceUrl: "https://github.com/hshi74/toddlerbot",
+    productUrl: "https://hshi74.github.io/toddlerbot/",
+    sourceReach: "30 ACTIVE DOF / 0.56 M / 3.4 KG",
+    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
+    geometryStatus: "unverified",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "ToddlerBot software and hardware repository",
+        url: "https://github.com/hshi74/toddlerbot",
+      },
+      {
+        sourceId: "documentation",
+        kind: "project-documentation",
+        label: "ToddlerBot 2.0 project documentation",
+        url: "https://hshi74.github.io/toddlerbot/",
+      },
+      {
+        sourceId: "paper",
+        kind: "research-paper",
+        label: "ToddlerBot open-source humanoid paper",
+        url: "https://arxiv.org/abs/2409.16658",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "active-dof",
+        label: "Active degrees of freedom",
+        value: "30",
+        status: "observed",
+        sourceIds: ["documentation", "paper"],
+      },
+      {
+        claimId: "size-and-mass",
+        label: "Published size and mass",
+        value: "0.56 m / 3.4 kg",
+        status: "observed",
+        sourceIds: ["paper"],
+      },
+    ],
+    visual: {
+      kind: "humanoid",
+      primary: "#ff6b36",
+      secondary: "#f0efe9",
+      shell: "#242321",
+    },
+  },
+  {
+    format: ROBOT_PROFILE_FORMAT,
+    id: "poppy-humanoid",
+    recordStatus: "reviewed",
+    platformClass: "humanoid",
+    mobilityType: "biped",
+    simulationSupport: "catalog-only",
+    simulationEngine: "locomotion-catalog",
+    simulationNote:
+      "SOURCE-BACKED CATALOG RECORD; NO BIPED DYNAMICS ENGINE IS CONNECTED",
+    opennessStatus: "open-platform",
+    originBasis: "POPPY PROJECT ORIGINATED AT INRIA BORDEAUX / FRANCE",
+    supplyChainStatus: "not-assessed",
+    availabilityStatus: "self-build",
+    model: "POPPY HUMANOID",
+    company: "POPPY PROJECT / INRIA",
+    country: "FRANCE",
+    countryCode: "FR",
+    region: "EUROPEAN",
+    openScope: "OPEN CAD + CC BY-SA HARDWARE / GPL-3.0 SOFTWARE",
+    license: "CC BY-SA HARDWARE + GPL-3.0 SOFTWARE",
+    sourceUrl: "https://github.com/poppy-project/poppy-humanoid",
+    productUrl: "https://www.poppy-project.org/en/robots/poppy-humanoid/",
+    sourceReach: "83 CM / 3.5 KG / 25 ACTUATORS",
+    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
+    geometryStatus: "unverified",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "hardware",
+        kind: "source-repository",
+        label: "Poppy Humanoid hardware repository",
+        url: "https://github.com/poppy-project/poppy-humanoid",
+      },
+      {
+        sourceId: "project",
+        kind: "project-documentation",
+        label: "Poppy Humanoid project page",
+        url: "https://www.poppy-project.org/en/robots/poppy-humanoid/",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "size-mass-actuators",
+        label: "Published size, mass, and actuator count",
+        value: "83 cm / 3.5 kg / 25 actuators",
+        status: "observed",
+        sourceIds: ["project", "hardware"],
+      },
+    ],
+    visual: {
+      kind: "humanoid",
+      primary: "#00a878",
+      secondary: "#eef4ef",
+      shell: "#18332b",
+    },
+  },
+  {
+    format: ROBOT_PROFILE_FORMAT,
+    id: "pupper-v3",
+    recordStatus: "reviewed",
+    platformClass: "quadruped",
+    mobilityType: "quadruped",
+    simulationSupport: "catalog-only",
+    simulationEngine: "locomotion-catalog",
+    simulationNote:
+      "CATALOG RECORD; UPSTREAM MUJOCO WORK EXISTS BUT IS NOT EMBEDDED HERE",
+    opennessStatus: "open-platform",
+    originBasis: "STANFORD-ROOTED HANDS-ON ROBOTICS PROJECT / UNITED STATES",
+    supplyChainStatus: "mixed",
+    availabilityStatus: "self-build",
+    model: "PUPPER V3",
+    company: "HANDS-ON ROBOTICS",
+    country: "USA",
+    countryCode: "US",
+    region: "AMERICAN",
+    openScope: "PUBLIC CAD + BUILD FILES / GPL-3.0 SOFTWARE MONOREPO",
+    license: "GPL-3.0 SOFTWARE; HARDWARE TERMS NOT SEPARATELY STATED",
+    sourceUrl: "https://github.com/Nate711/pupperv3-monorepo",
+    productUrl: "https://pupper-v3-documentation.readthedocs.io/en/latest/",
+    sourceReach: "12 DOF / 3 KG / 25 × 22 × 20 CM CROUCHED",
+    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
+    geometryStatus: "unverified",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Pupper v3 public monorepo",
+        url: "https://github.com/Nate711/pupperv3-monorepo",
+      },
+      {
+        sourceId: "documentation",
+        kind: "project-documentation",
+        label: "Pupper v3 build and learning documentation",
+        url: "https://pupper-v3-documentation.readthedocs.io/en/latest/",
+      },
+      {
+        sourceId: "specifications",
+        kind: "project-documentation",
+        label: "Pupper v3 technical specifications",
+        url: "https://pupper-v3-documentation.readthedocs.io/en/latest/learn_more/tech_specs.html",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "degrees-of-freedom",
+        label: "Published degrees of freedom",
+        value: "12 / three per leg",
+        status: "observed",
+        sourceIds: ["specifications"],
+      },
+      {
+        claimId: "mass-and-size",
+        label: "Published mass and crouched size",
+        value: "3 kg / 25 × 22 × 20 cm",
+        status: "observed",
+        sourceIds: ["specifications"],
+      },
+    ],
+    visual: {
+      kind: "quadruped",
+      primary: "#f1bd17",
+      secondary: "#f2f0e8",
+      shell: "#312d18",
+    },
+  },
+  {
+    format: ROBOT_PROFILE_FORMAT,
+    id: "solo-12",
+    recordStatus: "reviewed",
+    platformClass: "quadruped",
+    mobilityType: "quadruped",
+    simulationSupport: "catalog-only",
+    simulationEngine: "locomotion-catalog",
+    simulationNote:
+      "SOURCE-BACKED CATALOG RECORD; NO QUADRUPED DYNAMICS ENGINE IS CONNECTED",
+    opennessStatus: "open-platform",
+    originBasis:
+      "MAX PLANCK / LAAS-CNRS EUROPEAN-LED OPEN DYNAMIC ROBOT INITIATIVE",
+    supplyChainStatus: "not-assessed",
+    availabilityStatus: "commercial-kit-discontinued",
+    model: "SOLO 12",
+    company: "OPEN DYNAMIC ROBOT INITIATIVE",
+    country: "GERMANY",
+    countryCode: "DE",
+    region: "EUROPEAN",
+    openScope: "OPEN MECHANICS + ELECTRONICS + CONTROL SOFTWARE",
+    license: "BSD-3-CLAUSE",
+    sourceUrl:
+      "https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware",
+    productUrl: "https://inria-paris-robotics-lab.github.io/Robots/Solo.html",
+    sourceReach: "12 DOF / LIGHTWEIGHT TORQUE-CONTROLLED QUADRUPED",
+    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
+    geometryStatus: "unverified",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "hardware",
+        kind: "source-repository",
+        label: "Open Robot Actuator Hardware / Solo 12",
+        url: "https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware",
+      },
+      {
+        sourceId: "project",
+        kind: "project-documentation",
+        label: "Inria Paris Robotics Lab Solo page",
+        url: "https://inria-paris-robotics-lab.github.io/Robots/Solo.html",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "degrees-of-freedom",
+        label: "Published degrees of freedom",
+        value: "12",
+        status: "observed",
+        sourceIds: ["hardware", "project"],
+      },
+      {
+        claimId: "commercial-availability",
+        label: "Commercial kit status",
+        value: "Discontinued; open self-build records remain",
+        status: "observed",
+        sourceIds: ["project"],
+      },
+    ],
+    visual: {
+      kind: "quadruped",
+      primary: "#e64b3c",
+      secondary: "#efefec",
+      shell: "#30201f",
+    },
+  },
+  {
+    format: ROBOT_PROFILE_FORMAT,
+    id: "crazyflie-2-1-plus",
+    recordStatus: "reviewed",
+    platformClass: "drone",
+    mobilityType: "multirotor",
+    simulationSupport: "catalog-only",
+    simulationEngine: "flight-catalog",
+    simulationNote:
+      "SOURCE-BACKED CATALOG RECORD; NO FLIGHT DYNAMICS ENGINE IS CONNECTED",
+    opennessStatus: "mixed-open-restricted",
+    originBasis: "BITCRAZE AB / SWEDEN",
+    supplyChainStatus: "not-assessed",
+    availabilityStatus: "commercial-product",
+    model: "CRAZYFLIE 2.1+",
+    company: "BITCRAZE",
+    country: "SWEDEN",
+    countryCode: "SE",
+    region: "EUROPEAN",
+    openScope: "OPEN-SOURCE FIRMWARE / SEMI-OPEN HARDWARE SCHEMATICS",
+    license: "LGPL-3.0 FIRMWARE; HARDWARE TERMS VARY BY REVISION",
+    sourceUrl: "https://github.com/bitcraze/crazyflie-firmware",
+    productUrl: "https://www.bitcraze.io/products/crazyflie-2-1-plus/",
+    sourceReach: "29 G / 92 × 92 × 29 MM / 7 MIN FLIGHT",
+    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
+    geometryStatus: "unverified",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "firmware",
+        kind: "source-repository",
+        label: "Crazyflie firmware repository",
+        url: "https://github.com/bitcraze/crazyflie-firmware",
+      },
+      {
+        sourceId: "product",
+        kind: "manufacturer-product",
+        label: "Crazyflie 2.1+ product page",
+        url: "https://www.bitcraze.io/products/crazyflie-2-1-plus/",
+      },
+      {
+        sourceId: "openness",
+        kind: "manufacturer-about",
+        label: "Bitcraze open-source philosophy and hardware scope",
+        url: "https://www.bitcraze.io/open-source-philosophy/",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "mass-and-size",
+        label: "Published mass and dimensions",
+        value: "29 g / 92 × 92 × 29 mm",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+      {
+        claimId: "flight-time",
+        label: "Published flight time",
+        value: "7 minutes",
+        status: "vendor-claimed",
+        sourceIds: ["product"],
+      },
+    ],
+    visual: {
+      kind: "drone",
+      primary: "#e3342f",
+      secondary: "#f2f2ef",
+      shell: "#291b1a",
+    },
+  },
+  {
+    format: ROBOT_PROFILE_FORMAT,
+    id: "agilicious",
+    recordStatus: "reviewed",
+    platformClass: "drone",
+    mobilityType: "multirotor",
+    simulationSupport: "catalog-only",
+    simulationEngine: "flight-catalog",
+    simulationNote:
+      "RESEARCH CATALOG RECORD; NO FLIGHT DYNAMICS ENGINE IS CONNECTED",
+    opennessStatus: "source-available-restricted",
+    originBasis: "UNIVERSITY OF ZURICH ROBOTICS AND PERCEPTION GROUP / SWITZERLAND",
+    supplyChainStatus: "not-assessed",
+    availabilityStatus: "research-release",
+    model: "AGILICIOUS",
+    company: "UZH ROBOTICS & PERCEPTION GROUP",
+    country: "SWITZERLAND",
+    countryCode: "CH",
+    region: "EUROPEAN",
+    openScope:
+      "SOFTWARE + HARDWARE SOURCE / ACADEMIC NON-COMMERCIAL USE ONLY",
+    license: "UZH ACADEMIC NON-COMMERCIAL LICENSE",
+    sourceUrl: "https://github.com/uzh-rpg/agilicious",
+    productUrl: "https://rpg.ifi.uzh.ch/agilicious.html",
+    sourceReach: "UP TO 5 G / 70 KM/H RESEARCH FLIGHT DEMONSTRATIONS",
+    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
+    geometryStatus: "unverified",
+    sourceCheckedAt: "2026-07-30",
+    sources: [
+      {
+        sourceId: "software",
+        kind: "source-repository",
+        label: "Agilicious software and hardware repository",
+        url: "https://github.com/uzh-rpg/agilicious",
+      },
+      {
+        sourceId: "project",
+        kind: "project-documentation",
+        label: "UZH Agilicious research project page",
+        url: "https://rpg.ifi.uzh.ch/agilicious.html",
+      },
+      {
+        sourceId: "license",
+        kind: "project-documentation",
+        label: "Agilicious academic non-commercial license",
+        url: "https://github.com/uzh-rpg/agilicious/blob/main/LICENSE",
+      },
+    ],
+    publishedClaims: [
+      {
+        claimId: "flight-envelope",
+        label: "Published research flight demonstrations",
+        value: "Up to 5 g and 70 km/h",
+        status: "observed",
+        sourceIds: ["software", "project"],
+      },
+      {
+        claimId: "license-boundary",
+        label: "Use restriction",
+        value: "Academic and non-commercial only",
+        status: "observed",
+        sourceIds: ["license"],
+      },
+    ],
+    visual: {
+      kind: "drone",
+      primary: "#00a7a0",
+      secondary: "#e9f2f0",
+      shell: "#15302f",
+    },
+  },
 ];
 
-export const ROBOT_PROFILES = PROFILE_DEFINITIONS.map(defineRobotProfile);
+export const ROBOT_PROFILES = PROFILE_DEFINITIONS.map((profile) =>
+  defineRobotProfile({
+    platformClass: "arm",
+    mobilityType:
+      profile.visual.kind === "mobile" ? "mobile-manipulator" : "fixed-base",
+    simulationSupport: "interactive",
+    simulationEngine: "planar-arm-v1",
+    simulationNote:
+      "INTERACTIVE PLANAR TEACHING MODEL; NOT A VENDOR DIGITAL TWIN",
+    opennessStatus: "open-component",
+    originBasis: `${profile.company} PROJECT OR COMPANY RECORD / ${profile.country}`,
+    supplyChainStatus: "not-assessed",
+    availabilityStatus: "commercial-product",
+    ...profile,
+  })
+);
 
 export function getRobotProfile(id) {
   return ROBOT_PROFILES.find((profile) => profile.id === id) || ROBOT_PROFILES[0];
@@ -462,4 +882,25 @@ export function getRobotProfile(id) {
 
 export function getRobotProfilesByTopology(topology) {
   return ROBOT_PROFILES.filter((profile) => profile.topology === topology);
+}
+
+export function getRobotProfilesByPlatformClass(platformClass) {
+  return ROBOT_PROFILES.filter(
+    (profile) => profile.platformClass === platformClass
+  );
+}
+
+export function getInteractiveRobotProfiles() {
+  return ROBOT_PROFILES.filter(
+    (profile) => profile.simulationSupport === "interactive"
+  );
+}
+
+export function canLaunchPlanarWorkbench(profile) {
+  return Boolean(
+    profile &&
+      profile.platformClass === "arm" &&
+      profile.simulationSupport === "interactive" &&
+      profile.simulationEngine === "planar-arm-v1"
+  );
 }
