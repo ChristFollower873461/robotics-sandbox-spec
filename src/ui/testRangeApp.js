@@ -10,6 +10,8 @@ import {
   renderChallengeEvidence,
   renderChallengeScene,
 } from "./challengeView.js";
+import { evidenceBasis } from "../core/decision/foundation.js";
+import { createMissionOutcome } from "../core/decision/missionOutcome.js";
 import { getDecisionRecord } from "./decisionCatalog.js";
 import {
   getRobotProfile,
@@ -63,6 +65,12 @@ const PLATFORM_COPY = {
   },
 };
 
+const CHALLENGE_UNRESOLVED_DOMAINS = Object.freeze({
+  "bring-part-home": Object.freeze(["contact", "control", "safety"]),
+  "cross-workshop": Object.freeze(["terrain", "contact", "dynamics", "control", "safety"]),
+  "inspect-high-shelf": Object.freeze(["perception", "battery", "dynamics", "control", "safety"]),
+});
+
 const MISSIONS = {
   arm: [
     { id: "easy-pick", label: "Easy pick", note: "Move from home to a nearby tote.", target: { x: 298, y: 352 } },
@@ -99,6 +107,7 @@ const state = {
   dragging: false,
   engineerView: false,
   plan: null,
+  missionOutcome: null,
 };
 
 const ids = [
@@ -142,6 +151,7 @@ const ids = [
   "range-engineer-detail",
   "range-fidelity",
   "range-planner-output",
+  "range-input-fingerprint",
   "range-upstream",
   "range-source",
   "range-live-summary",
@@ -316,6 +326,25 @@ function updatePlan() {
     : state.platform === "arm"
       ? armPlan()
       : mobilePlan();
+
+  state.missionOutcome = isChallengeMode()
+    ? createMissionOutcome({
+        profileId: state.profileId,
+        challengeId: state.challengeId,
+        input: {
+          challengeId: state.challengeId,
+          profileId: state.profileId,
+          target: state.target,
+          fixtures: FIXTURES,
+          arena: ARENA,
+          mmPerPixel: MM_PER_PIXEL,
+        },
+        result: state.plan,
+        evidence: evidenceBasis(profile(), record()),
+        unresolvedDomains: CHALLENGE_UNRESOLVED_DOMAINS[state.challengeId],
+        nextSimulation: record().upstreamSimulation[0],
+      })
+    : null;
 }
 
 function renderChallenges() {
@@ -667,6 +696,10 @@ function renderInspector() {
       state.plan.constraints || [],
       state.plan.limitations || []
     );
+    elements.rangeWhyContent.insertAdjacentHTML(
+      "beforeend",
+      `<p class="range-receipt-row"><i></i><span><strong>Decision receipt</strong> — reviewed ${state.missionOutcome.evidence.reviewedAt}; input ${state.missionOutcome.inputFingerprint.slice(-8)}.</span></p>`
+    );
   } else {
     elements.rangeWhyContent.innerHTML = content.why
       .map((line) => `<p><i></i><span>${line}</span></p>`)
@@ -683,6 +716,9 @@ function renderInspector() {
   elements.rangePlannerOutput.textContent = state.platform === "arm"
     ? `${state.plan.valid ? "IK SOLVED" : "UNREACHABLE"} / ${Math.round(state.plan.distanceMm)} MM RADIUS`
     : `${state.plan.valid ? "ROUTE FOUND" : state.plan.reason.toUpperCase()} / ${state.plan.expanded} EXPANDED`;
+  elements.rangeInputFingerprint.textContent = state.missionOutcome
+    ? state.missionOutcome.inputFingerprint
+    : "Exploration mode — no mission receipt";
   elements.rangeUpstream.textContent = currentRecord.upstreamSimulation[0]?.engine || "Project-specific";
   elements.rangeSource.href = currentProfile.sourceUrl;
   elements.rangeStatus.dataset.state = content.state;

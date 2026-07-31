@@ -18,6 +18,7 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /id="range-missions"/);
   assert.match(html, /id="range-view-toggle"/);
   assert.match(html, /id="range-progress"/);
+  assert.match(html, /id="range-input-fingerprint"/);
   assert.match(html, /data-range-platform="arm"/);
   assert.match(html, /data-range-platform="humanoid"/);
   assert.match(html, /data-range-platform="quadruped"/);
@@ -96,6 +97,8 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(decisionApp, /applyScenarioPreset/);
   assert.match(decisionApp, /onlyDifferences/);
   assert.match(decisionApp, /renderMeasurementHints/);
+  assert.match(decisionApp, /createRecommendationReceipt/);
+  assert.match(decisionApp, /loadDecisionFoundation/);
   assert.match(testRangeApp, /planArenaRoute/);
   assert.match(testRangeApp, /sampleArenaRoute/);
   assert.match(testRangeApp, /inverseKinematics/);
@@ -103,5 +106,6 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(testRangeApp, /evaluateChallenge/);
   assert.match(testRangeApp, /renderChallengeCards/);
   assert.match(testRangeApp, /renderChallengeScene/);
+  assert.match(testRangeApp, /createMissionOutcome/);
   assert.match(testRangeApp, /prefers-reduced-motion/);
 });

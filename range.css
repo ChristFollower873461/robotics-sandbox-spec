@@ -360,7 +360,7 @@
 .range-status[data-state="failure"] i,
 .range-status[data-state="blocked"] i { background: #dc6148; }
 .range-stage-actions button {
-  min-height: 34px;
+  min-height: 44px;
   padding: 0 12px;
   border: 1px solid #9cac9f;
   border-radius: 8px;
@@ -488,7 +488,7 @@
   color: white;
 }
 .range-transport button {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
   border: 0;
   border-radius: 999px;
@@ -557,12 +557,15 @@
 #range-why-content .range-constraint[data-state="unknown"] i { background: #527a90; }
 #range-why-content .range-constraint strong { color: #263c35; }
 #range-why-content .range-limitation { color: #6a5c31; }
+#range-why-content .range-receipt-row { margin-top: 3px; padding-top: 10px; border-top: 1px solid var(--range-line); color: #365149; }
+#range-why-content .range-receipt-row i { background: #315f52; }
 .range-engineer-detail { display: none; margin-top: 16px; padding: 12px; border: 1px solid #82948c; border-radius: 8px; background: #17241f; color: white; }
 .show-engineer-view .range-engineer-detail { display: grid; gap: 10px; }
 .range-engineer-detail div { padding-bottom: 9px; border-bottom: 1px solid #3d5048; }
 .range-engineer-detail div:last-child { padding-bottom: 0; border-bottom: 0; }
 .range-engineer-detail span { display: block; color: #8da39a; font: 700 7px/1 var(--guide-mono); letter-spacing: 0.06em; text-transform: uppercase; }
 .range-engineer-detail strong { display: block; margin-top: 5px; font: 600 9px/1.45 var(--guide-mono); }
+#range-input-fingerprint { overflow-wrap: anywhere; }
 .range-source { min-height: 42px; margin-top: 16px; padding: 0 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #8e9b94; border-radius: 8px; color: var(--range-ink); font-size: 10px; font-weight: 700; text-decoration: none; }
 .range-source:hover { border-color: var(--range-green); color: var(--range-green); }
 

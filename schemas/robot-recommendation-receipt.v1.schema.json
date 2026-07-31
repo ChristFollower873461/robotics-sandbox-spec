@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robot-recommendation-receipt.v1.schema.json",
+  "title": "Basement Boys Robot Recommendation Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "evaluatorVersion", "generatedAt", "inputFingerprint", "datasetFingerprint", "dataSource", "effectiveInput", "report", "recommendations"],
+  "properties": {
+    "format": { "const": "basement-boys/robot-recommendation-receipt/v1" },
+    "evaluatorVersion": { "const": "deterministic-screening/1.0.0" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "inputFingerprint": { "$ref": "#/$defs/fingerprint" },
+    "datasetFingerprint": { "$ref": "#/$defs/fingerprint" },
+    "dataSource": { "type": "object", "required": ["adapterId"], "properties": { "adapterId": { "type": "string" } } },
+    "effectiveInput": { "type": "object" },
+    "report": { "$ref": "robot-decision-report.v1.schema.json" },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["profileId", "outcome", "rationale", "evidence", "higherFidelity"],
+        "properties": {
+          "profileId": { "type": "string" },
+          "outcome": { "enum": ["pass", "caution", "fail", "unknown"] },
+          "rationale": { "type": "object" },
+          "evidence": { "type": "object" },
+          "higherFidelity": { "type": "object" }
+        }
+      }
+    }
+  },
+  "$defs": { "fingerprint": { "type": "string", "pattern": "^fnv1a64-[0-9a-f]{16}$" } }
+}

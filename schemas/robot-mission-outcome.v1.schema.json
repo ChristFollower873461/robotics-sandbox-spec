@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robot-mission-outcome.v1.schema.json",
+  "title": "Basement Boys Robot Mission Outcome v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "modelVersion", "profileId", "challengeId", "status", "inputFingerprint", "headline", "explanation", "constraints", "limitations", "unresolvedDomains", "evidence", "nextSimulation"],
+  "properties": {
+    "format": { "const": "basement-boys/robot-mission-outcome/v1" },
+    "modelVersion": { "const": "challenge-screening/1.0.0" },
+    "profileId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "challengeId": { "type": "string", "minLength": 3 },
+    "status": { "enum": ["success", "caution", "failure", "unknown"] },
+    "inputFingerprint": { "type": "string", "pattern": "^fnv1a64-[0-9a-f]{16}$" },
+    "headline": { "type": "string", "minLength": 5 },
+    "explanation": { "type": "string", "minLength": 10 },
+    "constraints": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/constraint" } },
+    "limitations": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "unresolvedDomains": { "type": "array", "items": { "enum": ["geometry", "kinematics", "contact", "dynamics", "control", "perception", "terrain", "battery", "safety"] }, "uniqueItems": true },
+    "evidence": { "type": "object", "required": ["reviewedAt"], "properties": { "reviewedAt": { "type": "string", "format": "date" } } },
+    "nextSimulation": { "type": "object", "required": ["status", "label", "engine", "readiness", "claimBoundary"], "properties": { "status": { "const": "not-run" }, "label": { "type": "string" }, "engine": { "type": "string" }, "readiness": { "type": "string" }, "claimBoundary": { "type": "string", "minLength": 20 } } }
+  },
+  "$defs": {
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "state", "value"],
+      "properties": { "label": { "type": "string" }, "state": { "enum": ["pass", "caution", "fail", "unknown"] }, "value": { "type": "string" } }
+    }
+  }
+}

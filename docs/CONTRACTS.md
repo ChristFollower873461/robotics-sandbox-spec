@@ -20,11 +20,30 @@ findings, calculations, evidence keys, assumptions, next steps, fidelity, and
 the non-certification disclosure. Outcomes are `pass`, `caution`, `fail`, or
 `unknown`; there is no compatibility score.
 
+`basement-boys/robot-decision-snapshot/v1` atomically binds every validated
+profile to exactly one validated decision record, its publication time,
+catalog-only privacy boundary, adapter identity, and canonical fingerprint.
+
+`basement-boys/robot-recommendation-receipt/v1` binds a validated report to an
+evaluator version, effective-input fingerprint, dataset fingerprint, plain
+rationale, evidence review date, and targeted higher-fidelity route. The route
+remains `not-run` until a future adapter returns a separately validated result.
+Notes, reference-photo metadata, and UI timestamps do not affect its input
+fingerprint.
+
+`basement-boys/robot-mission-outcome/v1` provides the same deterministic audit
+trail for Challenge Mode: mission/profile input, modeled constraints,
+limitations, unresolved model domains, evidence basis, and honest next-model
+boundary.
+
 Runtime modules are under `src/core/decision/`; matching schemas are:
 
 - `schemas/robot-decision-catalog.v1.schema.json`
 - `schemas/robot-decision-scenario.v1.schema.json`
 - `schemas/robot-decision-report.v1.schema.json`
+- `schemas/robot-decision-snapshot.v1.schema.json`
+- `schemas/robot-recommendation-receipt.v1.schema.json`
+- `schemas/robot-mission-outcome.v1.schema.json`
 
 See `docs/DECISION_WORKBENCH.md` for evaluator semantics and the adapter
 contract.

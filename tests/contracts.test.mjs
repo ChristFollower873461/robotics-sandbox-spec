@@ -13,6 +13,11 @@ import {
 import { ROBOT_DECISION_CATALOG_FORMAT } from "../src/core/decision/catalog.js";
 import { DECISION_REPORT_FORMAT } from "../src/core/decision/evaluator.js";
 import { DECISION_SCENARIO_FORMAT } from "../src/core/decision/scenario.js";
+import {
+  DECISION_SNAPSHOT_FORMAT,
+  RECOMMENDATION_RECEIPT_FORMAT,
+} from "../src/core/decision/foundation.js";
+import { MISSION_OUTCOME_FORMAT } from "../src/core/decision/missionOutcome.js";
 import { ROBOT_PROFILES } from "../src/ui/robotProfiles.js";
 
 async function readJson(relativePath) {
@@ -21,12 +26,15 @@ async function readJson(relativePath) {
 }
 
 test("published JSON schemas match the runtime contract identifiers", async () => {
-  const [robotSchema, workcellSchema, catalogSchema, scenarioSchema, reportSchema] = await Promise.all([
+  const [robotSchema, workcellSchema, catalogSchema, scenarioSchema, reportSchema, snapshotSchema, receiptSchema, missionSchema] = await Promise.all([
     readJson("../schemas/robot-profile.v1.schema.json"),
     readJson("../schemas/robot-workcell.v2.schema.json"),
     readJson("../schemas/robot-decision-catalog.v1.schema.json"),
     readJson("../schemas/robot-decision-scenario.v1.schema.json"),
     readJson("../schemas/robot-decision-report.v1.schema.json"),
+    readJson("../schemas/robot-decision-snapshot.v1.schema.json"),
+    readJson("../schemas/robot-recommendation-receipt.v1.schema.json"),
+    readJson("../schemas/robot-mission-outcome.v1.schema.json"),
   ]);
 
   assert.equal(robotSchema.value.properties.format.const, ROBOT_PROFILE_FORMAT);
@@ -34,6 +42,9 @@ test("published JSON schemas match the runtime contract identifiers", async () =
   assert.equal(catalogSchema.value.properties.format.const, ROBOT_DECISION_CATALOG_FORMAT);
   assert.equal(scenarioSchema.value.properties.format.const, DECISION_SCENARIO_FORMAT);
   assert.equal(reportSchema.value.properties.format.const, DECISION_REPORT_FORMAT);
+  assert.equal(snapshotSchema.value.properties.format.const, DECISION_SNAPSHOT_FORMAT);
+  assert.equal(receiptSchema.value.properties.format.const, RECOMMENDATION_RECEIPT_FORMAT);
+  assert.equal(missionSchema.value.properties.format.const, MISSION_OUTCOME_FORMAT);
   assert.equal(robotSchema.value.additionalProperties, false);
   assert.equal(workcellSchema.value.additionalProperties, false);
   assert.deepEqual(robotSchema.value.properties.platformClass.enum, [

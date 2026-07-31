@@ -61,6 +61,13 @@ conclusion. Every state includes a recovery or upstream-validation path.
    validation step.
 6. Export the complete report as JSON or a printable standalone HTML file.
 
+The exported JSON is a decision receipt, not merely a rendered result. It
+captures the exact recommendation-effective inputs, reviewed catalog
+fingerprint, evaluator version, rationale, evidence basis, and any simulation
+domain that remains unresolved. Notes and photo metadata stay in the local
+scenario/report but are deliberately excluded from the recommendation
+fingerprint.
+
 The orthographic viewer uses the entered room dimensions and reviewed robot
 dimensions. Solid geometry means the plan/elevation dimension is sourced.
 Hatching means the graphic is an explicitly approximate or unscaled proxy.
@@ -69,13 +76,18 @@ path, or flight path. They are not swept volumes or dynamics.
 
 ## Contracts
 
-The workbench adds three dependency-free, versioned contracts:
+The workbench uses six dependency-free, versioned contracts:
 
 - `robot-decision-catalog/v1`: the uniform field-level decision layer for all
   13 robots;
 - `robot-decision-scenario/v1`: portable environment, task, and candidate
   inputs;
 - `robot-decision-report/v1`: deterministic findings and disclosures.
+- `robot-decision-snapshot/v1`: complete atomic catalog version and provenance;
+- `robot-recommendation-receipt/v1`: reproducible decision input/output and
+  higher-fidelity routing;
+- `robot-mission-outcome/v1`: reproducible Challenge Mode constraints and
+  limitations.
 
 Matching JSON Schemas live in `schemas/`. Runtime code lives under
 `src/core/decision/`; the curated records live in
@@ -177,3 +189,10 @@ engine—not a reinterpretation of the planar engine. An adapter should declare:
 The adapter may contribute a Level 3 upstream result only when it actually ran
 the declared model. It must not convert catalog dimensions into a physics claim
 or describe a successful simulation as hardware, safety, or sim-to-real proof.
+
+The current router does not run these adapters. It activates only when a
+non-pass finding maps to a fidelity gap and names the minimum relevant domains:
+payload maps to contact/dynamics/control/safety; rough terrain maps to
+terrain/contact/dynamics/control/safety; indoor flight maps to
+dynamics/control/perception/safety. A generic request for “more simulation”
+does not trigger a pretend result.
