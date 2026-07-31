@@ -2,7 +2,7 @@
 
 - Status: Active public reference/prototype
 - Last reviewed: 2026-07-31
-- Notes: Local-first decision workbench and source-backed catalog of 13
+- Notes: Web-first, self-hostable decision workbench and source-backed catalog of 13
   American and European robot-platform records. All 13 have field-level
   evidence, confidence, explicit unknowns, class-aware rough screening,
   orthographic fit/movement proxies, upstream simulation paths, and portable

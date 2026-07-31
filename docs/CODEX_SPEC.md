@@ -1,7 +1,7 @@
 # AIssisted Robotics Sandbox — Codex Build Spec
 
 ## Mission
-Build a **local-first robotics sandbox** for simulated robotic arm manipulation.
+Build a **browser-based robotics sandbox** for simulated robotic arm manipulation.
 
 This is not a toy animation and not a full industrial robotics stack. It should be a serious, demoable foundation for robotics work that teaches and shows:
 - forward kinematics
@@ -188,7 +188,7 @@ Keep math/planning logic separate from render code.
 ## Acceptance Criteria
 Do **not** call this done unless all of the following are true:
 
-1. The app runs locally with a clean startup path.
+1. The app runs on the public web and locally with a clean startup path.
 2. User can configure a 2-DOF arm and see FK update live.
 3. User can set a reachable target and the arm solves to it.
 4. User can set an unreachable target and the UI clearly reports failure.

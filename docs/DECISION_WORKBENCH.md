@@ -1,8 +1,12 @@
 # Robot Decision Workbench
 
-The decision workbench is a local-first screening tool for deciding which
+The decision workbench is a web-first, self-hostable screening tool for deciding which
 robot candidates deserve deeper engineering work. It is an information hub
 and rough simulator, not a purchasing oracle or certified digital twin.
+
+The public application performs its current calculations in the browser. A
+reference photo or floor plan is not uploaded; it remains on the user's device
+unless a future, separately consented workflow explicitly says otherwise.
 
 ## Decision loop
 

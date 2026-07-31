@@ -1,10 +1,16 @@
 # Robotics Sandbox / Robot Arm
 
-Local-first robot decision workbench, source-backed catalog, and rough
-simulator. Enter a measured environment and task, compare American and European
+Web-first, self-hostable robot decision workbench, source-backed catalog, and
+rough simulator. Enter a measured environment and task, compare American and European
 arms, humanoids, quadrupeds, and drones, inspect every calculation and unknown,
 then continue into the normalized planar teaching engine or the documented
 upstream simulation path.
+
+**Live workbench:** [robotics.basementboys.org](https://robotics.basementboys.org)
+
+The site is public and the MIT-licensed source is designed to be forked. Photos,
+floor plans, calculations, and exports still stay in the browser by default;
+web-first does not mean uploading private facility data.
 
 ## What this project demonstrates
 
@@ -71,6 +77,8 @@ upstream simulation path.
 - No third-party runtime dependencies
 
 ## Run / inspect
+
+Use the hosted workbench above, or run the exact same application yourself:
 
 1. Install dependencies (none required today, but keeps workflow consistent):
 
