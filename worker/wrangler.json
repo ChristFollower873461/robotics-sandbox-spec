@@ -1,0 +1,11 @@
+{
+  "name": "robotics-sandbox",
+  "main": "index.js",
+  "compatibility_date": "2026-07-31",
+  "assets": {
+    "directory": "../client",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

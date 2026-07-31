@@ -91,6 +91,6 @@ const summary = {
 if (process.argv.includes("--json")) {
   console.log(JSON.stringify(summary, null, 2));
 } else {
-  console.log("AIssisted Robotics Sandbox core inspection");
+  console.log("Robotics Sandbox core inspection");
   console.log(JSON.stringify(summary, null, 2));
 }

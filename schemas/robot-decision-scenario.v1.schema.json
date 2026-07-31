@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robot-decision-scenario.v1.schema.json",
+  "title": "Basement Boys Robot Decision Scenario v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "id", "name", "createdAt", "environment", "task", "candidateIds"],
+  "properties": {
+    "format": { "const": "basement-boys/robot-decision-scenario/v1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 3 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["widthMm", "depthMm", "clearanceHeightMm", "doorwayWidthMm", "terrain", "indoor", "measurementMethod", "referencePhoto"],
+      "properties": {
+        "widthMm": { "type": "number", "exclusiveMinimum": 0 },
+        "depthMm": { "type": "number", "exclusiveMinimum": 0 },
+        "clearanceHeightMm": { "type": "number", "exclusiveMinimum": 0 },
+        "doorwayWidthMm": { "type": "number", "exclusiveMinimum": 0 },
+        "terrain": { "enum": ["level-hard", "mixed-indoor", "rough", "unknown"] },
+        "indoor": { "type": "boolean" },
+        "measurementMethod": { "enum": ["manual", "photo-assisted"] },
+        "referencePhoto": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["fileName", "mediaType", "byteSize"],
+              "properties": {
+                "fileName": { "type": "string", "minLength": 1 },
+                "mediaType": { "type": "string", "minLength": 1 },
+                "byteSize": { "type": "integer", "minimum": 0 }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "requiredReachMm", "targetHeightMm", "payloadKg", "minimumFlightTimeMin", "requiresMobility", "requiresBimanual", "notes"],
+      "properties": {
+        "kind": { "enum": ["pick-place", "bench-research", "indoor-inspection", "ground-traverse", "aerial-inspection"] },
+        "requiredReachMm": { "type": "number", "minimum": 0 },
+        "targetHeightMm": { "type": "number", "minimum": 0 },
+        "payloadKg": { "type": "number", "minimum": 0 },
+        "minimumFlightTimeMin": { "type": "number", "minimum": 0 },
+        "requiresMobility": { "type": "boolean" },
+        "requiresBimanual": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "candidateIds": {
+      "type": "array",
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+    }
+  }
+}

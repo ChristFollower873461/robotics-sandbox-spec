@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robot-decision-report.v1.schema.json",
+  "title": "Basement Boys Robot Decision Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "generatedAt", "scenario", "evaluations", "disclosure"],
+  "properties": {
+    "format": { "const": "basement-boys/robot-decision-report/v1" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "scenario": { "$ref": "robot-decision-scenario.v1.schema.json" },
+    "evaluations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["profileId", "model", "platformClass", "outcome", "fidelity", "findings", "assumptions"],
+        "properties": {
+          "profileId": { "type": "string" },
+          "model": { "type": "string" },
+          "platformClass": { "enum": ["arm", "humanoid", "quadruped", "drone"] },
+          "outcome": { "$ref": "#/$defs/status" },
+          "fidelity": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["level", "label", "boundary"],
+            "properties": {
+              "level": { "type": "integer", "minimum": 1, "maximum": 3 },
+              "label": { "type": "string" },
+              "boundary": { "type": "string" }
+            }
+          },
+          "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+          "assumptions": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "disclosure": { "type": "string", "minLength": 20 }
+  },
+  "$defs": {
+    "status": { "enum": ["pass", "caution", "fail", "unknown"] },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "status", "summary", "calculation", "evidenceKeys", "nextStep"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "status": { "$ref": "#/$defs/status" },
+        "summary": { "type": "string" },
+        "calculation": { "type": "string" },
+        "evidenceKeys": { "type": "array", "items": { "type": "string" } },
+        "nextStep": { "type": "string" }
+      }
+    }
+  }
+}

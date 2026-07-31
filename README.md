@@ -1,25 +1,69 @@
 # Robotics Sandbox / Robot Arm
 
-Lightweight robotics sandbox focused on the core logic for a 2-DOF planar robot arm.  
-This repo is a local-first, code-centric foundation for kinematics, waypoint planning, obstacle checks, and scenario serialization.
+Web-first, self-hostable robot decision workbench, source-backed catalog, and
+rough simulator. Enter a measured environment and task, compare American and European
+arms, humanoids, quadrupeds, and drones, inspect every calculation and unknown,
+then continue into the normalized planar teaching engine or the documented
+upstream simulation path.
+
+**Live workbench:** [robotics.basementboys.org](https://robotics.basementboys.org)
+
+The site is public and the MIT-licensed source is designed to be forked. Photos,
+floor plans, calculations, and exports still stay in the browser by default;
+web-first does not mean uploading private facility data.
 
 ## What this project demonstrates
 
+- A guided environment/task/candidate study across all 13 robot profiles.
+- Deterministic pass/caution/fail/unknown screening with calculations,
+  assumptions, field-level evidence, confidence, and next validation steps.
+- Dimension-true orthographic room and robot proxies; approximate or unscaled
+  geometry is visibly hatched rather than presented as sourced CAD.
+- Local photo/floor-plan context plus manual measurements, without uploading
+  images or pretending to infer scale and perspective.
+- Portable, versioned decision scenario, catalog, and report contracts, plus
+  browser-side JSON and printable HTML export.
 - Forward kinematics for a configurable 2-link planar arm.
 - Inverse kinematics with reachable/unreachable target handling and elbow-up/elbow-down preference.
-- Waypoint trajectory planning with sampled poses and simple timing/path metrics.
+- Direct interpolation and deterministic joint-space A* planning.
+- A live configuration-space map showing collision states, planned joint path, and current configuration.
+- Jacobian-based manipulability, condition number, singularity warnings, and an end-effector manipulability ellipse.
 - Obstacle awareness with circle/rectangle collision checks against arm link segments.
 - Scenario snapshot serialization and hydration for repeatable state loading.
+- Draggable targets and obstacles, editable scene primitives, waypoint playback, and timeline scrubbing.
+- Photo-assisted workcell reconstruction: load a local overhead image or floor plan, enter real millimeter bounds, and trace collision fixtures on top.
+- A fixture ledger with exact names, positions, dimensions, provenance, and robot-base placement.
+- Validated `robot-profile/v1` records with platform class, mobility,
+  simulation support, openness, origin basis, supply-chain caveats, typed
+  sources, reviewed claims, explicit geometry status, and source-check dates.
+- Versioned `robot-workcell/v2` download, clipboard copy, and import for
+  reproducible scenes, with automatic v1 migration.
+- A credential-free Databricks bundle and governed asset manifest for moving
+  approved robotics knowledge into the existing AIssisted Consulting workspace.
+- Five sourced single-arm profiles: Interbotix WidowX, Niryo Ned2, Franka Research 3, Universal Robots UR5e, and Hello Robot Stretch.
+- Two sourced, published dual systems: ALOHA Stationary and Franka FR3 Duo.
+- Two sourced humanoids: Stanford ToddlerBot 2.0 and Poppy Humanoid.
+- Two sourced quadrupeds: Pupper v3 and Open Dynamic Robot Initiative Solo 12.
+- Two sourced drones: Bitcraze Crazyflie 2.1+ and UZH Agilicious.
+- Explicit engine gating: humanoid, quadruped, and drone records are
+  catalog-only until a locomotion or flight adapter exists, so they cannot
+  enter planar IK, collision, or A*.
+- Explicit source-fact versus simulation-geometry labeling so normalized link lengths are never presented as vendor dimensions.
 
 ## Why this is worth showing
 
 - The robotics math and planning code is cleanly separated from UI concerns.
 - It is small enough to read quickly, but complete enough to demonstrate real FK/IK/collision/planning behavior.
-- It is structured as a practical base for a future visual UI or hardware/ROS adapter layer.
+- The browser interface calls the same tested core modules used by the CLI inspection flow.
 
 ## Repo artifacts
 
 - `docs/ARCHITECTURE.md` for a fast architecture walkthrough.
+- `docs/CONTRACTS.md` for robot-profile and workcell schemas, validation, and
+  migration behavior.
+- `docs/STATE_OF_THE_ART.md` for the technical research, product-profile sources, and explicit simulator boundaries.
+- `docs/DECISION_WORKBENCH.md` for finding semantics, fidelity levels, catalog
+  contribution rules, and the simulation-adapter contract.
 - `examples/scenarios/showcase-scenario.json` as an inspectable scenario payload.
 - `examples/outputs/inspect-summary.json` as a committed output snapshot from `npm run inspect:json`.
 - `.github/workflows/ci.yml` for automated verification (`npm run verify`) on push/PR.
@@ -33,6 +77,8 @@ This repo is a local-first, code-centric foundation for kinematics, waypoint pla
 - No third-party runtime dependencies
 
 ## Run / inspect
+
+Use the hosted workbench above, or run the exact same application yourself:
 
 1. Install dependencies (none required today, but keeps workflow consistent):
 
@@ -64,13 +110,29 @@ This repo is a local-first, code-centric foundation for kinematics, waypoint pla
    npm run inspect:json
    ```
 
-6. Start the static server shell:
+6. Start the interactive browser workbench:
 
    ```bash
    npm run dev
    ```
 
-   Note: a full browser UI is not currently committed in this repo, so `dev` serves the project root but does not provide an interactive arm interface yet.
+   Open `http://localhost:4173/`. Start at **Build a robot shortlist**: enter
+   room measurements and task requirements, choose up to six candidates, run
+   the screening report, inspect evidence/unknowns, and export JSON or HTML.
+   Add a local photo for visual context or choose **Trace the room below** to
+   continue into the calibrated fixture editor.
+
+   Browse Arm, Humanoid, Quadruped, and Drone specimen drawers for deeper
+   catalog inspection. Arm records marked **LIVE** launch the planar workbench;
+   records marked **CATALOG** expose sources, licenses, claims, availability,
+   and caveats without changing the active simulator. In the arm workbench,
+   choose single or dual mode, compare both IK branches, or open **Build Cell**
+   to calibrate a reference photo, trace fixtures, and export a portable
+   workcell. Then inspect the A* search in configuration space and scrub or
+   play the solved trajectory.
+
+   A matching reference image and portable scene are available in
+   `examples/environments/` for testing the photo-assisted workflow.
 
 ## Core API example
 
@@ -83,7 +145,9 @@ const plan = planWaypointTrajectory({
   linkLengths: [170, 130],
   startJoints: [0.52, 0.26],
   waypoints: [{ id: "wp-1", x: 200, y: 50 }],
-  obstacles: [],
+  obstacles: [{ id: "fixture", type: "circle", x: 80, y: 30, radius: 28 }],
+  planner: "grid",
+  gridResolution: 58,
 });
 ```
 
@@ -97,11 +161,27 @@ const plan = planWaypointTrajectory({
 ├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE
+├── index.html
+├── styles.css
 ├── package.json
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   └── CODEX_SPEC.md
+│   ├── CODEX_SPEC.md
+│   ├── CONTRACTS.md
+│   ├── DECISION_WORKBENCH.md
+│   └── STATE_OF_THE_ART.md
+├── schemas/
+│   ├── robot-decision-catalog.v1.schema.json
+│   ├── robot-decision-report.v1.schema.json
+│   ├── robot-decision-scenario.v1.schema.json
+│   ├── robot-profile.v1.schema.json
+│   └── robot-workcell.v2.schema.json
+├── databricks/
+│   ├── bootstrap/
+│   └── manifests/
+├── databricks.yml
 ├── examples/
+│   ├── environments/
 │   ├── outputs/
 │   │   └── inspect-summary.json
 │   └── scenarios/
@@ -112,24 +192,57 @@ const plan = planWaypointTrajectory({
 ├── src/
 │   ├── core/
 │   │   ├── collision/
+│   │   ├── decision/
+│   │   ├── environment/
 │   │   ├── kinematics/
 │   │   ├── planning/
 │   │   └── scenario/
 │   ├── types/
 │   └── ui/
+│       ├── app.js
+│       ├── decisionApp.js
+│       └── decisionCatalog.js
 └── tests/
-    └── core.test.mjs
+    ├── core.test.mjs
+    └── ui-shell.test.mjs
 ```
 
 ## Current status
 
+- The 13-platform decision workbench is implemented and runnable, with
+  complete field-level catalog records, deterministic findings, explicit
+  unknowns, scaled/hatching-aware graphics, evidence drawers, and local
+  JSON/HTML exports.
 - Core robotics modules are implemented and runnable.
-- Collision and path checks are present for simple 2D circle/rectangle obstacles.
+- Collision and path checks are present for editable 2D circle/rectangle obstacles.
 - Scenario save/load helpers are implemented.
-- UI state helpers exist, but no complete frontend app shell is committed yet.
+- The browser UI supports a 13-platform evidence catalog plus sourced
+  interactive arm profiles, FK/IK, alternate IK branches, obstacle editing,
+  direct/A* planning, C-space inspection, manipulability diagnostics,
+  dual-arm mirrored workcells, photo-calibrated fixture tracing, validated v2
+  workcell import/export with v1 migration, and playback.
 
 ## Limitations and next steps
 
-- Add a minimal browser UI entrypoint (`index.html` + rendering layer) so the simulation is interactive.
-- Expand tests to cover edge cases (workspace boundary, tangent collisions, interpolation edge cases).
-- Add one or two fixed sample scenario JSON files for repeatable demos.
+- This is a normalized two-link teaching model, not a vendor-accurate digital twin.
+- Decision results are rough screening, not safety, purchasing, deployment, or
+  sim-to-real proof. A pass means the candidate deserves deeper validation.
+- Approximate/hatching-aware plan and elevation graphics are not collision
+  meshes, swept volumes, gait, aerodynamics, or dynamics.
+- Humanoid and quadruped records do not yet have a locomotion engine; drone
+  records do not yet have a flight-dynamics engine. They are deliberately
+  catalog-only.
+- Project origin does not prove a wholly American or European supply chain.
+  Supply-chain status is shown separately and remains `not-assessed` unless
+  primary documentation supports a stronger statement.
+- Dual mode mirrors one per-arm plan; it does not yet coordinate independent
+  goals or detect inter-arm collision.
+- Photo calibration maps the image bounds to user-entered cell dimensions. It
+  does not remove perspective distortion or infer dimensions from an
+  unmeasured photograph.
+- Fixture tracing is assisted/manual; automatic object recognition requires a
+  separate vision service and validation workflow.
+- Collision checking is discretized and sampled, not continuous.
+- It does not model full high-DOF geometry, dynamics, torque, self-collision,
+  uncertainty, safety-rated controls, or hardware execution.
+- CAD/mesh import and URDF-derived robot geometry remain future work.

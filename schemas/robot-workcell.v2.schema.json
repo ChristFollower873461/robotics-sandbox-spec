@@ -1,0 +1,488 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robot-workcell.v2.schema.json",
+  "title": "Basement Boys Robot Workcell v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "savedAt",
+    "units",
+    "name",
+    "coordinateFrame",
+    "bounds",
+    "robotSystems",
+    "calibration",
+    "fixtures"
+  ],
+  "properties": {
+    "format": {
+      "const": "basement-boys/robot-workcell/v2"
+    },
+    "savedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "units": {
+      "const": "mm"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "coordinateFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frameId", "handedness", "axes"],
+      "properties": {
+        "frameId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handedness": {
+          "const": "right"
+        },
+        "axes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": {
+              "const": "+right"
+            },
+            "y": {
+              "const": "+forward"
+            },
+            "z": {
+              "const": "+up"
+            }
+          }
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "depth", "clearanceHeight"],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 300,
+          "maximum": 4000
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 300,
+          "maximum": 4000
+        },
+        "clearanceHeight": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 10000
+        }
+      }
+    },
+    "robotSystems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/robotSystem"
+      }
+    },
+    "calibration": {
+      "$ref": "#/$defs/calibration"
+    },
+    "fixtures": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/fixture"
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fromFormat"],
+      "properties": {
+        "fromFormat": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z", "yawDegrees"],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "yawDegrees": {
+          "type": "number"
+        }
+      }
+    },
+    "robotSystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "systemId",
+        "profileId",
+        "topology",
+        "geometryStatus",
+        "mounts"
+      ],
+      "properties": {
+        "systemId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topology": {
+          "enum": ["single", "dual"]
+        },
+        "geometryStatus": {
+          "enum": [
+            "vendor-cad",
+            "source-dimensioned",
+            "normalized",
+            "inferred",
+            "unverified"
+          ]
+        },
+        "mounts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mountId", "role", "pose"],
+            "properties": {
+              "mountId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "role": {
+                "enum": ["primary", "partner"]
+              },
+              "pose": {
+                "$ref": "#/$defs/pose"
+              }
+            }
+          }
+        }
+      }
+    },
+    "reference": {
+      "type": ["object", "null"],
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assetId": {
+          "type": ["string", "null"]
+        },
+        "checksumSha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pixels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      },
+      "required": ["fileName", "assetId", "checksumSha256", "pixels"],
+      "additionalProperties": false
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "reference",
+        "anchors",
+        "measurements",
+        "transform",
+        "residualMm",
+        "uncertaintyMm",
+        "confidence",
+        "imageEmbedded"
+      ],
+      "properties": {
+        "method": {
+          "enum": ["numeric-bounds", "photo-bounds", "homography"]
+        },
+        "reference": {
+          "$ref": "#/$defs/reference"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchor"
+          }
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/measurement"
+          }
+        },
+        "transform": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "minItems": 9,
+              "maxItems": 9,
+              "items": {
+                "type": "number"
+              }
+            }
+          ]
+        },
+        "residualMm": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "uncertaintyMm": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "confidence": {
+          "enum": ["unrated", "low", "medium", "high"]
+        },
+        "imageEmbedded": {
+          "const": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "enum": ["photo-bounds", "homography"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reference": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "homography"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "anchors": {
+                "minItems": 4
+              },
+              "transform": {
+                "type": "array"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "name", "kind", "pose", "geometry", "provenance"],
+      "properties": {
+        "fixtureId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pose": {
+          "$ref": "#/$defs/pose"
+        },
+        "geometry": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/box"
+            },
+            {
+              "$ref": "#/$defs/cylinder"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchorId", "imagePoint", "worldPoint"],
+      "properties": {
+        "anchorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "imagePoint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["xPx", "yPx"],
+          "properties": {
+            "xPx": {
+              "type": "number"
+            },
+            "yPx": {
+              "type": "number"
+            }
+          }
+        },
+        "worldPoint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["xMm", "yMm", "zMm"],
+          "properties": {
+            "xMm": {
+              "type": "number"
+            },
+            "yMm": {
+              "type": "number"
+            },
+            "zMm": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measurementId",
+        "fromAnchorId",
+        "toAnchorId",
+        "distanceMm"
+      ],
+      "properties": {
+        "measurementId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fromAnchorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "toAnchorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "distanceMm": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "box": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "width", "depth", "height"],
+      "properties": {
+        "type": {
+          "const": "box"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "depth": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": ["number", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "cylinder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "radius", "height"],
+      "properties": {
+        "type": {
+          "const": "cylinder"
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": ["number", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "reviewStatus", "confidence", "sourceAssetId"],
+      "properties": {
+        "method": {
+          "enum": ["manual", "traced", "preset", "imported", "proposed"]
+        },
+        "reviewStatus": {
+          "enum": ["confirmed", "proposed", "rejected"]
+        },
+        "confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sourceAssetId": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

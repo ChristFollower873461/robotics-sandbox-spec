@@ -1,0 +1,130 @@
+{
+  "format": "basement-boys/robot-workcell/v2",
+  "savedAt": "2026-07-30T00:00:00.000Z",
+  "units": "mm",
+  "name": "PHOTO-ASSISTED PACKING CELL",
+  "coordinateFrame": {
+    "frameId": "workcell",
+    "handedness": "right",
+    "axes": {
+      "x": "+right",
+      "y": "+forward",
+      "z": "+up"
+    }
+  },
+  "bounds": {
+    "width": 1200,
+    "depth": 800,
+    "clearanceHeight": null
+  },
+  "robotSystems": [
+    {
+      "systemId": "robot-system-1",
+      "profileId": "interbotix-wx250s",
+      "topology": "single",
+      "geometryStatus": "normalized",
+      "mounts": [
+        {
+          "mountId": "active",
+          "role": "primary",
+          "pose": {
+            "x": 0,
+            "y": -75,
+            "z": 0,
+            "yawDegrees": 0
+          }
+        }
+      ]
+    }
+  ],
+  "calibration": {
+    "method": "photo-bounds",
+    "reference": {
+      "fileName": "reference-workcell.svg",
+      "assetId": "asset-sample-workcell-01",
+      "checksumSha256": "a6790af09d76dd1cde6f2492229d5fcdbe54fbcf62c8017f4dbb0b753a29a2af",
+      "pixels": {
+        "width": 1200,
+        "height": 800
+      }
+    },
+    "anchors": [],
+    "measurements": [],
+    "transform": null,
+    "residualMm": null,
+    "uncertaintyMm": null,
+    "confidence": "unrated",
+    "imageEmbedded": false
+  },
+  "fixtures": [
+    {
+      "fixtureId": "sample-infeed",
+      "name": "INFEED",
+      "kind": "conveyor",
+      "pose": {
+        "x": -345,
+        "y": 152.5,
+        "z": 0,
+        "yawDegrees": 0
+      },
+      "geometry": {
+        "type": "box",
+        "width": 270,
+        "depth": 175,
+        "height": null
+      },
+      "provenance": {
+        "method": "traced",
+        "reviewStatus": "confirmed",
+        "confidence": null,
+        "sourceAssetId": "asset-sample-workcell-01"
+      }
+    },
+    {
+      "fixtureId": "sample-outfeed",
+      "name": "OUTFEED",
+      "kind": "conveyor",
+      "pose": {
+        "x": 340,
+        "y": 152.5,
+        "z": 0,
+        "yawDegrees": 0
+      },
+      "geometry": {
+        "type": "box",
+        "width": 270,
+        "depth": 175,
+        "height": null
+      },
+      "provenance": {
+        "method": "traced",
+        "reviewStatus": "confirmed",
+        "confidence": null,
+        "sourceAssetId": "asset-sample-workcell-01"
+      }
+    },
+    {
+      "fixtureId": "sample-rear-guard",
+      "name": "REAR GUARD",
+      "kind": "guard",
+      "pose": {
+        "x": 0,
+        "y": -272.5,
+        "z": 0,
+        "yawDegrees": 0
+      },
+      "geometry": {
+        "type": "box",
+        "width": 1060,
+        "depth": 45,
+        "height": null
+      },
+      "provenance": {
+        "method": "traced",
+        "reviewStatus": "confirmed",
+        "confidence": null,
+        "sourceAssetId": "asset-sample-workcell-01"
+      }
+    }
+  ]
+}

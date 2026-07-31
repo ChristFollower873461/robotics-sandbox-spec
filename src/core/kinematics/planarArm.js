@@ -77,6 +77,47 @@ export function inverseKinematics(linkLengths, target, elbowPreference = "down")
   };
 }
 
+export function planarJacobian(linkLengths, joints) {
+  const [l1, l2] = sanitizeLinkLengths(linkLengths);
+  const [q1, q2] = joints;
+  const combined = q1 + q2;
+
+  return [
+    [
+      -l1 * Math.sin(q1) - l2 * Math.sin(combined),
+      -l2 * Math.sin(combined),
+    ],
+    [
+      l1 * Math.cos(q1) + l2 * Math.cos(combined),
+      l2 * Math.cos(combined),
+    ],
+  ];
+}
+
+export function manipulabilityMetrics(linkLengths, joints) {
+  const jacobian = planarJacobian(linkLengths, joints);
+  const [rowX, rowY] = jacobian;
+  const a = rowX[0] ** 2 + rowX[1] ** 2;
+  const b = rowX[0] * rowY[0] + rowX[1] * rowY[1];
+  const d = rowY[0] ** 2 + rowY[1] ** 2;
+  const trace = a + d;
+  const discriminant = Math.sqrt(Math.max(0, (a - d) ** 2 + 4 * b ** 2));
+  const major = Math.sqrt(Math.max(0, (trace + discriminant) / 2));
+  const minor = Math.sqrt(Math.max(0, (trace - discriminant) / 2));
+  const normalized = Math.abs(Math.sin(joints[1]));
+  const angle = 0.5 * Math.atan2(2 * b, a - d);
+
+  return {
+    jacobian,
+    major,
+    minor,
+    angle,
+    condition: minor < 1e-6 ? Number.POSITIVE_INFINITY : major / minor,
+    normalized,
+    singular: normalized < 0.08,
+  };
+}
+
 export function jointsToDegrees(joints) {
   return /** @type {[number, number]} */ (joints.map((value) => radiansToDegrees(value)));
 }

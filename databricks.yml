@@ -1,0 +1,22 @@
+bundle:
+  name: aissisted-robotics
+
+sync:
+  paths:
+    - databricks
+    - docs
+    - examples/environments
+    - src/core
+
+variables:
+  catalog_name:
+    description: Unity Catalog container for governed robotics data and assets.
+    default: aissisted_robotics
+
+targets:
+  dev:
+    default: true
+    mode: development
+
+  prod:
+    mode: production

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/robot-decision-catalog.v1.schema.json",
+  "title": "Basement Boys Robot Decision Catalog Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "profileId", "platformClass", "currentFidelity", "fidelityLabel", "evaluatorBoundary", "facts", "capabilities", "taskFit", "upstreamSimulation"],
+  "properties": {
+    "format": { "const": "basement-boys/robot-decision-catalog/v1" },
+    "profileId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "platformClass": { "enum": ["arm", "humanoid", "quadruped", "drone"] },
+    "currentFidelity": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "fidelityLabel": { "type": "string", "minLength": 10 },
+    "evaluatorBoundary": { "type": "string", "minLength": 20 },
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["widthMm", "depthMm", "heightMm", "massKg", "reachMm", "payloadKg", "flightTimeMin", "maxSpeedMps"],
+      "properties": {
+        "widthMm": { "$ref": "#/$defs/evidence" },
+        "depthMm": { "$ref": "#/$defs/evidence" },
+        "heightMm": { "$ref": "#/$defs/evidence" },
+        "massKg": { "$ref": "#/$defs/evidence" },
+        "reachMm": { "$ref": "#/$defs/evidence" },
+        "payloadKg": { "$ref": "#/$defs/evidence" },
+        "flightTimeMin": { "$ref": "#/$defs/evidence" },
+        "maxSpeedMps": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manipulation", "bimanual", "groundMobility", "leggedMobility", "aerialMobility"],
+      "properties": {
+        "manipulation": { "$ref": "#/$defs/capability" },
+        "bimanual": { "$ref": "#/$defs/capability" },
+        "groundMobility": { "$ref": "#/$defs/capability" },
+        "leggedMobility": { "$ref": "#/$defs/capability" },
+        "aerialMobility": { "$ref": "#/$defs/capability" }
+      }
+    },
+    "taskFit": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "upstreamSimulation": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "engine", "sourceId", "readiness"],
+        "properties": {
+          "label": { "type": "string" },
+          "engine": { "type": "string" },
+          "sourceId": { "type": "string" },
+          "readiness": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit", "status", "confidence", "sourceIds", "note"],
+      "properties": {
+        "value": { "type": ["number", "string", "null"] },
+        "unit": { "type": ["string", "null"] },
+        "status": { "enum": ["sourced", "derived", "approximate", "unknown"] },
+        "confidence": { "enum": ["high", "medium", "low", "unknown"] },
+        "sourceIds": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string", "minLength": 8 }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "evidence"],
+      "properties": {
+        "level": { "enum": ["supported", "partial", "not-supported", "unknown"] },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    }
+  }
+}

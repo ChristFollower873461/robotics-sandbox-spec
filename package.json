@@ -1,10 +1,11 @@
 {
-  "name": "aissisted-robotics-sandbox",
+  "name": "robotics-sandbox-spec",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "type": "module",
-  "description": "Local-first robotics sandbox for planar arm kinematics, path planning, and obstacle awareness.",
+  "description": "Source-backed robot decision workbench, rough simulator, and guarded planar-arm teaching lab.",
   "scripts": {
+    "build": "node scripts/build-site.mjs",
     "start": "node scripts/dev-server.mjs",
     "dev": "node scripts/dev-server.mjs",
     "inspect": "node scripts/inspect-core.mjs",
