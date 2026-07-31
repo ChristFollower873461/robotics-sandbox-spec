@@ -6,7 +6,7 @@ import {
   CHALLENGE_STATUS,
   evaluateChallenge,
   getChallengeDefinition,
-} from "../src/core/missions/challengeEngine.js";
+} from "../src/core/missionEngine.js";
 import { getDecisionRecord } from "../src/ui/decisionCatalog.js";
 
 const arena = { width: 920, height: 520 };

@@ -13,7 +13,7 @@ This repository is organized around a small but extendable split between robotic
   A* fallback, sampled trajectory generation, timing, and validity metrics.
 - `src/core/planning/arenaPlanner.js`: deterministic footprint-aware 2D route
   planning and distance-based playback sampling for the friendly test range.
-- `src/core/missions/challengeEngine.js`: immutable challenge definitions and
+- `src/core/missionEngine.js`: immutable challenge definitions and
   deterministic evaluation for arm reach/drop clearance, ground
   footprint/path/turning, and aerial height/path/viewing boundaries.
 - `src/core/environment/workcell.js`: calibrated workcell bounds, fixture

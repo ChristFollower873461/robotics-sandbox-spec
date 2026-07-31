@@ -4,7 +4,7 @@ import {
   CHALLENGE_DEFINITIONS,
   evaluateChallenge,
   getChallengeDefinition,
-} from "../core/missions/challengeEngine.js";
+} from "../core/missionEngine.js";
 import {
   renderChallengeCards,
   renderChallengeEvidence,

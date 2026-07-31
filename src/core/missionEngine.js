@@ -1,6 +1,6 @@
-/** Pure, deterministic mission evaluation kept independent from browser state. */
-import { inverseKinematics } from "../kinematics/planarArm.js";
-import { planArenaRoute } from "../planning/arenaPlanner.js";
+/** Pure, deterministic mission evaluation, independent from browser state. */
+import { inverseKinematics } from "./kinematics/planarArm.js";
+import { planArenaRoute } from "./planning/arenaPlanner.js";
 
 export const CHALLENGE_STATUS = Object.freeze({
   SUCCESS: "success",
