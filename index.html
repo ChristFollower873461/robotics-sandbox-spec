@@ -28,6 +28,148 @@
         </a>
       </header>
 
+      <section id="decision-lab" class="decision-lab" aria-labelledby="decision-title">
+        <header class="decision-header">
+          <div>
+            <span>ROUGH FEASIBILITY / STUDY 001</span>
+            <h1 id="decision-title">BUILD A ROBOT<br /><em>SHORTLIST.</em></h1>
+          </div>
+          <div class="decision-positioning">
+            <strong>DECIDE WHAT DESERVES A REAL SIMULATION.</strong>
+            <p>
+              Enter the room and job. Compare source-backed facts, scaled
+              proxies, calculations, missing data, and upstream next steps.
+            </p>
+          </div>
+          <div class="fidelity-stamp">
+            <span>CURRENT BROWSER FIDELITY</span>
+            <strong>LEVEL 1–2</strong>
+            <small>GEOMETRIC / KINEMATIC APPROXIMATION</small>
+          </div>
+        </header>
+
+        <div class="decision-shell">
+          <nav class="decision-steps" aria-label="Decision study steps">
+            <a href="#study-environment"><b>01</b><span>MEASURE<small>ROOM + ACCESS</small></span></a>
+            <a href="#study-task"><b>02</b><span>DEFINE<small>JOB + LOAD</small></span></a>
+            <a href="#study-candidates"><b>03</b><span>SHORTLIST<small>UP TO SIX</small></span></a>
+            <a href="#study-results"><b>04</b><span>REVIEW<small>FINDINGS + RECEIPTS</small></span></a>
+          </nav>
+
+          <form id="decision-form" class="decision-form">
+            <section id="study-environment" class="study-block">
+              <header><span>01 / ENVIRONMENT</span><strong>MEASURE THE SPACE</strong></header>
+              <div class="study-field study-field--wide">
+                <label for="study-name">STUDY NAME</label>
+                <input id="study-name" type="text" value="Workshop handling study" />
+              </div>
+              <div class="measurement-grid">
+                <div class="study-field"><label for="room-width">WIDTH <small>MM</small></label><input id="room-width" type="number" min="100" step="10" value="5000" /></div>
+                <div class="study-field"><label for="room-depth">DEPTH <small>MM</small></label><input id="room-depth" type="number" min="100" step="10" value="4000" /></div>
+                <div class="study-field"><label for="room-height">CLEAR HEIGHT <small>MM</small></label><input id="room-height" type="number" min="100" step="10" value="2600" /></div>
+                <div class="study-field"><label for="door-width">NARROWEST DOOR <small>MM</small></label><input id="door-width" type="number" min="100" step="10" value="900" /></div>
+              </div>
+              <div class="study-field-row">
+                <div class="study-field"><label for="terrain-type">SURFACE / TERRAIN</label><select id="terrain-type"><option value="level-hard">LEVEL / HARD</option><option value="mixed-indoor">MIXED INDOOR</option><option value="rough">ROUGH / IRREGULAR</option><option value="unknown">UNKNOWN</option></select></div>
+                <label class="study-toggle"><input id="indoor-environment" type="checkbox" checked /><span>INDOOR ENVIRONMENT</span></label>
+              </div>
+              <label class="photo-capture" for="decision-reference-photo">
+                <input id="decision-reference-photo" type="file" accept="image/*" />
+                <span>ADD A PHOTO OR FLOOR PLAN</span>
+                <strong id="decision-photo-state">OPTIONAL / KEPT LOCAL</strong>
+              </label>
+              <p class="study-note">
+                A photo supplies visual context only. Your measurements set
+                scale. No perspective correction or inferred dimensions.
+              </p>
+            </section>
+
+            <section id="study-task" class="study-block">
+              <header><span>02 / TASK</span><strong>DEFINE THE JOB</strong></header>
+              <div class="study-field study-field--wide">
+                <label for="task-kind">PRIMARY TASK</label>
+                <select id="task-kind">
+                  <option value="pick-place">PICK + PLACE</option>
+                  <option value="bench-research">BENCH RESEARCH</option>
+                  <option value="indoor-inspection">INDOOR INSPECTION</option>
+                  <option value="ground-traverse">GROUND TRAVERSE</option>
+                  <option value="aerial-inspection">AERIAL INSPECTION</option>
+                </select>
+              </div>
+              <div class="measurement-grid">
+                <div class="study-field"><label for="required-reach">REQUIRED REACH <small>MM</small></label><input id="required-reach" type="number" min="0" step="10" value="500" /></div>
+                <div class="study-field"><label for="target-height">TARGET HEIGHT <small>MM</small></label><input id="target-height" type="number" min="0" step="10" value="900" /></div>
+                <div class="study-field"><label for="payload-kg">PAYLOAD <small>KG</small></label><input id="payload-kg" type="number" min="0" step="0.1" value="0.5" /></div>
+                <div class="study-field"><label for="flight-minutes">MIN FLIGHT <small>MIN</small></label><input id="flight-minutes" type="number" min="0" step="1" value="5" /></div>
+              </div>
+              <div class="study-requirements">
+                <label class="study-toggle"><input id="requires-mobility" type="checkbox" /><span>BASE MUST MOVE</span></label>
+                <label class="study-toggle"><input id="requires-bimanual" type="checkbox" /><span>TWO ARMS REQUIRED</span></label>
+              </div>
+              <div class="study-field study-field--wide"><label for="task-notes">TASK NOTES</label><textarea id="task-notes" rows="3" placeholder="Objects, route, duty cycle, tools, sensors, constraints…"></textarea></div>
+            </section>
+
+            <section id="study-candidates" class="study-block study-block--candidates">
+              <header><span>03 / CANDIDATES</span><strong>PICK UP TO SIX</strong></header>
+              <div id="decision-candidate-list" class="decision-candidate-list"></div>
+              <div class="decision-actions">
+                <button id="run-decision-study" type="submit">RUN ROUGH SCREEN →</button>
+                <button id="open-cell-builder" type="button">TRACE THE ROOM BELOW</button>
+              </div>
+              <p id="candidate-message" class="study-note" aria-live="polite"></p>
+            </section>
+          </form>
+
+          <aside class="decision-viewport" aria-label="Scaled environment proxy">
+            <header>
+              <span>ORTHOGRAPHIC FIT PROXY</span>
+              <strong id="proxy-scale-label">SCALED TO ENTERED ROOM</strong>
+            </header>
+            <svg id="decision-proxy" viewBox="0 0 760 430" role="img" aria-label="Scaled room and robot proxy"></svg>
+            <div class="proxy-legend">
+              <span><i data-state="pass"></i>PASS</span>
+              <span><i data-state="caution"></i>CAUTION</span>
+              <span><i data-state="fail"></i>FAIL</span>
+              <span><i data-state="unknown"></i>UNKNOWN</span>
+            </div>
+            <p>
+              Plan + elevation proxies expose scale and movement class. They
+              are not collision meshes, swept volumes, gait, or flight dynamics.
+            </p>
+          </aside>
+        </div>
+
+        <section id="study-results" class="decision-results" aria-live="polite">
+          <header class="results-header">
+            <div><span>04 / SCREENING REPORT</span><strong id="results-title">READY TO SCREEN</strong></div>
+            <div id="result-counts" class="result-counts"></div>
+            <div class="export-actions">
+              <button id="export-decision-json" type="button" disabled>EXPORT JSON</button>
+              <button id="export-decision-html" type="button" disabled>EXPORT REPORT</button>
+            </div>
+          </header>
+          <div id="decision-result-list" class="decision-result-list">
+            <div class="results-empty">
+              <span>NO SCREENING RUN YET</span>
+              <strong>YOUR FIRST RESULT WILL SHOW THE MATH, THE RECEIPTS, AND WHAT IS STILL UNKNOWN.</strong>
+            </div>
+          </div>
+          <aside id="evidence-drawer" class="evidence-drawer" hidden>
+            <button id="close-evidence" type="button" aria-label="Close evidence details">CLOSE ×</button>
+            <div id="evidence-content"></div>
+          </aside>
+          <footer class="decision-disclosure">
+            <strong>SCREENING, NOT CERTIFICATION.</strong>
+            <p>No digital-twin, safety, purchase, deployment, or sim-to-real claim is made. A pass means “plausible enough to investigate upstream.”</p>
+          </footer>
+        </section>
+      </section>
+
+      <div class="deep-dive-divider">
+        <span>DEEP DIVE / SOURCE CATALOG + PLANAR ARM TEACHING ENGINE</span>
+        <strong>INSPECT THE DATA. THEN OPEN THE MOTION LAB.</strong>
+      </div>
+
       <section class="bot-dock" aria-labelledby="bot-dock-title">
         <div class="bot-dock-heading">
           <span>OPEN ROBOT WORKCELL INDEX</span>
@@ -474,6 +616,7 @@
       </section>
     </main>
 
+    <script type="module" src="/src/ui/decisionApp.js"></script>
     <script type="module" src="/src/ui/app.js"></script>
   </body>
 </html>

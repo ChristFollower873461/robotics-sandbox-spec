@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Source-backed multi-platform robotics catalog with a guarded planar-arm teaching workbench.",
+  "description": "Source-backed robot decision workbench, rough simulator, and guarded planar-arm teaching lab.",
   "scripts": {
     "start": "node scripts/dev-server.mjs",
     "dev": "node scripts/dev-server.mjs",

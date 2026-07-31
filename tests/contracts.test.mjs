@@ -10,6 +10,9 @@ import {
   ROBOT_PROFILE_FORMAT,
   validateRobotProfile,
 } from "../src/core/robot/profile.js";
+import { ROBOT_DECISION_CATALOG_FORMAT } from "../src/core/decision/catalog.js";
+import { DECISION_REPORT_FORMAT } from "../src/core/decision/evaluator.js";
+import { DECISION_SCENARIO_FORMAT } from "../src/core/decision/scenario.js";
 import { ROBOT_PROFILES } from "../src/ui/robotProfiles.js";
 
 async function readJson(relativePath) {
@@ -18,13 +21,19 @@ async function readJson(relativePath) {
 }
 
 test("published JSON schemas match the runtime contract identifiers", async () => {
-  const [robotSchema, workcellSchema] = await Promise.all([
+  const [robotSchema, workcellSchema, catalogSchema, scenarioSchema, reportSchema] = await Promise.all([
     readJson("../schemas/robot-profile.v1.schema.json"),
     readJson("../schemas/robot-workcell.v2.schema.json"),
+    readJson("../schemas/robot-decision-catalog.v1.schema.json"),
+    readJson("../schemas/robot-decision-scenario.v1.schema.json"),
+    readJson("../schemas/robot-decision-report.v1.schema.json"),
   ]);
 
   assert.equal(robotSchema.value.properties.format.const, ROBOT_PROFILE_FORMAT);
   assert.equal(workcellSchema.value.properties.format.const, WORKCELL_FORMAT);
+  assert.equal(catalogSchema.value.properties.format.const, ROBOT_DECISION_CATALOG_FORMAT);
+  assert.equal(scenarioSchema.value.properties.format.const, DECISION_SCENARIO_FORMAT);
+  assert.equal(reportSchema.value.properties.format.const, DECISION_REPORT_FORMAT);
   assert.equal(robotSchema.value.additionalProperties, false);
   assert.equal(workcellSchema.value.additionalProperties, false);
   assert.deepEqual(robotSchema.value.properties.platformClass.enum, [

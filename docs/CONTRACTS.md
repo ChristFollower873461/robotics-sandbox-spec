@@ -4,6 +4,31 @@ The browser workbench and future simulation adapters exchange versioned,
 validated records. Runtime validators are dependency-free ES modules; matching
 JSON Schemas live in `schemas/`.
 
+## Decision contracts
+
+`basement-boys/robot-decision-catalog/v1` adds a complete screening record for
+each robot profile. Eight physical/operating fields are always present and
+carry value, unit, evidence status, confidence, source IDs, and an explanatory
+note. Missing facts are explicit `unknown` records with `null` values.
+
+`basement-boys/robot-decision-scenario/v1` carries measured environment,
+access, terrain, task, requirements, optional local-photo metadata, and
+candidate IDs. It never embeds photo bytes.
+
+`basement-boys/robot-decision-report/v1` carries the scenario, candidate
+findings, calculations, evidence keys, assumptions, next steps, fidelity, and
+the non-certification disclosure. Outcomes are `pass`, `caution`, `fail`, or
+`unknown`; there is no compatibility score.
+
+Runtime modules are under `src/core/decision/`; matching schemas are:
+
+- `schemas/robot-decision-catalog.v1.schema.json`
+- `schemas/robot-decision-scenario.v1.schema.json`
+- `schemas/robot-decision-report.v1.schema.json`
+
+See `docs/DECISION_WORKBENCH.md` for evaluator semantics and the adapter
+contract.
+
 ## `basement-boys/robot-profile/v1`
 
 Runtime module: `src/core/robot/profile.js`

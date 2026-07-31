@@ -1,0 +1,33 @@
+{
+  "format": "basement-boys/robot-decision-scenario/v1",
+  "id": "workshop-handling-study",
+  "name": "Workshop handling study",
+  "createdAt": "2026-07-31T12:00:00.000Z",
+  "environment": {
+    "widthMm": 5000,
+    "depthMm": 4000,
+    "clearanceHeightMm": 2600,
+    "doorwayWidthMm": 900,
+    "terrain": "level-hard",
+    "indoor": true,
+    "measurementMethod": "manual",
+    "referencePhoto": null
+  },
+  "task": {
+    "kind": "pick-place",
+    "requiredReachMm": 500,
+    "targetHeightMm": 900,
+    "payloadKg": 0.5,
+    "minimumFlightTimeMin": 5,
+    "requiresMobility": false,
+    "requiresBimanual": false,
+    "notes": "Rough pre-purchase screen; validate tools and duty cycle upstream."
+  },
+  "candidateIds": [
+    "interbotix-wx250s",
+    "aloha-stationary",
+    "toddlerbot-2",
+    "pupper-v3",
+    "crazyflie-2-1-plus"
+  ]
+}

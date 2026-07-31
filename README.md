@@ -1,13 +1,22 @@
 # Robotics Sandbox / Robot Arm
 
-Interactive robotics catalog and sandbox focused on making platform evidence
-and robot-arm planning visible. Compare reviewed American and European arm,
-humanoid, quadruped, and drone projects, inspect the exact layer each project
-publishes, then launch the normalized planar teaching engine for supported arm
-profiles.
+Local-first robot decision workbench, source-backed catalog, and rough
+simulator. Enter a measured environment and task, compare American and European
+arms, humanoids, quadrupeds, and drones, inspect every calculation and unknown,
+then continue into the normalized planar teaching engine or the documented
+upstream simulation path.
 
 ## What this project demonstrates
 
+- A guided environment/task/candidate study across all 13 robot profiles.
+- Deterministic pass/caution/fail/unknown screening with calculations,
+  assumptions, field-level evidence, confidence, and next validation steps.
+- Dimension-true orthographic room and robot proxies; approximate or unscaled
+  geometry is visibly hatched rather than presented as sourced CAD.
+- Local photo/floor-plan context plus manual measurements, without uploading
+  images or pretending to infer scale and perspective.
+- Portable, versioned decision scenario, catalog, and report contracts, plus
+  browser-side JSON and printable HTML export.
 - Forward kinematics for a configurable 2-link planar arm.
 - Inverse kinematics with reachable/unreachable target handling and elbow-up/elbow-down preference.
 - Direct interpolation and deterministic joint-space A* planning.
@@ -47,6 +56,8 @@ profiles.
 - `docs/CONTRACTS.md` for robot-profile and workcell schemas, validation, and
   migration behavior.
 - `docs/STATE_OF_THE_ART.md` for the technical research, product-profile sources, and explicit simulator boundaries.
+- `docs/DECISION_WORKBENCH.md` for finding semantics, fidelity levels, catalog
+  contribution rules, and the simulation-adapter contract.
 - `examples/scenarios/showcase-scenario.json` as an inspectable scenario payload.
 - `examples/outputs/inspect-summary.json` as a committed output snapshot from `npm run inspect:json`.
 - `.github/workflows/ci.yml` for automated verification (`npm run verify`) on push/PR.
@@ -97,8 +108,14 @@ profiles.
    npm run dev
    ```
 
-   Open `http://localhost:4173/`. Browse Arm, Humanoid, Quadruped, and Drone
-   specimen drawers. Arm records marked **LIVE** launch the planar workbench;
+   Open `http://localhost:4173/`. Start at **Build a robot shortlist**: enter
+   room measurements and task requirements, choose up to six candidates, run
+   the screening report, inspect evidence/unknowns, and export JSON or HTML.
+   Add a local photo for visual context or choose **Trace the room below** to
+   continue into the calibrated fixture editor.
+
+   Browse Arm, Humanoid, Quadruped, and Drone specimen drawers for deeper
+   catalog inspection. Arm records marked **LIVE** launch the planar workbench;
    records marked **CATALOG** expose sources, licenses, claims, availability,
    and caveats without changing the active simulator. In the arm workbench,
    choose single or dual mode, compare both IK branches, or open **Build Cell**
@@ -143,8 +160,12 @@ const plan = planWaypointTrajectory({
 │   ├── ARCHITECTURE.md
 │   ├── CODEX_SPEC.md
 │   ├── CONTRACTS.md
+│   ├── DECISION_WORKBENCH.md
 │   └── STATE_OF_THE_ART.md
 ├── schemas/
+│   ├── robot-decision-catalog.v1.schema.json
+│   ├── robot-decision-report.v1.schema.json
+│   ├── robot-decision-scenario.v1.schema.json
 │   ├── robot-profile.v1.schema.json
 │   └── robot-workcell.v2.schema.json
 ├── databricks/
@@ -163,13 +184,16 @@ const plan = planWaypointTrajectory({
 ├── src/
 │   ├── core/
 │   │   ├── collision/
+│   │   ├── decision/
 │   │   ├── environment/
 │   │   ├── kinematics/
 │   │   ├── planning/
 │   │   └── scenario/
 │   ├── types/
 │   └── ui/
-│       └── app.js
+│       ├── app.js
+│       ├── decisionApp.js
+│       └── decisionCatalog.js
 └── tests/
     ├── core.test.mjs
     └── ui-shell.test.mjs
@@ -177,6 +201,10 @@ const plan = planWaypointTrajectory({
 
 ## Current status
 
+- The 13-platform decision workbench is implemented and runnable, with
+  complete field-level catalog records, deterministic findings, explicit
+  unknowns, scaled/hatching-aware graphics, evidence drawers, and local
+  JSON/HTML exports.
 - Core robotics modules are implemented and runnable.
 - Collision and path checks are present for editable 2D circle/rectangle obstacles.
 - Scenario save/load helpers are implemented.
@@ -189,6 +217,10 @@ const plan = planWaypointTrajectory({
 ## Limitations and next steps
 
 - This is a normalized two-link teaching model, not a vendor-accurate digital twin.
+- Decision results are rough screening, not safety, purchasing, deployment, or
+  sim-to-real proof. A pass means the candidate deserves deeper validation.
+- Approximate/hatching-aware plan and elevation graphics are not collision
+  meshes, swept volumes, gait, aerodynamics, or dynamics.
 - Humanoid and quadruped records do not yet have a locomotion engine; drone
   records do not yet have a flight-dynamics engine. They are deliberately
   catalog-only.

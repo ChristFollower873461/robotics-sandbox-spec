@@ -1,12 +1,15 @@
 # Repository Status
 
 - Status: Active public reference/prototype
-- Last reviewed: 2026-07-30
-- Notes: Source-backed catalog of 13 American and European robot-platform
-  records. Seven arm profiles launch the normalized planar kinematics,
-  manipulability, obstacle, and visible joint-space A* workbench. Six
-  humanoid, quadruped, and drone profiles remain explicitly catalog-only until
-  locomotion or flight engines are implemented.
+- Last reviewed: 2026-07-31
+- Notes: Local-first decision workbench and source-backed catalog of 13
+  American and European robot-platform records. All 13 have field-level
+  evidence, confidence, explicit unknowns, class-aware rough screening,
+  orthographic fit/movement proxies, upstream simulation paths, and portable
+  JSON/HTML reports. Seven arm profiles additionally launch the normalized
+  planar kinematics, manipulability, obstacle, and visible joint-space A*
+  teaching workbench. Humanoid, quadruped, and drone motion remains Level 1
+  geometric screening until an explicit locomotion or flight adapter runs.
 
 ## Cleanup Guidance
 
