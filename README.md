@@ -12,6 +12,11 @@ The site is public and the MIT-licensed source is designed to be forked. Photos,
 floor plans, calculations, and exports still stay in the browser by default;
 web-first does not mean uploading private facility data.
 
+Production is deployed from this GitHub repository directly to Cloudflare with
+`npm run deploy:cloudflare`. No secondary hosting platform is part of the web
+release path. Databricks remains the governed robotics knowledge and data
+workspace described below; it is infrastructure, not the frontend host.
+
 ## What this project demonstrates
 
 - A guided environment/task/candidate study across all 13 robot profiles.
