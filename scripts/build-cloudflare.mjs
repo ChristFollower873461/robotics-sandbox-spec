@@ -6,13 +6,11 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const distDir = path.join(rootDir, "dist");
 const clientDir = path.join(distDir, "client");
 const serverDir = path.join(distDir, "server");
-const metadataDir = path.join(distDir, ".openai");
 
 await fs.rm(distDir, { recursive: true, force: true });
 await Promise.all([
   fs.mkdir(clientDir, { recursive: true }),
   fs.mkdir(serverDir, { recursive: true }),
-  fs.mkdir(metadataDir, { recursive: true }),
 ]);
 
 await Promise.all([
@@ -21,7 +19,6 @@ await Promise.all([
   fs.cp(path.join(rootDir, "src"), path.join(clientDir, "src"), { recursive: true }),
   fs.copyFile(path.join(rootDir, "worker", "index.js"), path.join(serverDir, "index.js")),
   fs.copyFile(path.join(rootDir, "worker", "wrangler.json"), path.join(serverDir, "wrangler.json")),
-  fs.copyFile(path.join(rootDir, ".openai", "hosting.json"), path.join(metadataDir, "hosting.json")),
 ]);
 
-console.log("Built Robotics Sandbox for web deployment in dist/.");
+console.log("Built Robotics Sandbox for Cloudflare in dist/.");
