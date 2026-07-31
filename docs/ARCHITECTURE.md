@@ -13,6 +13,9 @@ This repository is organized around a small but extendable split between robotic
   A* fallback, sampled trajectory generation, timing, and validity metrics.
 - `src/core/planning/arenaPlanner.js`: deterministic footprint-aware 2D route
   planning and distance-based playback sampling for the friendly test range.
+- `src/core/challenge/challengeEngine.js`: immutable challenge definitions and
+  deterministic evaluation for arm reach/drop clearance, ground
+  footprint/path/turning, and aerial height/path/viewing boundaries.
 - `src/core/environment/workcell.js`: calibrated workcell bounds, fixture
   validation, presets, and versioned JSON serialization/hydration.
 - `src/core/environment/workcellContract.js`: the workcell v2 validator,
@@ -42,6 +45,8 @@ This repository is organized around a small but extendable split between robotic
   explainable comparison, evidence drawer, and local JSON/HTML export.
 - `src/ui/testRangeApp.js`: playable four-class range, mission presets,
   draggable targets, animation, and progressive evidence disclosure.
+- `src/ui/challengeView.js`: challenge cards, mission-specific SVG stage props,
+  carried-object motion, and plain-language constraint disclosure.
 - `src/ui/app.js`: SVG scene and reference-photo overlay, fixture ledger,
   Canvas C-space renderer, platform/profile browsing, guarded arm-profile
   switching, direct manipulation, planning controls, telemetry, workcell file

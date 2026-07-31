@@ -33,12 +33,13 @@
         <header class="range-intro">
           <div>
             <p class="eyebrow">A playable rough simulator</p>
-            <h1 id="range-title">Pick a robot. Drop a target.<br /><em>Watch the limits show up.</em></h1>
+            <h1 id="range-title">Give a robot a job.<br /><em>See what stops it.</em></h1>
           </div>
           <div class="range-intro-copy">
             <p>
-              Start moving in seconds. The friendly view explains what happened;
-              the engineer view exposes the geometry, evidence, and missing physics.
+              Choose a quick challenge and start moving in seconds. The friendly
+              result explains what happened; Why? opens the geometry, evidence,
+              and missing physics.
             </p>
             <div class="range-trust">
               <span><i></i>Runs locally</span>
@@ -48,35 +49,45 @@
           </div>
         </header>
 
-        <div id="range-app" class="range-console" data-platform="arm" data-playing="false">
+        <div id="range-app" class="range-console" data-platform="arm" data-mode="challenge" data-playing="false" data-challenge-state="ready">
           <header class="range-console-bar">
             <div class="range-console-title">
               <span><i></i>LIVE TEST RANGE</span>
               <small>2D GEOMETRIC SCREENING / 4.6 × 2.6 M FLOOR</small>
             </div>
-            <div class="range-platform-tabs" role="tablist" aria-label="Robot movement class">
-              <button type="button" role="tab" data-range-platform="arm" aria-selected="true"><span>01</span>Arm</button>
-              <button type="button" role="tab" data-range-platform="humanoid" aria-selected="false"><span>02</span>Humanoid</button>
-              <button type="button" role="tab" data-range-platform="quadruped" aria-selected="false"><span>03</span>Quadruped</button>
-              <button type="button" role="tab" data-range-platform="drone" aria-selected="false"><span>04</span>Drone</button>
+            <div class="range-console-tools">
+              <div class="range-mode-switch" role="tablist" aria-label="Test range mode">
+                <button id="range-mode-challenge" type="button" role="tab" data-range-mode="challenge" aria-selected="true">Challenge Mode</button>
+                <button id="range-mode-explore" type="button" role="tab" data-range-mode="explore" aria-selected="false">Free Explore</button>
+              </div>
+              <div class="range-platform-tabs" role="tablist" aria-label="Robot movement class">
+                <button type="button" role="tab" data-range-platform="arm" aria-selected="true"><span>01</span>Arm</button>
+                <button type="button" role="tab" data-range-platform="humanoid" aria-selected="false"><span>02</span>Humanoid</button>
+                <button type="button" role="tab" data-range-platform="quadruped" aria-selected="false"><span>03</span>Quadruped</button>
+                <button type="button" role="tab" data-range-platform="drone" aria-selected="false"><span>04</span>Drone</button>
+              </div>
             </div>
             <button id="range-view-toggle" class="range-view-toggle" type="button" aria-pressed="false">Engineer view</button>
           </header>
 
           <div class="range-console-body">
             <aside class="range-mission-panel" aria-label="Robot and mission controls">
-              <div class="range-step-heading"><span>01</span><strong>Pick a machine</strong></div>
+              <div class="range-step-heading"><span>01</span><strong id="range-choice-title">Choose a challenge</strong></div>
+              <div id="range-challenges" class="range-challenges" role="group" aria-label="Robot challenges"></div>
+
               <label class="range-select" for="range-robot-select">
-                <span>Open robot record</span>
+                <span id="range-robot-select-label">Recommended robot</span>
                 <select id="range-robot-select"></select>
               </label>
 
-              <div class="range-step-heading"><span>02</span><strong>Give it a job</strong></div>
-              <div id="range-missions" class="range-missions" role="group" aria-label="Test missions"></div>
+              <div id="range-explore-missions" class="range-explore-missions" hidden>
+                <div class="range-step-heading"><span>02</span><strong>Give it a job</strong></div>
+                <div id="range-missions" class="range-missions" role="group" aria-label="Test missions"></div>
+              </div>
 
               <div class="range-tip">
-                <span>Try it yourself</span>
-                <strong>Drag the orange target anywhere on the floor.</strong>
+                <span id="range-tip-label">Your move</span>
+                <strong id="range-tip-title">Drag the orange bin, then run the mission.</strong>
                 <small id="range-control-hint">The arm can only reach inside its published-radius screening circle.</small>
               </div>
             </aside>
@@ -117,6 +128,7 @@
                   <g transform="translate(331 568)"><rect width="258" height="58" rx="9" /><text x="16" y="23">CONTACT + TERRAIN</text><text class="range-boundary-value" x="16" y="43">NOT MODELED</text></g>
                   <g transform="translate(630 568)"><rect width="258" height="58" rx="9" /><text x="16" y="23">REAL CONTROLLER</text><text class="range-boundary-value" x="16" y="43">UPSTREAM NEXT STEP</text></g>
                 </g>
+                <g id="range-challenge-layer"></g>
                 <g id="range-reach-layer"></g>
                 <g id="range-route-layer"></g>
                 <g id="range-robot-layer"></g>
@@ -152,8 +164,13 @@
                 <p>The range will explain the geometric result in plain language.</p>
               </div>
 
-              <details class="range-why" open>
-                <summary>Why this result <span>+</span></summary>
+              <div id="range-result-actions" class="range-result-actions" hidden>
+                <button id="range-replay" type="button">↻ Replay</button>
+                <button id="range-try-robot" type="button">Try another robot</button>
+              </div>
+
+              <details class="range-why">
+                <summary id="range-why-summary">Why? <span>+</span></summary>
                 <div id="range-why-content"></div>
               </details>
 

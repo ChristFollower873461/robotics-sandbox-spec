@@ -1,5 +1,15 @@
 import { forwardKinematics, inverseKinematics } from "../core/kinematics/planarArm.js";
 import { planArenaRoute, sampleArenaRoute } from "../core/planning/arenaPlanner.js";
+import {
+  CHALLENGE_DEFINITIONS,
+  evaluateChallenge,
+  getChallengeDefinition,
+} from "../core/challenge/challengeEngine.js";
+import {
+  renderChallengeCards,
+  renderChallengeEvidence,
+  renderChallengeScene,
+} from "./challengeView.js";
 import { getDecisionRecord } from "./decisionCatalog.js";
 import {
   getRobotProfile,
@@ -77,11 +87,14 @@ const MISSIONS = {
 };
 
 const state = {
+  mode: "challenge",
+  challengeId: CHALLENGE_DEFINITIONS[0].id,
+  challengeAttempted: false,
   platform: "arm",
   profileId: PLATFORM_DEFAULTS.arm,
   missionId: MISSIONS.arm[0].id,
-  target: { ...MISSIONS.arm[0].target },
-  progress: 1,
+  target: { ...CHALLENGE_DEFINITIONS[0].stage.target },
+  progress: 0,
   animationFrame: null,
   dragging: false,
   engineerView: false,
@@ -90,10 +103,17 @@ const state = {
 
 const ids = [
   "range-app",
+  "range-challenges",
+  "range-choice-title",
+  "range-explore-missions",
+  "range-robot-select-label",
+  "range-tip-label",
+  "range-tip-title",
   "range-robot-select",
   "range-missions",
   "range-control-hint",
   "range-stage",
+  "range-challenge-layer",
   "range-reach-layer",
   "range-route-layer",
   "range-robot-layer",
@@ -114,6 +134,10 @@ const ids = [
   "range-route",
   "range-evidence-score",
   "range-explanation",
+  "range-result-actions",
+  "range-replay",
+  "range-try-robot",
+  "range-why-summary",
   "range-why-content",
   "range-engineer-detail",
   "range-fidelity",
@@ -147,6 +171,20 @@ function appendSvg(parent, name, attributes = {}, text = null) {
 
 function profile() {
   return getRobotProfile(state.profileId);
+}
+
+function challenge() {
+  return getChallengeDefinition(state.challengeId);
+}
+
+function isChallengeMode() {
+  return state.mode === "challenge";
+}
+
+function activeArmBase() {
+  return isChallengeMode() && challenge()?.platform === "arm"
+    ? challenge().stage.base
+    : ARM_BASE;
 }
 
 function record() {
@@ -217,9 +255,10 @@ function normalizedArmLengths() {
 }
 
 function armTargetMillimeters(target = state.target) {
+  const base = activeArmBase();
   return {
-    x: (target.x - ARM_BASE.x) * MM_PER_PIXEL,
-    y: (ARM_BASE.y - target.y) * MM_PER_PIXEL,
+    x: (target.x - base.x) * MM_PER_PIXEL,
+    y: (base.y - target.y) * MM_PER_PIXEL,
   };
 }
 
@@ -264,7 +303,28 @@ function mobilePlan() {
 }
 
 function updatePlan() {
-  state.plan = state.platform === "arm" ? armPlan() : mobilePlan();
+  state.plan = isChallengeMode()
+    ? evaluateChallenge({
+        challengeId: state.challengeId,
+        platformClass: profile().platformClass,
+        facts: record().facts,
+        target: state.target,
+        fixtures: FIXTURES,
+        arena: ARENA,
+        mmPerPixel: MM_PER_PIXEL,
+      })
+    : state.platform === "arm"
+      ? armPlan()
+      : mobilePlan();
+}
+
+function renderChallenges() {
+  renderChallengeCards(
+    elements.rangeChallenges,
+    CHALLENGE_DEFINITIONS,
+    state.challengeId,
+    setChallenge
+  );
 }
 
 function renderRobotSelect() {
@@ -294,23 +354,24 @@ function renderMissions() {
 function renderReach() {
   elements.rangeReachLayer.replaceChildren();
   if (state.platform !== "arm") return;
+  const base = activeArmBase();
   const reachPixels = publishedReach() / MM_PER_PIXEL;
   appendSvg(elements.rangeReachLayer, "circle", {
-    cx: ARM_BASE.x,
-    cy: ARM_BASE.y,
+    cx: base.x,
+    cy: base.y,
     r: reachPixels,
     class: "range-reach-disc",
   });
   appendSvg(elements.rangeReachLayer, "circle", {
-    cx: ARM_BASE.x,
-    cy: ARM_BASE.y,
+    cx: base.x,
+    cy: base.y,
     r: normalizedArmLengths().reduce((sum, value) => sum + value, 0) / MM_PER_PIXEL,
     class: "range-reach-model",
   });
   appendSvg(
     elements.rangeReachLayer,
     "text",
-    { x: ARM_BASE.x + 10, y: ARM_BASE.y - reachPixels + 22, class: "range-reach-label" },
+    { x: base.x + 10, y: base.y - reachPixels + 22, class: "range-reach-label" },
     `${publishedReach()} MM PUBLISHED REACH`
   );
 }
@@ -322,9 +383,26 @@ function pathData(path) {
 function renderRoute() {
   elements.rangeRouteLayer.replaceChildren();
   if (state.platform === "arm") {
-    const home = { x: ARM_BASE.x + 96, y: ARM_BASE.y - 16 };
+    if (isChallengeMode()) {
+      appendSvg(elements.rangeRouteLayer, "path", {
+        d: pathData(state.plan.path),
+        class: `range-route range-route--challenge ${state.plan.valid ? "is-valid" : "is-blocked"}`,
+      });
+      state.plan.path.slice(1).forEach((point, index) => {
+        appendSvg(elements.rangeRouteLayer, "circle", {
+          cx: point.x,
+          cy: point.y,
+          r: 5,
+          class: "range-route-node",
+          "data-index": index + 1,
+        });
+      });
+      return;
+    }
+    const base = activeArmBase();
+    const home = { x: base.x + 96, y: base.y - 16 };
     appendSvg(elements.rangeRouteLayer, "path", {
-      d: `M${home.x} ${home.y} Q${ARM_BASE.x + 94} ${ARM_BASE.y - 118} ${state.target.x} ${state.target.y}`,
+      d: `M${home.x} ${home.y} Q${base.x + 94} ${base.y - 118} ${state.target.x} ${state.target.y}`,
       class: `range-route ${state.plan.valid ? "is-valid" : "is-blocked"}`,
     });
     return;
@@ -345,13 +423,18 @@ function renderRoute() {
 }
 
 function armPoseAtProgress(progress) {
-  const home = { x: ARM_BASE.x + 96, y: ARM_BASE.y - 16 };
+  const base = activeArmBase();
+  const home = isChallengeMode()
+    ? state.plan.path[0]
+    : { x: base.x + 96, y: base.y - 16 };
   const target = state.plan.valid ? state.target : home;
   const eased = 1 - (1 - progress) ** 3;
-  const point = {
-    x: home.x + (target.x - home.x) * eased,
-    y: home.y + (target.y - home.y) * eased,
-  };
+  const point = isChallengeMode() && state.plan.valid
+    ? sampleArenaRoute(state.plan.path, eased)
+    : {
+        x: home.x + (target.x - home.x) * eased,
+        y: home.y + (target.y - home.y) * eased,
+      };
   const solution = inverseKinematics(normalizedArmLengths(), armTargetMillimeters(point), "down");
   if (!solution.reachable) return null;
   return forwardKinematics(normalizedArmLengths(), solution.joints);
@@ -360,17 +443,18 @@ function armPoseAtProgress(progress) {
 function renderArm(progress) {
   const pose = armPoseAtProgress(progress);
   if (!pose) return;
+  const base = activeArmBase();
   const group = appendSvg(elements.rangeRobotLayer, "g", {
     class: "range-robot range-robot--arm",
     style: `--robot-color:${profile().visual.primary}`,
     filter: "url(#range-shadow)",
   });
   const points = pose.joints.map((point) => ({
-    x: ARM_BASE.x + point.x / MM_PER_PIXEL,
-    y: ARM_BASE.y - point.y / MM_PER_PIXEL,
+    x: base.x + point.x / MM_PER_PIXEL,
+    y: base.y - point.y / MM_PER_PIXEL,
   }));
-  appendSvg(group, "ellipse", { cx: ARM_BASE.x, cy: ARM_BASE.y + 12, rx: 34, ry: 12, class: "range-arm-base-shadow" });
-  appendSvg(group, "rect", { x: ARM_BASE.x - 27, y: ARM_BASE.y - 4, width: 54, height: 26, rx: 9, class: "range-arm-base" });
+  appendSvg(group, "ellipse", { cx: base.x, cy: base.y + 12, rx: 34, ry: 12, class: "range-arm-base-shadow" });
+  appendSvg(group, "rect", { x: base.x - 27, y: base.y - 4, width: 54, height: 26, rx: 9, class: "range-arm-base" });
   appendSvg(group, "path", { d: `M${points[0].x} ${points[0].y}L${points[1].x} ${points[1].y}L${points[2].x} ${points[2].y}`, class: "range-arm-links" });
   points.forEach((point, index) => appendSvg(group, "circle", { cx: point.x, cy: point.y, r: index === 2 ? 8 : 11, class: "range-arm-joint" }));
   appendSvg(group, "path", { d: `M${points[2].x - 9} ${points[2].y - 5}l-8-9m17 14 9 7`, class: "range-arm-gripper" });
@@ -426,17 +510,51 @@ function renderRobot() {
 
 function renderTarget() {
   elements.rangeTargetLayer.replaceChildren();
+  const challengeStatus = isChallengeMode() ? state.plan.status : null;
+  const targetState = state.plan.valid
+    ? challengeStatus === "unknown" ? "is-unknown" : "is-valid"
+    : "is-blocked";
   const group = appendSvg(elements.rangeTargetLayer, "g", {
-    class: `range-target ${state.plan.valid ? "is-valid" : "is-blocked"}`,
+    class: `range-target ${targetState}`,
     transform: `translate(${state.target.x} ${state.target.y})`,
   });
   appendSvg(group, "circle", { r: 27, class: "range-target-pulse" });
   appendSvg(group, "circle", { r: 14, class: "range-target-core" });
   appendSvg(group, "path", { d: "M-7 0H7M0-7V7", class: "range-target-cross" });
-  appendSvg(group, "text", { x: 22, y: -20 }, state.missionId === "custom" ? "CUSTOM TARGET" : "DRAG TARGET");
+  const label = isChallengeMode()
+    ? challenge().targetLabel
+    : state.missionId === "custom" ? "CUSTOM TARGET" : "DRAG TARGET";
+  appendSvg(group, "text", { x: 22, y: -20 }, label);
+}
+
+function challengeResultContent() {
+  const definition = challenge();
+  if (!state.challengeAttempted) {
+    if (!state.plan.valid && state.plan.status !== "unknown") {
+      return {
+        state: "failure",
+        result: "Move the goal",
+        headline: state.plan.headline,
+        body: state.plan.explanation,
+      };
+    }
+    return {
+      state: state.plan.status === "unknown" ? "unknown" : "ready",
+      result: state.plan.status === "unknown" ? "Ready—with unknowns" : "Ready to run",
+      headline: `${definition.title} is set up.`,
+      body: `${definition.shortGoal} Drag the orange goal to test a different placement, or run the recommended setup.`,
+    };
+  }
+  return {
+    state: state.plan.status,
+    result: state.plan.resultLabel,
+    headline: state.plan.headline,
+    body: state.plan.explanation,
+  };
 }
 
 function resultContent() {
+  if (isChallengeMode()) return challengeResultContent();
   const currentRecord = record();
   const mission = selectedMission();
   if (state.platform === "arm") {
@@ -521,7 +639,17 @@ function renderInspector() {
   elements.rangeResult.textContent = content.result;
   elements.rangeEvidenceScore.textContent = `${counts.sourced} sourced / ${counts.unknown} open`;
 
-  if (state.platform === "arm") {
+  if (isChallengeMode() && state.challengeId === "bring-part-home") {
+    elements.rangeDistanceLabel.textContent = "Reach checks";
+    elements.rangeDistance.textContent = state.plan.reachMm
+      ? `${Math.round(state.plan.pickupDistanceMm || 0)} + ${Math.round(state.plan.dropDistanceMm || 0)} mm`
+      : "Unknown";
+    elements.rangeRoute.textContent = state.plan.valid ? "Pick + place" : "Blocked";
+  } else if (isChallengeMode() && state.challengeId === "inspect-high-shelf") {
+    elements.rangeDistanceLabel.textContent = "Target height";
+    elements.rangeDistance.textContent = `${state.plan.targetHeightMm} mm`;
+    elements.rangeRoute.textContent = state.plan.valid ? "Overhead line" : "Blocked";
+  } else if (state.platform === "arm") {
     elements.rangeDistanceLabel.textContent = "Reach used";
     elements.rangeDistance.textContent = `${Math.round(state.plan.distanceMm)} mm`;
     elements.rangeRoute.textContent = state.plan.valid ? "IK solved" : "No solution";
@@ -533,10 +661,18 @@ function renderInspector() {
 
   elements.rangeExplanation.dataset.state = content.state;
   elements.rangeExplanation.innerHTML = `<span>What this means</span><strong>${content.headline}</strong><p>${content.body}</p>`;
-  elements.rangeWhyContent.innerHTML = content.why
-    .map((line) => `<p><i></i><span>${line}</span></p>`)
-    .join("");
-  if (known.length > 0) {
+  if (isChallengeMode()) {
+    renderChallengeEvidence(
+      elements.rangeWhyContent,
+      state.plan.constraints || [],
+      state.plan.limitations || []
+    );
+  } else {
+    elements.rangeWhyContent.innerHTML = content.why
+      .map((line) => `<p><i></i><span>${line}</span></p>`)
+      .join("");
+  }
+  if (!isChallengeMode() && known.length > 0) {
     elements.rangeWhyContent.insertAdjacentHTML(
       "beforeend",
       `<p class="range-source-fact"><i></i><span>Known record: ${factLabel(known[0][0])} ${factValue(known[0][1])} (${known[0][1].status}).</span></p>`
@@ -550,17 +686,23 @@ function renderInspector() {
   elements.rangeUpstream.textContent = currentRecord.upstreamSimulation[0]?.engine || "Project-specific";
   elements.rangeSource.href = currentProfile.sourceUrl;
   elements.rangeStatus.dataset.state = content.state;
-  elements.rangeStatus.querySelector("span").textContent = content.result;
+  elements.rangeStatus.querySelector("span").textContent = state.animationFrame !== null
+    ? "Mission running"
+    : content.result;
   elements.rangeLiveSummary.textContent = `${currentProfile.model}: ${content.headline} ${content.body}`;
+  elements.rangeResultActions.hidden = !isChallengeMode() || !state.challengeAttempted;
+  elements.rangeWhySummary.firstChild.textContent = isChallengeMode() ? "Why? " : "Why this result ";
 }
 
 function renderTransport() {
   const duration = state.plan.duration;
   elements.rangeProgress.value = String(Math.round(state.progress * 1000));
   elements.rangeTime.textContent = `${(state.progress * duration).toFixed(1)} / ${duration.toFixed(1)} s`;
-  elements.rangeModeLabel.textContent = PLATFORM_COPY[state.platform].mode;
+  elements.rangeModeLabel.textContent = isChallengeMode()
+    ? `${challenge().order} / ${challenge().modelFocus.toUpperCase()}`
+    : PLATFORM_COPY[state.platform].mode;
   elements.rangePlay.innerHTML = state.animationFrame === null
-    ? "<span>▶</span> Run the route"
+    ? `<span>▶</span> ${isChallengeMode() && state.challengeAttempted ? "Replay mission" : isChallengeMode() ? "Run mission" : "Run the route"}`
     : "<span>Ⅱ</span> Pause";
 }
 
@@ -572,8 +714,21 @@ function syncPlatformTabs() {
   });
 }
 
+function syncModeTabs() {
+  document.querySelectorAll("[data-range-mode]").forEach((button) => {
+    const selected = button.dataset.rangeMode === state.mode;
+    button.setAttribute("aria-selected", String(selected));
+    button.tabIndex = selected ? 0 : -1;
+  });
+}
+
 function renderAll() {
   updatePlan();
+  if (isChallengeMode()) {
+    renderChallengeScene(elements.rangeChallengeLayer, challenge(), state.plan, state.progress);
+  } else {
+    elements.rangeChallengeLayer.replaceChildren();
+  }
   renderReach();
   renderRoute();
   renderRobot();
@@ -581,9 +736,27 @@ function renderAll() {
   renderInspector();
   renderTransport();
   elements.rangeApp.dataset.platform = state.platform;
+  elements.rangeApp.dataset.mode = state.mode;
   elements.rangeApp.dataset.playing = String(state.animationFrame !== null);
-  elements.rangeControlHint.textContent = PLATFORM_COPY[state.platform].hint;
+  elements.rangeApp.dataset.challengeState = isChallengeMode()
+    ? state.challengeAttempted ? state.plan.status : state.plan.valid ? "ready" : "failure"
+    : "explore";
+  elements.rangeChallenges.hidden = !isChallengeMode();
+  elements.rangeExploreMissions.hidden = isChallengeMode();
+  elements.rangeChoiceTitle.textContent = isChallengeMode() ? "Choose a challenge" : "Pick a machine";
+  elements.rangeRobotSelectLabel.textContent = isChallengeMode()
+    ? (state.profileId === challenge().defaultProfileId ? "Recommended robot" : "Alternate robot")
+    : "Open robot record";
+  elements.rangeTipLabel.textContent = isChallengeMode() ? "Your move" : "Try it yourself";
+  elements.rangeTipTitle.textContent = isChallengeMode()
+    ? `Drag ${challenge().targetLabel.toLowerCase()}, then run the mission.`
+    : "Drag the orange target anywhere on the floor.";
+  elements.rangeControlHint.textContent = isChallengeMode()
+    ? state.plan.limitations?.[0] || PLATFORM_COPY[state.platform].hint
+    : PLATFORM_COPY[state.platform].hint;
+  elements.rangeReset.textContent = isChallengeMode() ? "Reset mission" : "Reset scene";
   syncPlatformTabs();
+  syncModeTabs();
 }
 
 function stopPlayback() {
@@ -597,24 +770,35 @@ function stopPlayback() {
 function play() {
   if (state.animationFrame !== null) {
     stopPlayback();
+    if (isChallengeMode()) {
+      elements.rangeApp.dataset.challengeState = "ready";
+      elements.rangeStatus.dataset.state = "ready";
+      elements.rangeStatus.querySelector("span").textContent = "Mission paused";
+    }
     renderTransport();
     return;
   }
   if (!state.plan.valid) {
     state.progress = 1;
+    if (isChallengeMode()) state.challengeAttempted = true;
     renderAll();
     return;
   }
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     state.progress = 1;
+    if (isChallengeMode()) state.challengeAttempted = true;
     renderAll();
     return;
   }
   state.progress = 0;
+  if (isChallengeMode()) state.challengeAttempted = false;
   const durationMs = Math.min(Math.max(state.plan.duration * 620, 900), 3600);
   const startedAt = performance.now();
   const tick = (now) => {
     state.progress = Math.min((now - startedAt) / durationMs, 1);
+    if (isChallengeMode()) {
+      renderChallengeScene(elements.rangeChallengeLayer, challenge(), state.plan, state.progress);
+    }
     renderRobot();
     renderTransport();
     if (state.progress < 1) {
@@ -624,10 +808,16 @@ function play() {
     }
     state.animationFrame = null;
     elements.rangeApp.dataset.playing = "false";
-    renderTransport();
+    if (isChallengeMode()) state.challengeAttempted = true;
+    renderAll();
   };
   state.animationFrame = requestAnimationFrame(tick);
   elements.rangeApp.dataset.playing = "true";
+  if (isChallengeMode()) {
+    elements.rangeApp.dataset.challengeState = "running";
+    elements.rangeStatus.dataset.state = "ready";
+    elements.rangeStatus.querySelector("span").textContent = "Mission running";
+  }
   renderTransport();
 }
 
@@ -638,6 +828,40 @@ function setMission(missionId) {
   state.missionId = mission.id;
   state.target = { ...mission.target };
   state.progress = 1;
+  renderMissions();
+  renderAll();
+}
+
+function setChallenge(challengeId) {
+  const nextChallenge = getChallengeDefinition(challengeId);
+  if (!nextChallenge) return;
+  stopPlayback();
+  state.mode = "challenge";
+  state.challengeId = nextChallenge.id;
+  state.challengeAttempted = false;
+  state.platform = nextChallenge.platform;
+  state.profileId = nextChallenge.defaultProfileId;
+  state.target = { ...nextChallenge.stage.target };
+  state.progress = 0;
+  renderRobotSelect();
+  renderChallenges();
+  renderAll();
+}
+
+function setMode(mode) {
+  if (mode === state.mode) return;
+  stopPlayback();
+  if (mode === "challenge") {
+    setChallenge(state.challengeId);
+    return;
+  }
+  state.mode = "explore";
+  state.challengeAttempted = false;
+  const mission = MISSIONS[state.platform][0];
+  state.missionId = mission.id;
+  state.target = { ...mission.target };
+  state.progress = 1;
+  renderRobotSelect();
   renderMissions();
   renderAll();
 }
@@ -659,6 +883,15 @@ function setPlatform(platform) {
 }
 
 function resetScene() {
+  if (isChallengeMode()) {
+    const definition = challenge();
+    stopPlayback();
+    state.target = { ...definition.stage.target };
+    state.progress = 0;
+    state.challengeAttempted = false;
+    renderAll();
+    return;
+  }
   const mission = selectedMission() || MISSIONS[state.platform][0];
   stopPlayback();
   state.missionId = mission.id;
@@ -678,6 +911,13 @@ function stagePoint(event) {
 
 function moveTarget(point) {
   stopPlayback();
+  if (isChallengeMode()) {
+    state.target = point;
+    state.progress = 0;
+    state.challengeAttempted = false;
+    renderAll();
+    return;
+  }
   const missionChanged = state.missionId !== "custom";
   state.missionId = "custom";
   state.target = point;
@@ -703,15 +943,52 @@ document.querySelectorAll("[data-range-platform]").forEach((button) => {
   });
 });
 
+document.querySelectorAll("[data-range-mode]").forEach((button) => {
+  button.addEventListener("click", () => setMode(button.dataset.rangeMode));
+  button.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const buttons = [...document.querySelectorAll("[data-range-mode]")];
+    const currentIndex = buttons.indexOf(button);
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? buttons.length - 1
+        : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    setMode(buttons[nextIndex].dataset.rangeMode);
+    buttons[nextIndex].focus();
+  });
+});
+
 elements.rangeRobotSelect.addEventListener("change", () => {
   stopPlayback();
   state.profileId = elements.rangeRobotSelect.value;
-  state.progress = 1;
+  state.progress = isChallengeMode() ? 0 : 1;
+  state.challengeAttempted = false;
   renderAll();
 });
 
 elements.rangePlay.addEventListener("click", play);
 elements.rangeReset.addEventListener("click", resetScene);
+elements.rangeReplay.addEventListener("click", () => {
+  state.progress = 0;
+  state.challengeAttempted = false;
+  renderAll();
+  play();
+});
+elements.rangeTryRobot.addEventListener("click", () => {
+  const profiles = profilesForPlatform();
+  const currentIndex = profiles.findIndex(({ id }) => id === state.profileId);
+  const next = profiles[(currentIndex + 1 + profiles.length) % profiles.length];
+  if (!next) return;
+  stopPlayback();
+  state.profileId = next.id;
+  state.progress = 0;
+  state.challengeAttempted = false;
+  renderRobotSelect();
+  renderAll();
+  elements.rangeRobotSelect.focus();
+});
 elements.rangeViewToggle.addEventListener("click", () => {
   state.engineerView = !state.engineerView;
   elements.rangeViewToggle.setAttribute("aria-pressed", String(state.engineerView));
@@ -767,5 +1044,6 @@ elements.rangeStage.addEventListener("keydown", (event) => {
 window.addEventListener("beforeunload", stopPlayback);
 
 renderRobotSelect();
+renderChallenges();
 renderMissions();
 renderAll();

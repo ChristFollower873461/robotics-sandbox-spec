@@ -28,6 +28,25 @@ available. Drones show an overhead study path and explicitly treat floor
 fixtures as overflown. The range does not claim gait, contact, flight,
 localization, controller, or safety fidelity.
 
+### Challenge Mode
+
+Challenge Mode is the default plain-language entry to the same screening
+models. Its starter missions are immutable definitions evaluated by
+`src/core/challenge/challengeEngine.js`:
+
+- **Bring the Part Home** solves a bench handoff and user-positioned drop bin
+  against normalized planar reach and a fixture-clearance halo.
+- **Cross the Workshop** plans around clutter using the reviewed footprint,
+  reports geometric turning, and calls out any rough-patch crossing.
+- **Inspect the High Shelf** checks a 2.2 m inspection point against room
+  height, reviewed drone dimensions, and published flight time while keeping
+  camera, perception, localization, and flight control explicitly unknown.
+
+Success means the modeled constraints pass; caution means geometry passes with
+a material modeled caveat; failure means a modeled constraint blocks the
+mission; unknown means the reviewed evidence cannot support a stronger
+conclusion. Every state includes a recovery or upstream-validation path.
+
 ## Decision loop
 
 1. Enter measured room width, depth, clear height, narrowest doorway, terrain,

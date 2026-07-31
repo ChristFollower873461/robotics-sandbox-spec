@@ -113,6 +113,41 @@
 }
 .range-console-title small { color: #8fa59c; font: 8px/1 var(--guide-mono); letter-spacing: 0.06em; }
 
+.range-console-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.range-mode-switch {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border: 1px solid #45564f;
+  border-radius: 12px;
+  background: #0f1c18;
+}
+.range-mode-switch button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9fb0a9;
+  font: 750 10px/1 var(--guide-sans);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease, transform 90ms ease;
+}
+.range-mode-switch button:hover { color: white; }
+.range-mode-switch button:active { transform: scale(0.98); }
+.range-mode-switch button[aria-selected="true"] {
+  background: #f8f5e9;
+  color: #15231f;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.12);
+}
+.range-console[data-mode="challenge"] .range-platform-tabs { display: none; }
+
 .range-platform-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(102px, 1fr));
@@ -143,6 +178,8 @@
 .range-platform-tabs button[aria-selected="true"] { background: var(--range-yellow); color: #17231f; }
 .range-platform-tabs button[aria-selected="true"] span { color: #61501a; }
 .range-platform-tabs button:focus-visible,
+.range-mode-switch button:focus-visible,
+.range-challenges button:focus-visible,
 .range-view-toggle:focus-visible,
 .range-missions button:focus-visible,
 .range-select select:focus-visible,
@@ -185,6 +222,63 @@
   font: 700 8px/1 var(--guide-mono);
 }
 .range-step-heading > strong { font-size: 15px; letter-spacing: -0.015em; }
+
+.range-challenges { display: grid; gap: 9px; margin-bottom: 22px; }
+.range-challenges button {
+  width: 100%;
+  min-height: 94px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 4px 9px;
+  border: 1px solid #b8beb4;
+  border-radius: 12px;
+  background: #fffdf8;
+  color: var(--range-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 90ms ease, box-shadow 140ms ease;
+}
+.range-challenges button:hover { border-color: var(--range-green); transform: translateY(-1px); }
+.range-challenges button:active { transform: translateY(0) scale(0.985); }
+.range-challenges button[aria-pressed="true"] {
+  border-color: #5f501f;
+  background: #f6c74f;
+  box-shadow: 0 3px 0 #5f501f;
+}
+.range-challenge-order {
+  grid-row: 1 / 3;
+  padding-top: 3px;
+  color: var(--range-green);
+  font: 800 8px/1 var(--guide-mono);
+  letter-spacing: 0.05em;
+}
+.range-challenges button[aria-pressed="true"] .range-challenge-order { color: #574615; }
+.range-challenge-copy { min-width: 0; display: grid; gap: 4px; }
+.range-challenge-copy strong { font-size: 13px; line-height: 1.15; letter-spacing: -0.015em; }
+.range-challenge-copy small { color: #586660; font-size: 10px; line-height: 1.35; }
+.range-challenge-meta {
+  grid-column: 2;
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.range-challenge-meta b,
+.range-challenge-meta em {
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgba(21,35,31,0.08);
+  color: #33443e;
+  font: 700 7px/1 var(--guide-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-style: normal;
+}
+.range-challenge-meta em { background: transparent; padding-inline: 0; }
+.range-explore-missions[hidden],
+.range-challenges[hidden] { display: none; }
 
 .range-select { display: block; margin-bottom: 28px; }
 .range-select > span {
@@ -258,8 +352,12 @@
   font-weight: 700;
 }
 .range-status i { width: 8px; height: 8px; border-radius: 50%; background: #82928b; }
+.range-status[data-state="ready"] i { background: #4d8977; }
+.range-status[data-state="success"] i { background: #14a876; box-shadow: 0 0 0 4px rgba(20,168,118,0.12); }
 .range-status[data-state="promising"] i { background: #1c9c72; }
 .range-status[data-state="caution"] i { background: #d79517; }
+.range-status[data-state="unknown"] i { background: #648297; }
+.range-status[data-state="failure"] i,
 .range-status[data-state="blocked"] i { background: #dc6148; }
 .range-stage-actions button {
   min-height: 34px;
@@ -324,6 +422,36 @@
 .range-target text { fill: #903621; font: 800 9px/1 var(--guide-mono); letter-spacing: 0.06em; }
 .range-target.is-blocked .range-target-core { fill: #b94232; }
 .range-target.is-blocked .range-target-pulse { stroke: #b94232; }
+.range-target.is-valid .range-target-core { fill: #159a71; }
+.range-target.is-valid .range-target-pulse { stroke: #159a71; fill: rgba(21,154,113,0.13); }
+.range-target.is-unknown .range-target-core { fill: #527a90; }
+.range-target.is-unknown .range-target-pulse { stroke: #527a90; fill: rgba(82,122,144,0.13); }
+
+.range-challenge-zone text,
+.range-challenge-start-label,
+.range-challenge-scan text,
+.range-challenge-height-gauge text {
+  fill: #2e4a40;
+  font: 800 9px/1 var(--guide-mono);
+  letter-spacing: 0.07em;
+}
+.range-challenge-zone--handoff circle { fill: rgba(255,255,255,0.58); stroke: #557369; stroke-width: 2; stroke-dasharray: 5 5; }
+.range-challenge-zone--bin rect { fill: #a8d6b7; stroke: #163c30; stroke-width: 3; }
+.range-challenge-zone--bin path { fill: none; stroke: #326c59; stroke-width: 2; }
+.range-challenge-part rect,
+.range-challenge-parcel rect { fill: #f5c849; stroke: #263c35; stroke-width: 2; }
+.range-challenge-part path,
+.range-challenge-parcel path { fill: none; stroke: #745c17; stroke-width: 1.5; }
+.range-challenge-zone--receiving rect { fill: rgba(168,214,183,0.52); stroke: #23765c; stroke-width: 3; stroke-dasharray: 8 6; }
+.range-challenge-start-line { fill: none; stroke: #405a50; stroke-width: 3; }
+.range-challenge-scan > path { fill: rgba(242,184,36,0.18); stroke: #c89016; stroke-width: 2; stroke-dasharray: 7 5; }
+.range-challenge-scan circle:first-of-type { fill: none; stroke: #f2b824; stroke-width: 3; stroke-dasharray: 6 5; }
+.range-challenge-scan circle:last-of-type { fill: #f2b824; stroke: white; stroke-width: 3; }
+.range-challenge-height-gauge path { fill: none; stroke: #6e8279; stroke-width: 2; }
+.range-challenge-height-gauge .range-challenge-height-mark { stroke: #f06f45; stroke-width: 4; }
+.range-route--challenge { stroke-width: 7; }
+.range-console[data-challenge-state="success"] .range-stage-shell { box-shadow: inset 0 0 0 3px rgba(21,154,113,0.28); }
+.range-console[data-challenge-state="failure"] .range-stage-shell { box-shadow: inset 0 0 0 3px rgba(185,66,50,0.24); }
 
 .range-robot { --robot-color: #0d725f; pointer-events: none; }
 .range-arm-base-shadow { fill: rgba(21, 35, 31, 0.18); }
@@ -389,11 +517,31 @@
 .range-metrics strong { display: block; margin-top: 8px; font-size: 13px; line-height: 1.25; }
 
 .range-explanation { margin-top: 18px; padding: 16px; border-radius: 12px; background: #e5eee9; }
+.range-explanation[data-state="success"] { background: #dcefe4; }
+.range-explanation[data-state="ready"] { background: #e5eee9; }
 .range-explanation[data-state="caution"] { background: #f7eccb; }
+.range-explanation[data-state="unknown"] { background: #e0e9ee; }
+.range-explanation[data-state="failure"],
 .range-explanation[data-state="blocked"] { background: #f8ded5; }
 .range-explanation > span { color: #537066; font: 700 8px/1 var(--guide-mono); letter-spacing: 0.07em; text-transform: uppercase; }
 .range-explanation strong { display: block; margin-top: 8px; font-size: 14px; line-height: 1.3; }
 .range-explanation p { margin: 7px 0 0; color: #4f5b56; font-size: 11px; line-height: 1.5; }
+.range-result-actions { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.range-result-actions[hidden] { display: none; }
+.range-result-actions button {
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid #8e9b94;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--range-ink);
+  font: 700 10px/1.2 var(--guide-sans);
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 90ms ease;
+}
+.range-result-actions button:first-child { background: #17241f; border-color: #17241f; color: white; }
+.range-result-actions button:hover { border-color: var(--range-green); }
+.range-result-actions button:active { transform: scale(0.98); }
 .range-why { margin-top: 16px; border-top: 1px solid var(--range-line); border-bottom: 1px solid var(--range-line); }
 .range-why summary { min-height: 46px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; cursor: pointer; }
 .range-why summary::-webkit-details-marker { display: none; }
@@ -403,6 +551,12 @@
 #range-why-content p { margin: 0; display: grid; grid-template-columns: 8px 1fr; gap: 8px; color: #56625d; font-size: 10px; line-height: 1.42; }
 #range-why-content i { width: 7px; height: 7px; margin-top: 3px; border-radius: 50%; background: var(--range-green); }
 #range-why-content .range-source-fact i { background: var(--range-yellow); }
+#range-why-content .range-constraint[data-state="pass"] i { background: #159a71; }
+#range-why-content .range-constraint[data-state="caution"] i { background: #d79517; }
+#range-why-content .range-constraint[data-state="fail"] i { background: #b94232; }
+#range-why-content .range-constraint[data-state="unknown"] i { background: #527a90; }
+#range-why-content .range-constraint strong { color: #263c35; }
+#range-why-content .range-limitation { color: #6a5c31; }
 .range-engineer-detail { display: none; margin-top: 16px; padding: 12px; border: 1px solid #82948c; border-radius: 8px; background: #17241f; color: white; }
 .show-engineer-view .range-engineer-detail { display: grid; gap: 10px; }
 .range-engineer-detail div { padding-bottom: 9px; border-bottom: 1px solid #3d5048; }
@@ -429,12 +583,17 @@
   .range-intro { grid-template-columns: 1fr; gap: 24px; }
   .range-intro-copy > p { max-width: 64ch; }
   .range-console-bar { grid-template-columns: 1fr auto; padding: 14px; }
+  .range-console-tools { grid-column: 1 / -1; grid-row: 2; width: 100%; justify-content: stretch; }
+  .range-mode-switch { flex: 0 0 auto; }
   .range-platform-tabs { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+  .range-console-tools .range-platform-tabs { flex: 1; }
   .range-console-body { display: flex; flex-direction: column; }
   .range-stage-shell { order: 1; }
   .range-mission-panel { order: 2; border-top: 1px solid var(--range-line); border-right: 0; }
   .range-inspector { order: 3; display: block; }
   .range-missions { grid-template-columns: repeat(3, 1fr); }
+  .range-challenges { grid-template-columns: repeat(3, 1fr); }
+  .range-challenges button { min-height: 116px; }
   .range-tip { margin-top: 16px; }
   .range-inspector > * + * { margin-top: 16px; }
   .range-inspector > .range-metrics { margin-top: 0; }
@@ -448,6 +607,9 @@
   .range-trust { display: grid; grid-template-columns: 1fr 1fr; }
   .range-console { border-radius: 16px; }
   .range-console-title small { display: none; }
+  .range-console-tools { display: grid; gap: 8px; }
+  .range-mode-switch { width: 100%; }
+  .range-mode-switch button { min-height: 42px; padding-inline: 8px; font-size: 9px; }
   .range-platform-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .range-platform-tabs button { min-width: 0; padding-inline: 5px; gap: 4px; font-size: 10px; }
   .range-stage-head { min-height: 50px; }
@@ -457,6 +619,17 @@
   .range-transport input { grid-column: 1 / -1; grid-row: 2; width: 100%; }
   .range-transport > span { display: none; }
   .range-missions { grid-template-columns: 1fr; }
+  .range-challenges {
+    margin-inline: -18px;
+    padding: 2px 18px 6px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .range-challenges::-webkit-scrollbar { display: none; }
+  .range-challenges button { min-width: min(82vw, 310px); min-height: 104px; scroll-snap-align: start; }
   .range-mission-panel,
   .range-inspector { padding: 18px; }
 }
