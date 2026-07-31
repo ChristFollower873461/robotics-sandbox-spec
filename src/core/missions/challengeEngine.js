@@ -1,3 +1,4 @@
+/** Pure, deterministic mission evaluation kept independent from browser state. */
 import { inverseKinematics } from "../kinematics/planarArm.js";
 import { planArenaRoute } from "../planning/arenaPlanner.js";
 
