@@ -22,6 +22,10 @@ workspace described below; it is infrastructure, not the frontend host.
 - A playable four-class test range with draggable targets, class-specific
   missions, normalized arm IK, footprint-aware 2D routing, scrubbable
   playback, and progressive friendly/engineer explanations.
+- A reusable Challenge Mode with three deterministic starter missions:
+  **Bring the Part Home**, **Cross the Workshop**, and **Inspect the High
+  Shelf**. Each exposes its modeled success/caution/failure/unknown state,
+  recovery actions, evidence, and unmodeled physics without fake scoring.
 - A guided environment/task/candidate study across all 13 robot profiles.
 - Deterministic pass/caution/fail/unknown screening with calculations,
   assumptions, field-level evidence, confidence, and next validation steps.
@@ -199,6 +203,7 @@ const plan = planWaypointTrajectory({
 │   └── inspect-core.mjs
 ├── src/
 │   ├── core/
+│   │   ├── challenge/
 │   │   ├── collision/
 │   │   ├── decision/
 │   │   ├── environment/
@@ -208,11 +213,13 @@ const plan = planWaypointTrajectory({
 │   ├── types/
 │   └── ui/
 │       ├── app.js
+│       ├── challengeView.js
 │       ├── decisionApp.js
 │       ├── decisionCatalog.js
 │       └── testRangeApp.js
 └── tests/
     ├── arenaPlanner.test.mjs
+    ├── challengeEngine.test.mjs
     ├── core.test.mjs
     └── ui-shell.test.mjs
 ```

@@ -8,6 +8,12 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /id="arm-canvas"/);
   assert.match(html, /id="test-range"/);
   assert.match(html, /id="range-stage"/);
+  assert.match(html, /id="range-challenges"/);
+  assert.match(html, /id="range-challenge-layer"/);
+  assert.match(html, /data-range-mode="challenge"/);
+  assert.match(html, /data-range-mode="explore"/);
+  assert.match(html, /id="range-replay"/);
+  assert.match(html, /id="range-try-robot"/);
   assert.match(html, /id="range-robot-select"/);
   assert.match(html, /id="range-missions"/);
   assert.match(html, /id="range-view-toggle"/);
@@ -94,5 +100,8 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(testRangeApp, /sampleArenaRoute/);
   assert.match(testRangeApp, /inverseKinematics/);
   assert.match(testRangeApp, /getDecisionRecord/);
+  assert.match(testRangeApp, /evaluateChallenge/);
+  assert.match(testRangeApp, /renderChallengeCards/);
+  assert.match(testRangeApp, /renderChallengeScene/);
   assert.match(testRangeApp, /prefers-reduced-motion/);
 });
