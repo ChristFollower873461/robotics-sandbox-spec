@@ -25,9 +25,12 @@ test("the WidowX source model pins an auditable URDF and ten exact mesh inputs",
   const meshes = Object.values(WIDOWX_SOURCE_MODEL.meshes);
   assert.equal(meshes.length, 10);
   assert.equal(new Set(meshes.map(({ file }) => file)).size, meshes.length);
+  assert.equal(new Set(meshes.map(({ assetFile }) => assetFile)).size, meshes.length);
   for (const mesh of meshes) {
-    assert.equal(widowXMeshAssetUrl(mesh.file), `/src/assets/widowx-250s/${mesh.file}`);
-    const bytes = await readFile(`${assetDirectory}${mesh.file}`);
+    assert.match(mesh.file, /\.stl$/);
+    assert.equal(mesh.assetFile, `${mesh.file}.bin`);
+    assert.equal(widowXMeshAssetUrl(mesh.assetFile), `/src/assets/widowx-250s/${mesh.assetFile}`);
+    const bytes = await readFile(`${assetDirectory}${mesh.assetFile}`);
     assert.equal(createHash("sha256").update(bytes).digest("hex"), mesh.sha256, mesh.file);
   }
 });
@@ -63,5 +66,5 @@ test("the stage adapter rejects malformed measurements instead of inventing a po
     () => widowXStageTarget({ point: { x: "not-a-number", y: 2 }, base: { x: 0, y: 0 }, heightUnits: 4 }),
     /point\.x must be finite/
   );
-  assert.throws(() => widowXMeshAssetUrl("not-reviewed.stl"), /Unknown WidowX mesh file/);
+  assert.throws(() => widowXMeshAssetUrl("not-reviewed.stl.bin"), /Unknown WidowX mesh asset/);
 });
