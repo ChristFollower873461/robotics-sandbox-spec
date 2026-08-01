@@ -263,5 +263,5 @@ test("mission receipts preserve failure and unknown states", () => {
 
 test("local adapter accepts the published snapshot contract", async () => {
   const source = createLocalDecisionDataSource(LOCAL_DECISION_SNAPSHOT);
-  assert.equal((await source.loadSnapshot()).snapshotId, "repository-reviewed-catalog-2026-07-30");
+  assert.equal((await source.loadSnapshot()).snapshotId, "repository-reviewed-catalog-2026-08-01");
 });

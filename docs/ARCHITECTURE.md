@@ -21,6 +21,11 @@ This repository is organized around a small but extendable split between robotic
 - `src/core/environment/workcellContract.js`: the workcell v2 validator,
   v1-to-v2 migration, explicit robot mounts, calibration evidence, and fixture
   provenance adapters.
+- `src/core/environment/customerSpace.js`: privacy-safe customer room,
+  dimension provenance, axis-aligned fixture, serialization, and decision-input
+  adapter contract.
+- `src/core/visualization/customerSpaceScene.js`: pure plan/isometric
+  projection and shared geometry helpers used by both customer-space views.
 - `src/core/robot/profile.js`: robot-profile v1 validation, provenance checks,
   platform/engine compatibility enforcement, and portable record
   serialization.
@@ -39,6 +44,8 @@ This repository is organized around a small but extendable split between robotic
 - `src/core/decision/missionOutcome.js`: reproducible Challenge Mode outcomes.
 - `src/core/decision/simulationRouter.js`: explicit, not-run routing from a
   screening gap to the relevant simulation domains.
+- `src/core/decision/customerSpaceScreening.js`: validated, image-free package
+  that binds visible room geometry to its recommendation receipt.
 - `src/core/scenario/scenario.js`: state snapshot serialization/hydration for scenario save/load workflows.
 - `src/core/geometry.js`: shared numeric and interpolation utilities.
 
@@ -53,6 +60,9 @@ This repository is organized around a small but extendable split between robotic
   capability boundaries, and upstream simulation paths for all 13 profiles.
 - `src/ui/decisionData.js`: the reviewed repository snapshot plus opt-in
   same-origin remote endpoint configuration.
+- `src/ui/spaceStudioApp.js`: local photo/plan capture, measurement controls,
+  synchronized 2D/3D editing, task placement, screening, official robot media,
+  progressive evidence, and portable package export.
 - `src/ui/decisionApp.js`: guided study form, scaled orthographic proxies,
   explainable comparison, evidence drawer, and local JSON/HTML export.
 - `src/ui/testRangeApp.js`: playable four-class range, mission presets,
@@ -68,33 +78,41 @@ These modules are intentionally light so they can be reused by either a browser 
 
 ## Data flow at a glance
 
-1. The decision form creates a versioned environment/task scenario.
-2. The active adapter supplies one fully validated and fingerprinted profile
+1. The customer-space studio creates a validated image-free room record from
+   local media metadata, user-entered bounds, and editable fixture geometry.
+2. Its plan and isometric views project the same millimeter coordinates; a
+   view change never creates a second scene model.
+3. The visible robot base, task point, chosen job, and room generate the same
+   versioned decision scenario used by the full comparison workbench.
+4. The decision form can also create that scenario directly.
+5. The active adapter supplies one fully validated and fingerprinted profile
    and decision-record snapshot. A rejected remote snapshot cannot partially
    replace the local catalog.
-3. The evaluator joins selected profiles to decision records and emits
+6. The evaluator joins selected profiles to decision records and emits
    deterministic pass/caution/fail/unknown findings.
-4. The foundation turns the report into a receipt containing the
+7. The foundation turns the report into a receipt containing the
    recommendation-effective input fingerprint, dataset fingerprint, rationale,
    evidence basis, and targeted not-run simulation route. Notes and photo
    metadata are excluded from the effective input.
-5. The UI renders proxies, calculations, evidence, and next steps, then
+8. The customer-space package validator binds that receipt to the visible room
+   dimensions and rejects embedded reference images before local download.
+9. The UI renders proxies, calculations, evidence, and next steps, then
    exports the complete receipt locally.
-6. The platform drawer selects a source-backed record for deeper inspection.
-7. `canLaunchPlanarWorkbench()` admits only records declared as
+10. The platform drawer selects a source-backed record for deeper inspection.
+11. `canLaunchPlanarWorkbench()` admits only records declared as
    `arm` + `interactive` + `planar-arm-v1`.
-8. Catalog-only humanoid, quadruped, and drone records update the evidence
+12. Catalog-only humanoid, quadruped, and drone records update the evidence
    brief and capability warning without mutating the active simulator.
-9. For an admitted arm, a workcell defines calibrated millimeter bounds, robot
+13. For an admitted arm, a workcell defines calibrated millimeter bounds, robot
    mounts, and fixtures in world coordinates.
-10. The active robot base converts world fixtures into robot-local collision
+14. The active robot base converts world fixtures into robot-local collision
    geometry.
-11. User state defines arm config, target, and waypoints.
-12. Kinematics solve poses (`forwardKinematics`, `inverseKinematics`).
-13. Direct interpolation is sampled and checked for collision.
-14. When requested and needed, A* searches a generated 2D joint-space grid.
-15. The UI renders Cartesian motion and joint-space search side by side.
-16. Workcell and scenario modules persist/restore portable state snapshots.
+15. User state defines arm config, target, and waypoints.
+16. Kinematics solve poses (`forwardKinematics`, `inverseKinematics`).
+17. Direct interpolation is sampled and checked for collision.
+18. When requested and needed, A* searches a generated 2D joint-space grid.
+19. The UI renders Cartesian motion and joint-space search side by side.
+20. Workcell and scenario modules persist/restore portable state snapshots.
 
 ## Capability boundary
 

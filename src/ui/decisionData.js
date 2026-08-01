@@ -10,8 +10,8 @@ import { DECISION_CATALOG } from "./decisionCatalog.js";
 import { ROBOT_PROFILES } from "./robotProfiles.js";
 
 export const LOCAL_DECISION_SNAPSHOT = createDecisionSnapshot({
-  snapshotId: "repository-reviewed-catalog-2026-07-30",
-  publishedAt: "2026-07-30T00:00:00.000Z",
+  snapshotId: "repository-reviewed-catalog-2026-08-01",
+  publishedAt: "2026-08-01T00:00:00.000Z",
   source: {
     adapterId: "repository-local-catalog",
     kind: "local-static",

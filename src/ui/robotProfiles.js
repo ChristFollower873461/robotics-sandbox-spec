@@ -10,6 +10,7 @@ const PROFILE_DEFINITIONS = [
     topology: "single",
     systemType: "single-arm",
     recordStatus: "reviewed",
+    availabilityStatus: "commercial-kit-discontinued",
     model: "WIDOWX 250S",
     company: "INTERBOTIX / TROSSEN",
     country: "USA",
@@ -21,10 +22,10 @@ const PROFILE_DEFINITIONS = [
       "https://github.com/Interbotix/interbotix_ros_manipulators",
     productUrl:
       "https://docs.trossenrobotics.com/interbotix_xsarms_docs/",
-    sourceReach: "679 MM TO FINGERTIP",
+    sourceReach: "650 MM PUBLISHED REACH / 250 G WORKING PAYLOAD",
     geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
     geometryStatus: "normalized",
-    sourceCheckedAt: "2026-07-30",
+    sourceCheckedAt: "2026-08-01",
     sources: [
       {
         sourceId: "software",
@@ -35,8 +36,8 @@ const PROFILE_DEFINITIONS = [
       {
         sourceId: "specifications",
         kind: "manufacturer-specification",
-        label: "Interbotix X-Series specifications",
-        url: "https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications.html",
+        label: "WidowX-250 6DOF specifications",
+        url: "https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications/wx250s.html",
       },
       {
         sourceId: "product",
@@ -47,9 +48,16 @@ const PROFILE_DEFINITIONS = [
     ],
     publishedClaims: [
       {
-        claimId: "fingertip-reach",
-        label: "Published fingertip reach",
-        value: "679 mm",
+        claimId: "published-reach",
+        label: "Published reach",
+        value: "650 mm",
+        status: "vendor-claimed",
+        sourceIds: ["specifications"],
+      },
+      {
+        claimId: "working-payload",
+        label: "Published working payload",
+        value: "250 g inside the recommended workspace",
         status: "vendor-claimed",
         sourceIds: ["specifications"],
       },

@@ -78,14 +78,14 @@ test("scenario contract rejects invalid dimensions and accepts photo metadata", 
   assert.equal(validateDecisionScenario(invalid).valid, false);
 });
 
-test("arm screening exposes sourced reach without inventing payload", () => {
+test("arm screening uses the current sourced reach and working payload", () => {
   const report = evaluate(study());
   const candidate = report.evaluations[0];
   assert.equal(report.format, DECISION_REPORT_FORMAT);
   assert.equal(validateDecisionReport(report).valid, true);
   assert.equal(candidate.findings.find((item) => item.id === "reach").status, "pass");
-  assert.equal(candidate.findings.find((item) => item.id === "payload").status, "unknown");
-  assert.equal(candidate.outcome, "unknown");
+  assert.equal(candidate.findings.find((item) => item.id === "payload").status, "fail");
+  assert.equal(candidate.outcome, "fail");
 });
 
 test("dual-arm cell fails a too-small room while preserving bimanual evidence", () => {

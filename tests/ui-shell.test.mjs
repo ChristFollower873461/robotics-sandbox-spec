@@ -6,6 +6,19 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
   assert.match(html, /id="arm-canvas"/);
+  assert.match(html, /id="space-studio"/);
+  assert.match(html, /Show us your space/);
+  assert.match(html, /id="space-reference"/);
+  assert.match(html, /image\/jpeg,image\/png,image\/webp/);
+  assert.match(html, /id="space-measurements-confirmed"/);
+  assert.match(html, /id="space-plan-stage"/);
+  assert.match(html, /id="space-3d-stage"/);
+  assert.match(html, /data-space-view="plan"/);
+  assert.match(html, /data-space-view="space"/);
+  assert.match(html, /data-add-space-fixture="bench"/);
+  assert.match(html, /id="space-run-study"/);
+  assert.match(html, /id="space-result-evidence"/);
+  assert.match(html, /src="\/src\/ui\/spaceStudioApp\.js"/);
   assert.match(html, /id="test-range"/);
   assert.match(html, /id="range-stage"/);
   assert.match(html, /id="range-space-stage"/);
@@ -76,10 +89,12 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
 });
 
 test("browser workbench imports the tested core modules", async () => {
-  const [app, decisionApp, testRangeApp] = await Promise.all([
+  const [app, decisionApp, testRangeApp, spaceStudioApp, customerScreening] = await Promise.all([
     readFile(new URL("../src/ui/app.js", import.meta.url), "utf8"),
     readFile(new URL("../src/ui/decisionApp.js", import.meta.url), "utf8"),
     readFile(new URL("../src/ui/testRangeApp.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/ui/spaceStudioApp.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/core/decision/customerSpaceScreening.js", import.meta.url), "utf8"),
   ]);
 
   assert.match(app, /inverseKinematics/);
@@ -113,4 +128,32 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(testRangeApp, /renderSpatialStage/);
   assert.match(testRangeApp, /unprojectSpatialFloor/);
   assert.match(testRangeApp, /prefers-reduced-motion/);
+  assert.match(spaceStudioApp, /createCustomerSpace/);
+  assert.match(spaceStudioApp, /createIsometricTransform/);
+  assert.match(spaceStudioApp, /customerSpaceDecisionEnvironment/);
+  assert.match(spaceStudioApp, /evaluateDecisionStudy/);
+  assert.match(spaceStudioApp, /createRecommendationReceipt/);
+  assert.match(spaceStudioApp, /MAX_MEDIA_BYTES|CUSTOMER_SPACE_LIMITS/);
+  assert.match(spaceStudioApp, /URL\.revokeObjectURL/);
+  assert.match(spaceStudioApp, /createCustomerSpaceScreeningPackage/);
+  assert.match(spaceStudioApp, /Official image unavailable/);
+  for (const profileId of [
+    "interbotix-wx250s",
+    "niryo-ned2",
+    "franka-research-3",
+    "ur5e",
+    "hello-stretch-4",
+    "aloha-stationary",
+    "fr3-duo",
+    "toddlerbot-2",
+    "poppy-humanoid",
+    "pupper-v3",
+    "solo-12",
+    "crazyflie-2-1-plus",
+    "agilicious",
+  ]) {
+    assert.match(spaceStudioApp, new RegExp(`(?:"${profileId}"|${profileId}):`));
+  }
+  assert.match(customerScreening, /referenceImageIncluded: false/);
+  assert.match(customerScreening, /validateRecommendationReceipt/);
 });

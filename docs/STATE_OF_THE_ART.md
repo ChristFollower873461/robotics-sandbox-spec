@@ -82,8 +82,8 @@ commercial application, or manufactured unit is open.
 | ALOHA Stationary | Dual follower arms plus two leader arms | United States | Open hardware system and bimanual teleoperation code, MIT plus component licenses | [ALOHA repository](https://github.com/tonyzhaozh/aloha), [official specifications](https://docs.trossenrobotics.com/aloha_docs/1.0/specifications.html) |
 | Franka FR3 Duo | Two arms | Germany | FCI/`libfranka` and open LABS reference workflows; commercial hardware | [FR3 Duo](https://franka.de/fr3-duo), [Franka LABS](https://franka.de/labs) |
 
-Interbotix publishes a 679 mm fingertip reach for the WidowX 250S in its
-[X-Series specifications](https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications.html).
+Interbotix currently publishes a 650 mm reach and a 250 g working payload for the WidowX 250S in its
+[model-specific specifications](https://docs.trossenrobotics.com/interbotix_xsarms_docs/specifications/wx250s.html).
 Niryo describes the Ned line as designed and manufactured in France, and
 Franka identifies itself as a German company headquartered in Munich. The
 profile metadata records those source facts while keeping all on-screen link

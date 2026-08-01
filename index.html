@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Play with rough, source-backed robot movement models, compare open platforms, and understand what could fit before moving to a higher-fidelity simulation."
+      content="Show us your space, give it a real scale, and explore which open robotics platforms might be worth testing there."
     />
-    <title>Robot Field Guide / Play With the Possibilities</title>
+    <title>Robot Field Guide / Show Us Your Space</title>
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/range.css" />
   </head>
@@ -19,15 +19,176 @@
           <span><small>BASEMENT BOYS / OPEN LAB</small><strong>Robot Field Guide</strong></span>
         </a>
         <nav aria-label="Primary navigation">
+          <a href="#space-studio">Build my space</a>
           <a href="#test-range">Play</a>
           <a href="#decision-lab">Compare</a>
-          <a href="#robot-library">Browse the evidence</a>
         </nav>
         <div class="masthead-actions">
           <span>13 sourced records</span>
           <a href="https://github.com/ChristFollower873461/robotics-sandbox-spec">View source ↗</a>
         </div>
       </header>
+
+      <section id="space-studio" class="space-studio" aria-labelledby="space-studio-title">
+        <header class="space-studio-intro">
+          <div>
+            <p class="eyebrow">Your space is the starting point</p>
+            <h1 id="space-studio-title">Show us your space.<br /><em>See what might work there.</em></h1>
+          </div>
+          <div class="space-studio-promise">
+            <p>Start with one photo or floor plan and three measurements. We’ll turn them into an editable rough 3D room, place a real robot candidate inside it, and explain what the evidence can—and cannot—tell you.</p>
+            <div class="space-trust-row" aria-label="Privacy and fidelity summary">
+              <span><i></i>Image stays on this device</span>
+              <span><i></i>You control the scale</span>
+              <span><i></i>Unknowns stay visible</span>
+            </div>
+          </div>
+        </header>
+
+        <div id="space-app" class="space-app" data-view="space" data-result="ready">
+          <aside class="space-flow" aria-label="Build your space">
+            <header class="space-flow-heading">
+              <span>Guided reconstruction</span>
+              <strong>Build a useful first draft</strong>
+              <small>About 3 minutes · no robotics knowledge needed</small>
+            </header>
+
+            <section class="space-step" data-step="1">
+              <header><b>1</b><span><strong>Add a view of the space</strong><small>A photo or floor plan is enough to start.</small></span></header>
+              <div class="space-capture-kind" role="group" aria-label="Reference type">
+                <button type="button" data-space-capture-kind="photo" aria-pressed="true">Photo</button>
+                <button type="button" data-space-capture-kind="floor-plan" aria-pressed="false">Floor plan</button>
+              </div>
+              <label class="space-dropzone" for="space-reference">
+                <input id="space-reference" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" />
+                <span class="space-dropzone-icon" aria-hidden="true"><i></i><i></i></span>
+                <span><strong id="space-capture-title">Choose a photo</strong><small>JPEG, PNG, or WebP · up to 20 MB</small></span>
+                <b>Browse</b>
+              </label>
+              <div class="space-capture-state">
+                <output id="space-photo-state">No image selected</output>
+                <button id="space-remove-photo" type="button" hidden>Remove</button>
+              </div>
+              <p class="space-privacy-note"><i aria-hidden="true">⌁</i><span><strong>Private by default.</strong> The image is displayed with a local browser URL. We don’t upload it and it is excluded from downloads.</span></p>
+              <button id="space-use-example" class="space-text-action" type="button">Or use the example workshop →</button>
+            </section>
+
+            <section class="space-step" data-step="2">
+              <header><b>2</b><span><strong>Give it a real scale</strong><small>Measure wall-to-wall and floor-to-ceiling.</small></span></header>
+              <div class="space-unit-row">
+                <label for="space-units">Units</label>
+                <select id="space-units"><option value="metric">Millimeters</option><option value="imperial">Feet</option></select>
+              </div>
+              <div class="space-measurements">
+                <label><span>Width <small id="space-width-unit">mm</small></span><input id="space-width" type="number" min="300" max="50000" step="10" value="5000" /><output id="space-width-hint">16.4 ft</output></label>
+                <label><span>Depth <small id="space-depth-unit">mm</small></span><input id="space-depth" type="number" min="300" max="50000" step="10" value="4000" /><output id="space-depth-hint">13.1 ft</output></label>
+                <label><span>Clear height <small id="space-height-unit">mm</small></span><input id="space-height" type="number" min="300" max="20000" step="10" value="2600" /><output id="space-height-hint">8.5 ft</output></label>
+              </div>
+              <label class="space-confirm-measurements"><input id="space-measurements-confirmed" type="checkbox" /><span><strong>I measured these</strong><small>Otherwise we keep them labeled as estimates.</small></span></label>
+            </section>
+
+            <section class="space-step" data-step="3">
+              <header><b>3</b><span><strong>Add what matters</strong><small>Place the big obstacles; skip the small stuff.</small></span></header>
+              <div class="space-fixture-palette" role="group" aria-label="Add an object">
+                <button type="button" data-add-space-fixture="bench"><i></i>Work bench</button>
+                <button type="button" data-add-space-fixture="rack"><i></i>Rack</button>
+                <button type="button" data-add-space-fixture="keep-clear"><i></i>Keep-clear zone</button>
+              </div>
+              <p class="space-control-tip">In <strong>2D plan</strong>, drag objects, the robot base, or the orange task point. Arrow keys move the selected item.</p>
+              <div id="space-fixture-inspector" class="space-fixture-inspector" hidden>
+                <header><strong id="space-fixture-name">Object</strong><button id="space-delete-fixture" type="button">Remove</button></header>
+                <div>
+                  <label>Width <input id="space-fixture-width" type="number" min="20" step="10" /></label>
+                  <label>Depth <input id="space-fixture-depth" type="number" min="20" step="10" /></label>
+                  <label>Height <input id="space-fixture-height" type="number" min="20" step="10" /></label>
+                </div>
+                <small>Millimeters · dimensions are treated as measured edits.</small>
+              </div>
+            </section>
+
+            <section class="space-step space-step--job" data-step="4">
+              <header><b>4</b><span><strong>What should happen here?</strong><small>This chooses the right robot classes to screen.</small></span></header>
+              <label class="space-job-select" for="space-job">
+                <span>Closest job</span>
+                <select id="space-job">
+                  <option value="pick-place">Move or sort parts</option>
+                  <option value="bench-research">Experiment on a bench</option>
+                  <option value="indoor-inspection">Inspect this indoor space</option>
+                  <option value="ground-traverse">Travel across the ground</option>
+                  <option value="aerial-inspection">Inspect from the air</option>
+                </select>
+              </label>
+              <button id="space-run-study" class="space-primary-action" type="button">See what might work <span>→</span></button>
+              <output id="space-form-message" class="space-form-message" aria-live="polite"></output>
+            </section>
+          </aside>
+
+          <div class="space-stage-shell">
+            <header class="space-stage-bar">
+              <div><span><i></i>YOUR SPACE / LIVE DRAFT</span><strong id="space-stage-title">Example workshop · estimated scale</strong></div>
+              <div class="space-view-switch" role="tablist" aria-label="Space view">
+                <button type="button" role="tab" data-space-view="plan" aria-selected="false">2D plan</button>
+                <button type="button" role="tab" data-space-view="space" aria-selected="true">3D room</button>
+              </div>
+            </header>
+            <div class="space-stage-viewport">
+              <svg id="space-plan-stage" class="space-stage-view space-stage-view--plan" viewBox="0 0 920 640" role="img" aria-labelledby="space-plan-title space-plan-description" tabindex="-1" hidden>
+                <title id="space-plan-title">Editable measured plan of the customer's space</title>
+                <desc id="space-plan-description">A top-down room showing the local reference image, measured bounds, fixtures, robot base, and task point.</desc>
+              </svg>
+              <svg id="space-3d-stage" class="space-stage-view space-stage-view--3d" viewBox="0 0 920 640" role="img" aria-labelledby="space-3d-title space-3d-description" tabindex="0">
+                <title id="space-3d-title">Three-dimensional rough reconstruction of the customer's space</title>
+                <desc id="space-3d-description">An isometric room generated from entered dimensions with editable fixtures, a robot representation, and a task point. This is geometry screening without physics.</desc>
+              </svg>
+              <div id="space-reference-inset" class="space-reference-inset" hidden>
+                <img id="space-reference-preview" alt="Local reference for the reconstructed space" />
+                <span>Local reference · not uploaded</span>
+              </div>
+              <div class="space-stage-status"><span id="space-stage-status"><i></i>Geometry draft</span><small id="space-stage-boundary">User scale · estimated fixtures · no physics</small></div>
+            </div>
+            <footer class="space-stage-footer">
+              <div><span>Room</span><strong id="space-room-readout">5,000 × 4,000 × 2,600 mm</strong></div>
+              <div><span>Robot → task</span><strong id="space-reach-readout">850 mm</strong></div>
+              <div><span>Calibration</span><strong id="space-calibration-readout">Estimated numeric bounds</strong></div>
+              <div class="space-provenance-key" aria-label="Dimension provenance"><span><i data-state="measured"></i>Measured</span><span><i data-state="estimated"></i>Estimated</span><span><i data-state="unknown"></i>Unknown</span></div>
+            </footer>
+            <p id="space-live-summary" class="sr-only" aria-live="polite"></p>
+          </div>
+
+          <aside class="space-result-panel" aria-label="Robot screening result">
+            <header><span>Current screen</span><strong id="space-result-kicker">Ready when you are</strong></header>
+            <div class="space-robot-media" data-has-image="false">
+              <img id="space-robot-photo" alt="" hidden loading="lazy" referrerpolicy="no-referrer" />
+              <div id="space-robot-illustration" class="space-robot-illustration" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              <span id="space-robot-media-label">Source-shaped preview appears here</span>
+            </div>
+            <div class="space-result-identity">
+              <span id="space-result-platform">Start with your space</span>
+              <h2 id="space-result-model">No robot chosen yet</h2>
+              <p id="space-result-maker">We’ll compare the relevant open platforms.</p>
+            </div>
+            <div id="space-result-verdict" class="space-result-verdict" data-state="ready">
+              <span>What this means</span>
+              <strong>Build the rough room, then run the screen.</strong>
+              <p>The first result will explain fit, reach, mobility, evidence gaps, and what requires a real simulator.</p>
+            </div>
+            <div id="space-result-findings" class="space-result-findings"></div>
+            <div id="space-result-actions" class="space-result-actions" hidden>
+              <button id="space-try-next" type="button">Try another robot</button>
+              <a id="space-product-link" href="#" target="_blank" rel="noreferrer">See the real robot ↗</a>
+            </div>
+            <details id="space-result-why" class="space-result-why" hidden>
+              <summary>Why this result? <span>+</span></summary>
+              <div id="space-result-evidence"></div>
+            </details>
+            <div class="space-export-actions">
+              <button id="space-download" type="button">Download space JSON</button>
+              <button id="space-open-compare" type="button">Open full comparison</button>
+            </div>
+            <p class="space-screening-disclosure"><strong>Screening, not certification.</strong> This browser model does not validate safety, controls, contact, perception, terrain, battery, or real deployment.</p>
+          </aside>
+        </div>
+      </section>
 
       <section id="test-range" class="range-hero" aria-labelledby="range-title">
         <header class="range-intro">
@@ -406,7 +567,7 @@
           <dl>
             <div><dt>OPENNESS</dt><dd id="profile-openness">OPEN COMPONENT</dd></div>
             <div><dt>LICENSE / TERMS</dt><dd id="profile-license">BSD-3-CLAUSE</dd></div>
-            <div><dt>SOURCE FACT</dt><dd id="profile-reach">679 MM TO FINGERTIP</dd></div>
+            <div><dt>SOURCE FACT</dt><dd id="profile-reach">650 MM REACH / 250 G PAYLOAD</dd></div>
             <div><dt>SIM ENGINE</dt><dd id="profile-engine">PLANAR ARM V1 / LIVE</dd></div>
             <div><dt>AVAILABILITY</dt><dd id="profile-availability">COMMERCIAL PRODUCT</dd></div>
             <div><dt>SUPPLY CHAIN</dt><dd id="profile-supply-chain">NOT ASSESSED</dd></div>
@@ -794,6 +955,7 @@
     </main>
 
     <script type="module" src="/src/ui/testRangeApp.js"></script>
+    <script type="module" src="/src/ui/spaceStudioApp.js"></script>
     <script type="module" src="/src/ui/decisionApp.js"></script>
     <script type="module" src="/src/ui/app.js"></script>
   </body>

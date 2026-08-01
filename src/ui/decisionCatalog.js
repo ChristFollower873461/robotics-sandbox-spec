@@ -83,7 +83,8 @@ const RECORDS = [
     fidelityLabel: "LEVEL 2 / NORMALIZED PLANAR KINEMATIC APPROXIMATION",
     evaluatorBoundary: "Published reach screens the task; the live two-link drawing is normalized and is not vendor geometry.",
     facts: facts({
-      reachMm: sourced(679, "mm", ["specifications"], "Published fingertip reach; not a complete operating envelope."),
+      reachMm: sourced(650, "mm", ["specifications"], "Current manufacturer-published reach; not a complete operating envelope."),
+      payloadKg: sourced(0.25, "kg", ["specifications"], "Published working payload inside the recommended workspace; repeated operation and extension constraints still apply."),
     }),
     capabilities: capabilities({
       manipulation: capability("supported", ["software", "product"], "ROS manipulator packages and product documentation establish manipulation scope.", "high"),

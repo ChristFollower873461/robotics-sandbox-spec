@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/customer-space.v1.schema.json",
+  "title": "Basement Boys Customer Space v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "savedAt", "units", "name", "coordinateFrame", "capture", "bounds", "calibration", "markers", "fixtures"],
+  "properties": {
+    "format": { "const": "basement-boys/customer-space/v1" },
+    "savedAt": { "type": "string", "format": "date-time" },
+    "units": { "const": "mm" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "coordinateFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frameId", "handedness", "axes"],
+      "properties": {
+        "frameId": { "const": "customer-space" },
+        "handedness": { "const": "right" },
+        "axes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "const": "+right" },
+            "y": { "const": "+forward" },
+            "z": { "const": "+up" }
+          }
+        }
+      }
+    },
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "fileName", "mediaType", "byteSize", "pixels", "privacy", "imageEmbedded"],
+      "properties": {
+        "kind": { "enum": ["none", "photo", "floor-plan"] },
+        "fileName": { "type": ["string", "null"], "maxLength": 160 },
+        "mediaType": { "enum": ["image/jpeg", "image/png", "image/webp", null] },
+        "byteSize": { "type": "integer", "minimum": 0, "maximum": 20971520 },
+        "pixels": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["width", "height"],
+              "properties": {
+                "width": { "type": "integer", "minimum": 1 },
+                "height": { "type": "integer", "minimum": 1 }
+              }
+            }
+          ]
+        },
+        "privacy": { "const": "browser-local" },
+        "imageEmbedded": { "const": false }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "depth", "height"],
+      "properties": {
+        "width": { "$ref": "#/$defs/roomDimension" },
+        "depth": { "$ref": "#/$defs/roomDimension" },
+        "height": { "$ref": "#/$defs/roomDimension" }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "confidence", "statement"],
+      "properties": {
+        "method": { "enum": ["numeric-bounds", "photo-bounds"] },
+        "confidence": { "enum": ["measured", "estimated", "unknown"] },
+        "statement": { "type": "string", "minLength": 10 }
+      }
+    },
+    "markers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["robotBase", "taskPoint"],
+      "properties": {
+        "robotBase": { "$ref": "#/$defs/spacePoint" },
+        "taskPoint": { "$ref": "#/$defs/spacePoint" }
+      }
+    },
+    "fixtures": {
+      "type": "array",
+      "maxItems": 80,
+      "items": { "$ref": "#/$defs/fixture" }
+    }
+  },
+  "$defs": {
+    "roomDimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valueMm", "status", "source"],
+      "properties": {
+        "valueMm": { "type": "number" },
+        "status": { "enum": ["measured", "estimated"] },
+        "source": { "type": "string", "minLength": 1, "maxLength": 48 }
+      }
+    },
+    "spacePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["xMm", "yMm", "zMm"],
+      "properties": {
+        "xMm": { "type": "number", "minimum": 0 },
+        "yMm": { "type": "number", "minimum": 0 },
+        "zMm": { "type": "number", "minimum": 0 }
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "kind", "pose", "geometry", "provenance"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "kind": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "pose": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["xMm", "yMm", "zMm", "yawDegrees"],
+          "properties": {
+            "xMm": { "type": "number", "minimum": 0 },
+            "yMm": { "type": "number", "minimum": 0 },
+            "zMm": { "type": "number", "minimum": 0 },
+            "yawDegrees": { "const": 0 }
+          }
+        },
+        "geometry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "widthMm", "depthMm", "heightMm"],
+          "properties": {
+            "type": { "const": "box" },
+            "widthMm": { "type": "number", "minimum": 20 },
+            "depthMm": { "type": "number", "minimum": 20 },
+            "heightMm": { "type": "number", "minimum": 20 }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "reviewStatus", "dimensionalStatus", "sourceAssetId"],
+          "properties": {
+            "method": { "enum": ["manual", "preset", "traced"] },
+            "reviewStatus": { "enum": ["confirmed", "proposed"] },
+            "dimensionalStatus": { "enum": ["measured", "estimated", "unknown"] },
+            "sourceAssetId": { "type": ["string", "null"], "maxLength": 160 }
+          }
+        }
+      }
+    }
+  }
+}

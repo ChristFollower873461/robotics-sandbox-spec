@@ -6,6 +6,18 @@ JSON Schemas live in `schemas/`.
 
 ## Decision contracts
 
+`basement-boys/customer-space/v1` is the customer-facing room record. It uses
+millimeters in a right-handed `+right`, `+forward`, `+up` frame, distinguishes
+measured, estimated, and unknown dimensions, and stores axis-aligned box
+fixtures with provenance. Its reference-photo record contains metadata only;
+`privacy` is always `browser-local` and `imageEmbedded` is always `false`.
+
+`basement-boys/customer-space-screen/v1` binds one validated customer space to
+one validated recommendation receipt. Validation rejects mismatched room
+dimensions, embedded image data, unsupported timestamps, or an invalid child
+contract. This prevents a saved recommendation from silently describing a
+different visible room.
+
 `basement-boys/robot-decision-catalog/v1` adds a complete screening record for
 each robot profile. Eight physical/operating fields are always present and
 carry value, unit, evidence status, confidence, source IDs, and an explanatory
@@ -38,6 +50,8 @@ boundary.
 
 Runtime modules are under `src/core/decision/`; matching schemas are:
 
+- `schemas/customer-space.v1.schema.json`
+- `schemas/customer-space-screening-package.v1.schema.json`
 - `schemas/robot-decision-catalog.v1.schema.json`
 - `schemas/robot-decision-scenario.v1.schema.json`
 - `schemas/robot-decision-report.v1.schema.json`
@@ -47,6 +61,8 @@ Runtime modules are under `src/core/decision/`; matching schemas are:
 
 See `docs/DECISION_WORKBENCH.md` for evaluator semantics and the adapter
 contract.
+
+See `docs/CUSTOMER_SPACE.md` for the capture and calibration boundary.
 
 ## `basement-boys/robot-profile/v1`
 

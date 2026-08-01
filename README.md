@@ -19,6 +19,10 @@ workspace described below; it is infrastructure, not the frontend host.
 
 ## What this project demonstrates
 
+- A customer-first **Show us your space** studio: load a photo or floor plan
+  locally, enter a few real dimensions, arrange fixtures in a shared 2D/3D
+  room, mark the robot base and task, and receive an evidence-backed shortlist.
+  The image never leaves the browser and is never included in JSON exports.
 - A playable four-class test range with draggable targets, class-specific
   missions, normalized arm IK, footprint-aware 2D routing, scrubbable
   playback, and progressive friendly/engineer explanations.
@@ -80,6 +84,8 @@ workspace described below; it is infrastructure, not the frontend host.
 - `docs/ARCHITECTURE.md` for a fast architecture walkthrough.
 - `docs/CONTRACTS.md` for robot-profile and workcell schemas, validation, and
   migration behavior.
+- `docs/CUSTOMER_SPACE.md` for the photo/plan privacy model, calibration
+  boundary, shared 2D/3D geometry, screening package, and integration path.
 - `docs/STATE_OF_THE_ART.md` for the technical research, product-profile sources, and explicit simulator boundaries.
 - `docs/DECISION_WORKBENCH.md` for finding semantics, fidelity levels, catalog
   contribution rules, and the simulation-adapter contract.
@@ -135,11 +141,16 @@ Use the hosted workbench above, or run the exact same application yourself:
    npm run dev
    ```
 
-   Open `http://localhost:4173/`. Start at **Build a robot shortlist**: enter
-   room measurements and task requirements, choose up to six candidates, run
-   the screening report, inspect evidence/unknowns, and export JSON or HTML.
-   Add a local photo for visual context or choose **Trace the room below** to
-   continue into the calibrated fixture editor.
+   Open `http://localhost:4173/`. Start at **Show us your space**: optionally
+   add a local photo or floor plan, enter room dimensions, edit the shared
+   2D/3D layout, place the robot and orange task marker, then run the first
+   honest screening. Download either an image-free customer-space record or a
+   validated screening package that binds the visible room dimensions to its
+   recommendation receipt.
+
+   Continue to **Build a robot shortlist** when you want direct candidate
+   selection, all comparison fields, JSON/HTML reporting, and more detailed
+   environment/task controls.
 
    Browse Arm, Humanoid, Quadruped, and Drone specimen drawers for deeper
    catalog inspection. Arm records marked **LIVE** launch the planar workbench;
@@ -187,6 +198,7 @@ const plan = planWaypointTrajectory({
 │   ├── ARCHITECTURE.md
 │   ├── CODEX_SPEC.md
 │   ├── CONTRACTS.md
+│   ├── CUSTOMER_SPACE.md
 │   ├── DECISION_WORKBENCH.md
 │   └── STATE_OF_THE_ART.md
 ├── schemas/
@@ -194,6 +206,8 @@ const plan = planWaypointTrajectory({
 │   ├── robot-decision-report.v1.schema.json
 │   ├── robot-decision-scenario.v1.schema.json
 │   ├── robot-decision-snapshot.v1.schema.json
+│   ├── customer-space-screening-package.v1.schema.json
+│   ├── customer-space.v1.schema.json
 │   ├── robot-mission-outcome.v1.schema.json
 │   ├── robot-recommendation-receipt.v1.schema.json
 │   ├── robot-profile.v1.schema.json
