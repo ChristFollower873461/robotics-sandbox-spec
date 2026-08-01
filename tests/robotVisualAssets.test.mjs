@@ -33,7 +33,7 @@ test("the four default sandbox robots have versioned, source-traceable visual as
     assert.ok(asset.provenance.artifactPaths.length > 0);
     assert.ok(Object.isFrozen(asset.geometry.widthMm));
     assert.equal(asset.kinematics.joints.length, asset.kinematics.actuatorCount);
-    assert.match(robotVisualFidelityLabel(asset), /^SOURCE (KINEMATIC|DIMENSIONED)/);
+    assert.match(robotVisualFidelityLabel(asset), /^SOURCE (MESH|KINEMATIC|DIMENSIONED)/);
   }
 });
 
@@ -44,6 +44,9 @@ test("the source models retain the audited physical and kinematic distinctions",
   const crazyflie = getRobotVisualAsset("crazyflie-2-1-plus");
 
   assert.equal(widowx.kinematics.dof, 6);
+  assert.equal(widowx.representation.fidelity, "source-mesh");
+  assert.equal(widowx.display.spatialRenderer, "widowx-source-mesh");
+  assert.equal(widowx.provenance.artifactPaths.filter((path) => path.endsWith(".stl")).length, 10);
   assert.deepEqual(widowx.kinematics.joints.map((joint) => joint.name), [
     "waist", "shoulder", "elbow", "forearm_roll", "wrist_angle", "wrist_rotate",
   ]);

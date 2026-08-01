@@ -24,6 +24,7 @@ import {
 } from "./robotVisualAssets.js";
 import { SPATIAL_VIEWBOX, unprojectSpatialFloor } from "../core/visualization/spatialScene.js";
 import { renderSpatialStage } from "./spatialStageView.js";
+import { createWidowXThreeStage } from "./widowXThreeStage.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MM_PER_PIXEL = 5;
@@ -131,6 +132,11 @@ const ids = [
   "range-control-hint",
   "range-stage",
   "range-space-stage",
+  "range-widowx-stage",
+  "range-widowx-canvas",
+  "range-widowx-pose-value",
+  "range-widowx-reset-camera",
+  "range-widowx-loading",
   "range-challenge-layer",
   "range-reach-layer",
   "range-route-layer",
@@ -179,6 +185,8 @@ const elements = Object.fromEntries(
 );
 const stageViewport = document.querySelector(".range-stage-viewport");
 const spaceFidelity = document.querySelector(".range-space-fidelity");
+let widowXThreeStage = null;
+let widowXThreeStageFailed = false;
 
 elements.rangeRobotPhoto.addEventListener("error", () => {
   elements.rangeRobotReference.dataset.mediaState = "unavailable";
@@ -187,6 +195,29 @@ elements.rangeRobotPhoto.addEventListener("error", () => {
 
 elements.rangeRobotPhoto.addEventListener("load", () => {
   elements.rangeRobotReference.dataset.mediaState = "ready";
+});
+
+elements.rangeWidowxCanvas.addEventListener("widowxstagechange", (event) => {
+  const detail = event.detail || {};
+  elements.rangeWidowxStage.dataset.state = detail.status;
+  if (detail.status === "loading") {
+    elements.rangeWidowxLoading.querySelector("span").textContent = `Loading official source meshes ${detail.loaded || 0}/${detail.total || 10}…`;
+  } else if (detail.status === "ready") {
+    elements.rangeWidowxLoading.querySelector("span").textContent = "Official source geometry ready";
+  } else if (detail.status === "pose") {
+    elements.rangeWidowxPoseValue.textContent = `${detail.distanceMm} mm target · ${detail.residualMm} mm solve residual`;
+  } else if (detail.status === "error") {
+    widowXThreeStageFailed = true;
+    elements.rangeWidowxLoading.querySelector("span").textContent = "3D unavailable — showing the geometric fallback";
+    renderSpatialFallback();
+    syncStageView();
+    spaceFidelity.innerHTML = "<i></i><span><strong>3D source mesh unavailable</strong> · source-informed geometric fallback shown</span>";
+  }
+});
+
+elements.rangeWidowxResetCamera.addEventListener("click", () => {
+  widowXThreeStage?.resetCamera();
+  elements.rangeWidowxCanvas.focus();
 });
 
 function svgElement(name, attributes = {}, text = null) {
@@ -694,10 +725,13 @@ function renderTarget() {
   appendSvg(group, "text", { x: 22, y: -20 }, label);
 }
 
-function renderSpace() {
-  if (state.stageView !== "space") return;
-  const asset = visualAsset();
-  renderSpatialStage(elements.rangeSpaceStage, {
+function usesWidowXSourceMeshStage() {
+  return state.profileId === "interbotix-wx250s"
+    && visualAsset()?.display?.spatialRenderer === "widowx-source-mesh";
+}
+
+function spatialStageInput() {
+  return {
     arena: ARENA,
     fixtures: FIXTURES,
     platform: state.platform,
@@ -707,10 +741,53 @@ function renderSpace() {
     progress: state.progress,
     robotColor: profile().visual.primary,
     playing: state.animationFrame !== null,
+    visualAsset: visualAsset(),
+    engineerView: state.engineerView,
+  };
+}
+
+function renderSpatialFallback(asset = visualAsset()) {
+  renderSpatialStage(elements.rangeSpaceStage, {
+    ...spatialStageInput(),
     visualAsset: asset,
   });
+}
+
+function ensureWidowXThreeStage() {
+  if (widowXThreeStage || widowXThreeStageFailed) return widowXThreeStage;
+  try {
+    widowXThreeStage = createWidowXThreeStage(elements.rangeWidowxCanvas);
+  } catch (error) {
+    widowXThreeStageFailed = true;
+    elements.rangeWidowxStage.dataset.state = "error";
+    elements.rangeWidowxLoading.querySelector("span").textContent = `3D unavailable: ${error instanceof Error ? error.message : "unknown browser error"}`;
+  }
+  return widowXThreeStage;
+}
+
+function renderSpace() {
+  if (state.stageView !== "space") return;
+  const asset = visualAsset();
+  const sourceMeshStage = usesWidowXSourceMeshStage() && !widowXThreeStageFailed;
+  elements.rangeWidowxStage.hidden = !sourceMeshStage;
+  elements.rangeSpaceStage.hidden = sourceMeshStage;
+  if (sourceMeshStage) {
+    const stage = ensureWidowXThreeStage();
+    if (!stage) {
+      elements.rangeWidowxStage.hidden = true;
+      elements.rangeSpaceStage.hidden = false;
+      renderSpatialFallback(asset);
+      spaceFidelity.innerHTML = "<i></i><span><strong>3D source mesh unavailable</strong> · source-informed geometric fallback shown</span>";
+      return;
+    }
+    stage.update(spatialStageInput());
+  } else {
+    renderSpatialFallback(asset);
+  }
   spaceFidelity.innerHTML = asset
-    ? `<i></i><span><strong>${asset.representation.label}</strong> · ${asset.representation.fidelity.replaceAll("-", " ")} · geometry only</span>`
+    ? sourceMeshStage
+      ? "<i></i><span><strong>10 official STL meshes</strong> · source-joint position solve · fixture heights illustrative · no physics</span>"
+      : `<i></i><span><strong>${asset.representation.label}</strong> · ${asset.representation.fidelity.replaceAll("-", " ")} · geometry only</span>`
     : "<i></i><span><strong>Model unavailable</strong> · envelope only; no robot-specific geometry is loaded</span>";
 }
 
@@ -944,11 +1021,14 @@ function syncStageView() {
     button.tabIndex = selected ? 0 : -1;
   });
   const showingSpace = state.stageView === "space";
+  const showingWidowX = showingSpace && usesWidowXSourceMeshStage() && !widowXThreeStageFailed;
   stageViewport.dataset.activeView = state.stageView;
   elements.rangeStage.toggleAttribute("hidden", showingSpace);
   elements.rangeStage.tabIndex = showingSpace ? -1 : 0;
-  elements.rangeSpaceStage.toggleAttribute("hidden", !showingSpace);
-  elements.rangeSpaceStage.tabIndex = showingSpace ? 0 : -1;
+  elements.rangeSpaceStage.toggleAttribute("hidden", !showingSpace || showingWidowX);
+  elements.rangeSpaceStage.tabIndex = showingSpace && !showingWidowX ? 0 : -1;
+  elements.rangeWidowxStage.toggleAttribute("hidden", !showingWidowX);
+  elements.rangeWidowxCanvas.tabIndex = showingWidowX ? 0 : -1;
   spaceFidelity.hidden = !showingSpace;
 }
 

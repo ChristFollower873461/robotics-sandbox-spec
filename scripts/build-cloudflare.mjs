@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = path.join(rootDir, "dist");
@@ -21,5 +22,19 @@ await Promise.all([
   fs.copyFile(path.join(rootDir, "worker", "index.js"), path.join(serverDir, "index.js")),
   fs.copyFile(path.join(rootDir, "worker", "wrangler.json"), path.join(serverDir, "wrangler.json")),
 ]);
+
+// The test range includes Three.js and the STL loader. Bundle only this entry so
+// the rest of the dependency-free application keeps its existing native-module
+// delivery, while the browser never has to resolve packages from node_modules.
+await build({
+  entryPoints: [path.join(rootDir, "src", "ui", "testRangeApp.js")],
+  outfile: path.join(clientDir, "src", "ui", "testRangeApp.js"),
+  bundle: true,
+  format: "esm",
+  platform: "browser",
+  target: ["es2022"],
+  minify: true,
+  legalComments: "eof",
+});
 
 console.log("Built Robotics Sandbox for Cloudflare in dist/.");

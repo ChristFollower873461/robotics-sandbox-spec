@@ -80,8 +80,8 @@ function record(profileId, platformClass, values) {
 const RECORDS = [
   record("interbotix-wx250s", "arm", {
     currentFidelity: SIMULATION_FIDELITY.KINEMATIC_APPROXIMATION,
-    fidelityLabel: "LEVEL 2 / SOURCE-KINEMATIC VISUAL + NORMALIZED PLANAR REACH SOLVER",
-    evaluatorBoundary: "The visual follows the pinned six-axis URDF and base-mesh bounds; published reach still screens the task through a normalized planar solver, not full vendor IK or collision geometry.",
+    fidelityLabel: "LEVEL 2 / SOURCE-MESH 3D + SOURCE-JOINT POSITION IK + NORMALIZED PLANAR SCREEN",
+    evaluatorBoundary: "The 3D visual assembles ten official STL meshes from the pinned six-axis Xacro and executes a deterministic position-only source-joint solve. The mission verdict still comes from the normalized planar reach screen; neither layer evaluates tool orientation feasibility, collision, payload, torque, contact, safety, or the real controller.",
     facts: facts({
       reachMm: sourced(650, "mm", ["specifications"], "Current manufacturer-published reach; not a complete operating envelope."),
       payloadKg: sourced(0.25, "kg", ["specifications"], "Published working payload inside the recommended workspace; repeated operation and extension constraints still apply."),

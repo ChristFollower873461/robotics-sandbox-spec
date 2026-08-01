@@ -24,8 +24,9 @@ workspace described below; it is infrastructure, not the frontend host.
   room, mark the robot base and task, and receive an evidence-backed shortlist.
   The image never leaves the browser and is never included in JSON exports.
 - A playable four-class test range with draggable targets, class-specific
-  missions, robot-specific source-kinematic or source-dimensioned renditions
-  for the four defaults, normalized arm IK, footprint-aware 2D routing,
+  missions, a source-mesh/source-joint WidowX 250S 3D stage, robot-specific
+  source-kinematic or source-dimensioned renditions for the other defaults,
+  normalized arm screening IK, footprint-aware 2D routing,
   scrubbable playback, and progressive friendly/engineer explanations.
 - A reusable Challenge Mode with three deterministic starter missions:
   **Bring the Part Home**, **Cross the Workshop**, and **Inspect the High
@@ -273,9 +274,10 @@ const plan = planWaypointTrajectory({
 
 ## Limitations and next steps
 
-- Arm task screening still uses a normalized planar solver. The reviewed
-  default renditions improve robot identity, scale, and joint topology; they
-  are not vendor-accurate digital twins.
+- Arm mission verdicts still use a normalized planar solver. The WidowX 3D
+  stage now loads ten exact upstream STL files and poses the six source joints
+  with deterministic position-only IK; it is still not a collision model,
+  orientation-complete solver, dynamics simulation, or digital twin.
 - Decision results are rough screening, not safety, purchasing, deployment, or
   sim-to-real proof. A pass means the candidate deserves deeper validation.
 - Approximate/hatching-aware plan and elevation graphics are not collision
@@ -296,6 +298,7 @@ const plan = planWaypointTrajectory({
 - Collision checking is discretized and sampled, not continuous.
 - It does not model full high-DOF geometry, dynamics, torque, self-collision,
   uncertainty, safety-rated controls, or hardware execution.
-- Full CAD/mesh loading and full-DOF simulation remain future work. The four
-  default browser renditions now use pinned URDF topology, mesh bounds, or
+- Full source-mesh loading remains future work for the other robots, and
+  full-DOF dynamics remain future work for every robot. The four default
+  browser renditions now use pinned STL/URDF topology, mesh bounds, or
   published dimensions under the governed visual-fidelity contract.

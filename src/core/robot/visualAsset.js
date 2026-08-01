@@ -16,6 +16,7 @@ const MEASUREMENT_STATUSES = new Set(["source-mesh", "sourced", "approximate", "
 const KINEMATIC_KINDS = new Set(["serial-chain", "biped", "quadruped", "multirotor"]);
 const RENDERERS = new Set([
   "widowx-250s",
+  "widowx-source-mesh",
   "toddlerbot-2",
   "pupper-v3",
   "crazyflie-2-1-plus",

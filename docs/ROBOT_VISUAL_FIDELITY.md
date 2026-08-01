@@ -6,16 +6,16 @@ The test range must never present one generic body as if it were a specific real
 
 | Profile | Browser representation | Pinned upstream revision | What is still not modeled |
 | --- | --- | --- | --- |
-| Interbotix WidowX 250S | Six-axis source-kinematic chain plus base-mesh bounds | `Interbotix/interbotix_ros_manipulators@0bb2b0e6d0e619bff02cf74dbd5af5681dcf80c9` | Full six-axis IK, STL shells, collision, payload, tools, control |
+| Interbotix WidowX 250S | Ten official STL meshes assembled from the six-axis Xacro; deterministic position-only source-joint IK in the 3D stage | `Interbotix/interbotix_ros_manipulators@0bb2b0e6d0e619bff02cf74dbd5af5681dcf80c9` | Tool-orientation feasibility, self/environment collision, swept volume, payload, torque, compliance, contact, safety, controller |
 | ToddlerBot 2.0 | Major articulated chains from the 30-DOF URDF plus published height | `hshi74/toddlerbot@e337f3b177b4b53abff70b31d1695a7b66cc6d2e` | Per-axis mesh display, gait, balance, contacts, actuators, control |
 | Pupper v3 | Four three-actuator legs plus published crouched envelope | `Nate711/pupperv3-monorepo@6f96c5e79faa05492992c19918f8cd90b9243281` | Gait, footholds, contact, friction, stability, slope, motor limits |
 | Crazyflie 2.1+ | Parametric four-rotor silhouette at the published 92 × 92 × 29 mm size | `bitcraze/bitcraze-mechanics@c70aa74368e713734ddebbf14238fd6c3c2079c6` | Restricted CAD redistribution, aerodynamics, sensing, battery, control |
 
-The official reference image beside the result is loaded from the project or manufacturer source. It is not bundled or claimed as a redistributable asset.
+The official reference image beside the result is loaded from the project or manufacturer source. It is not bundled or claimed as a redistributable asset. The ten WidowX STL files are bundled under the upstream BSD-3-Clause license; every file has a pinned SHA-256 digest in `src/core/robot/widowxSourceModel.js`, and the required license text lives beside the meshes.
 
 ## Scale and legibility
 
-Plan geometry uses the range's shared `5 mm / display pixel` scale. A small platform may receive a dashed selection halo so it remains findable; the robot body itself stays at true scale. The spatial view uses the same x/y/z units for robot geometry. Fixture heights remain illustrative and are labeled that way.
+Plan geometry uses the range's shared `5 mm / display pixel` scale. A small platform may receive a dashed selection halo so it remains findable; the robot body itself stays at true scale. The WidowX source-mesh stage uses metres internally and maps the same stage coordinates at `5 mm / display pixel`; the 1 m reference mast is source-independent. Fixture heights remain illustrative and are labeled that way.
 
 ## Adding another robot
 
@@ -28,4 +28,4 @@ Plan geometry uses the range's shared `5 mm / display pixel` scale. A small plat
 
 ## Fidelity language
 
-`Source-kinematic` means the displayed topology follows a pinned source model. It does not mean dynamics, collision, control, or task validation. `Source-dimensioned` means the browser silhouette uses sourced overall dimensions. It does not mean a CAD mesh or flight/locomotion model is loaded. A successful mission remains rough geometric screening, never certification.
+`Source-mesh` means the displayed exterior is loaded from pinned upstream geometry with recorded license and hashes. It does not mean the browser has a collision model, dynamics, validated IK, or a digital twin. `Source-kinematic` means the displayed topology follows a pinned source model. It does not mean dynamics, collision, control, or task validation. `Source-dimensioned` means the browser silhouette uses sourced overall dimensions. It does not mean a CAD mesh or flight/locomotion model is loaded. A successful mission remains rough geometric screening, never certification.
