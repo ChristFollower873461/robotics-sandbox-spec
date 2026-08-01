@@ -23,7 +23,7 @@ const PROFILE_DEFINITIONS = [
     productUrl:
       "https://docs.trossenrobotics.com/interbotix_xsarms_docs/",
     sourceReach: "650 MM PUBLISHED REACH / 250 G WORKING PAYLOAD",
-    geometryTruth: "SOURCE SIX-AXIS URDF + BASE-MESH BOUNDS FOR THE VISUAL / PUBLISHED REACH + NORMALIZED PLANAR MISSION SOLVER",
+    geometryTruth: "TEN PINNED OFFICIAL STL MESHES + SOURCE SIX-AXIS JOINT ORIGINS IN 3D / PUBLISHED REACH + NORMALIZED PLANAR 2D MISSION SOLVER",
     geometryStatus: "normalized",
     sourceCheckedAt: "2026-08-01",
     sources: [

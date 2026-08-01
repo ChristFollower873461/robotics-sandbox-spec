@@ -19,9 +19,9 @@ const DEFINITIONS = [
     profileId: "interbotix-wx250s",
     platformClass: "arm",
     representation: {
-      fidelity: "source-kinematic",
-      label: "Official six-axis joint layout",
-      boundary: "The browser rendition follows the official joint chain and base-mesh bounds, but simplifies the exterior and does not load the vendor STL collision or visual meshes.",
+      fidelity: "source-mesh",
+      label: "Official STL assembly + six-axis joint layout",
+      boundary: "The 3D stage loads ten official WidowX 250S STL files and assembles them from the pinned Xacro joint origins. Its position-only browser IK follows the six source axes, but does not evaluate orientation feasibility, self-collision, payload, torque, compliance, contact, safety, or controller behavior. The 2D plan remains a normalized reach screen.",
     },
     geometry: {
       widthMm: sourced(233.5, ["wx250s-base-stl"], "Bounding-box long axis measured from the official base mesh at the pinned revision.", "source-mesh"),
@@ -44,7 +44,7 @@ const DEFINITIONS = [
     },
     display: {
       planRenderer: "widowx-250s",
-      spatialRenderer: "widowx-250s",
+      spatialRenderer: "widowx-source-mesh",
       linkLengthsMm: [250, 175, 75, 65],
       baseWidthMm: 233.5,
       baseDepthMm: 153.1,
@@ -62,6 +62,15 @@ const DEFINITIONS = [
       artifactPaths: [
         "interbotix_ros_xsarms/interbotix_xsarm_descriptions/urdf/wx250s.urdf.xacro",
         "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_1_base.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_2_shoulder.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_3_upper_arm.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_4_upper_forearm.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_5_lower_forearm.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_6_wrist.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_7_gripper.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_8_gripper_prop.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_9_gripper_bar.stl",
+        "interbotix_ros_xsarms/interbotix_xsarm_descriptions/meshes/wx250s_meshes/wx250s_10_gripper_finger.stl",
       ],
       checkedAt: "2026-08-01",
     },

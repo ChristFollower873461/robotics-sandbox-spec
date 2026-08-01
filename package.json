@@ -15,9 +15,13 @@
     "verify": "npm run inspect && npm test"
   },
   "devDependencies": {
+    "esbuild": "0.28.1",
     "wrangler": "4.117.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "three": "0.185.1"
   }
 }
