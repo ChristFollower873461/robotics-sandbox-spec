@@ -129,6 +129,11 @@ test("configuration-space occupancy and direct A* API are deterministic", () => 
 });
 
 test("robot profiles separate interactive arms from the multi-platform catalog", () => {
+  const reviewedCatalogGeometry = new Map([
+    ["toddlerbot-2", "inferred"],
+    ["pupper-v3", "source-dimensioned"],
+    ["crazyflie-2-1-plus", "source-dimensioned"],
+  ]);
   assert.equal(ROBOT_PROFILES.length, 13);
   assert.equal(getRobotProfilesByPlatformClass("arm").length, 7);
   assert.equal(getRobotProfilesByPlatformClass("humanoid").length, 2);
@@ -168,7 +173,10 @@ test("robot profiles separate interactive arms from the multi-platform catalog",
       assert.equal(profile.linkLengths.length, 2);
     } else {
       assert.equal(profile.simulationSupport, "catalog-only");
-      assert.equal(profile.geometryStatus, "unverified");
+      assert.equal(
+        profile.geometryStatus,
+        reviewedCatalogGeometry.get(profile.id) || "unverified"
+      );
       assert.equal(profile.topology, undefined);
       assert.equal(profile.linkLengths, undefined);
     }

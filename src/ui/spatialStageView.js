@@ -6,6 +6,8 @@ import {
   spatialRoutePoints,
   spatialSceneDisclosure,
 } from "../core/visualization/spatialScene.js";
+import { measurementValue } from "../core/robot/visualAsset.js";
+import { robotMotionCues } from "../core/robot/visualPose.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -32,6 +34,27 @@ function projectedPolygon(parent, worldPoints, className) {
   return append(parent, "polygon", {
     points: points(worldPoints.map((point) => projectSpatialPoint(point))),
     class: className,
+  });
+}
+
+function localPoint(pose, forward, lateral, z) {
+  const heading = Number.isFinite(pose.heading) ? pose.heading : 0;
+  return {
+    x: pose.x + Math.cos(heading) * forward - Math.sin(heading) * lateral,
+    y: pose.y + Math.sin(heading) * forward + Math.cos(heading) * lateral,
+    z,
+  };
+}
+
+function projectedPath(parent, worldPoints, className) {
+  const projected = worldPoints.map((point) => projectSpatialPoint(point));
+  return append(parent, "path", { d: projected.map((point, index) => `${index === 0 ? "M" : "L"}${point.x} ${point.y}`).join(" "), class: className });
+}
+
+function sourceJoints(parent, worldPoints, radius = 4) {
+  worldPoints.forEach((point) => {
+    const projected = projectSpatialPoint(point);
+    append(parent, "circle", { cx: projected.x, cy: projected.y, r: radius, class: "range-space-source-joint" });
   });
 }
 
@@ -129,54 +152,175 @@ function renderTarget(svg, target, status, platform, definition) {
   append(group, "text", { x: 24, y: -14 }, definition?.targetLabel || "TARGET");
 }
 
-function renderArm(svg, pose, color) {
+function renderArm(svg, pose, color, asset, progress) {
   const baseFloor = projectSpatialPoint({ ...pose.base, z: 0 });
-  const shoulder = projectSpatialPoint({ ...pose.base, z: 50 });
-  const elbowWorld = {
-    x: pose.base.x + (pose.x - pose.base.x) * 0.52,
-    y: pose.base.y + (pose.y - pose.base.y) * 0.52,
-    z: Math.max(pose.z + 36, 86),
+  if (!asset) return renderUnavailableSpatialRobot(svg, pose, color);
+  const width = (measurementValue(asset, "widthMm") || 235) / 5;
+  const depth = (measurementValue(asset, "depthMm") || 155) / 5;
+  const base = {
+    x: pose.base.x - width / 2,
+    y: pose.base.y - depth / 2,
+    width,
+    depth,
+    height: 14.4,
   };
-  const elbow = projectSpatialPoint(elbowWorld);
-  const hand = projectSpatialPoint(pose);
-  append(svg, "ellipse", { cx: baseFloor.x, cy: baseFloor.y + 5, rx: 31, ry: 11, class: "range-space-robot-shadow" });
-  const group = append(svg, "g", { class: "range-space-robot range-space-arm", style: `--robot-color:${color}` });
-  append(group, "path", { d: `M${shoulder.x} ${shoulder.y}L${elbow.x} ${elbow.y}L${hand.x} ${hand.y}`, class: "range-space-arm-outline" });
-  append(group, "path", { d: `M${shoulder.x} ${shoulder.y}L${elbow.x} ${elbow.y}L${hand.x} ${hand.y}`, class: "range-space-arm-links" });
-  append(group, "path", { d: `M${baseFloor.x - 22} ${baseFloor.y}v${shoulder.y - baseFloor.y}h44v${baseFloor.y - shoulder.y}z`, class: "range-space-arm-base" });
-  [shoulder, elbow, hand].forEach((point, index) => append(group, "circle", { cx: point.x, cy: point.y, r: index === 2 ? 7 : 10, class: "range-space-arm-joint" }));
-  append(group, "path", { d: `M${hand.x - 8} ${hand.y - 5}l-7-8m15 13 8 7`, class: "range-space-gripper" });
+  const faces = spatialBoxFaces(base);
+  append(svg, "ellipse", { cx: baseFloor.x, cy: baseFloor.y + 7, rx: 29, ry: 10, class: "range-space-robot-shadow" });
+  const group = append(svg, "g", { class: "range-space-robot range-space-arm range-space-arm--widowx", style: `--robot-color:${color}` });
+  append(group, "polygon", { points: points(faces.left), class: "range-space-arm-base-left" });
+  append(group, "polygon", { points: points(faces.right), class: "range-space-arm-base-right" });
+  append(group, "polygon", { points: points(faces.top), class: "range-space-arm-base-top" });
+
+  const cues = robotMotionCues(asset, progress);
+  const shoulder = { ...pose.base, z: 22.1 };
+  const blend = (amount, z) => ({
+    x: pose.base.x + (pose.x - pose.base.x) * amount,
+    y: pose.base.y + (pose.y - pose.base.y) * amount,
+    z,
+  });
+  const elbowHeight = Math.max(pose.z + 26, 76);
+  const chain = [
+    { ...pose.base, z: 14.4 },
+    shoulder,
+    blend(0.48, elbowHeight),
+    blend(0.7, elbowHeight - (elbowHeight - pose.z) * 0.4),
+    blend(0.84, pose.z + 12),
+    blend(0.93, pose.z + 5),
+    { x: pose.x, y: pose.y, z: pose.z },
+  ];
+  projectedPath(group, chain, "range-space-arm-outline");
+  projectedPath(group, chain, "range-space-arm-links range-space-arm-links--widowx");
+  sourceJoints(group, chain.slice(0, -1), 5.2);
+  const hand = projectSpatialPoint(chain.at(-1));
+  const gripper = append(group, "g", { transform: `rotate(${cues.wristDegrees} ${hand.x} ${hand.y})` });
+  append(gripper, "path", { d: `M${hand.x - 7} ${hand.y - 4}l-8-7M${hand.x + 7} ${hand.y + 4}l8 7`, class: "range-space-gripper" });
 }
 
-function renderMobileRobot(svg, pose, platform, color, playing) {
+function renderHumanoid(svg, pose, color, asset, progress) {
   const floor = projectSpatialPoint({ ...pose, z: 0 });
+  if (!asset) return renderUnavailableSpatialRobot(svg, pose, color);
+  const height = (measurementValue(asset, "heightMm") || 560) / 5;
+  const shoulderHalf = (asset.display.shoulderJointSpanMm || 134) / 10;
+  const cues = robotMotionCues(asset, progress);
+  append(svg, "ellipse", { cx: floor.x, cy: floor.y + 5, rx: 18, ry: 7, class: "range-space-robot-shadow" });
+  const group = append(svg, "g", { class: "range-space-robot range-space-humanoid range-space-humanoid--toddlerbot", style: `--robot-color:${color}` });
+  const pointsByName = {
+    leftFoot: localPoint(pose, cues.leftLegDegrees / 5, -6, 0),
+    leftAnkle: localPoint(pose, cues.leftLegDegrees / 7, -6, 6),
+    leftKnee: localPoint(pose, cues.leftLegDegrees / 9, -5.5, height * 0.31),
+    leftHip: localPoint(pose, 0, -4, height * 0.53),
+    rightFoot: localPoint(pose, cues.rightLegDegrees / 5, 6, 0),
+    rightAnkle: localPoint(pose, cues.rightLegDegrees / 7, 6, 6),
+    rightKnee: localPoint(pose, cues.rightLegDegrees / 9, 5.5, height * 0.31),
+    rightHip: localPoint(pose, 0, 4, height * 0.53),
+    waist: localPoint(pose, 0, 0, height * 0.63),
+    leftShoulder: localPoint(pose, 0, -shoulderHalf, height * 0.8),
+    leftElbow: localPoint(pose, cues.leftArmDegrees / 6, -18, height * 0.65),
+    leftHand: localPoint(pose, cues.leftArmDegrees / 4, -20, height * 0.5),
+    rightShoulder: localPoint(pose, 0, shoulderHalf, height * 0.8),
+    rightElbow: localPoint(pose, cues.rightArmDegrees / 6, 18, height * 0.65),
+    rightHand: localPoint(pose, cues.rightArmDegrees / 4, 20, height * 0.5),
+    neck: localPoint(pose, 0, 0, height * 0.91),
+    head: localPoint(pose, 0, 0, height * 0.965),
+  };
+  const chains = [
+    [pointsByName.leftFoot, pointsByName.leftAnkle, pointsByName.leftKnee, pointsByName.leftHip, pointsByName.waist],
+    [pointsByName.rightFoot, pointsByName.rightAnkle, pointsByName.rightKnee, pointsByName.rightHip, pointsByName.waist],
+    [pointsByName.leftHand, pointsByName.leftElbow, pointsByName.leftShoulder, pointsByName.neck, pointsByName.rightShoulder, pointsByName.rightElbow, pointsByName.rightHand],
+  ];
+  chains.forEach((chain) => {
+    projectedPath(group, chain, "range-space-limb-outline");
+    projectedPath(group, chain, "range-space-source-limb");
+    sourceJoints(group, chain.slice(1, -1), 3.3);
+  });
+  projectedPolygon(group, [
+    pointsByName.leftHip,
+    pointsByName.leftShoulder,
+    pointsByName.rightShoulder,
+    pointsByName.rightHip,
+  ], "range-space-humanoid-torso");
+  const head = projectSpatialPoint(pointsByName.head);
+  append(group, "circle", { cx: head.x, cy: head.y, r: 7, class: "range-space-humanoid-head" });
+  const top = projectSpatialPoint(localPoint(pose, 0, 0, height));
+  append(group, "path", { d: `M${top.x - 6} ${top.y}H${top.x + 6}`, class: "range-space-height-cap" });
+}
+
+function renderQuadruped(svg, pose, color, asset, progress) {
+  const floor = projectSpatialPoint({ ...pose, z: 0 });
+  if (!asset) return renderUnavailableSpatialRobot(svg, pose, color);
+  const height = (measurementValue(asset, "heightMm") || 200) / 5;
+  const cues = robotMotionCues(asset, progress);
+  append(svg, "ellipse", { cx: floor.x, cy: floor.y + 5, rx: 22, ry: 8, class: "range-space-robot-shadow" });
+  const group = append(svg, "g", { class: "range-space-robot range-space-quadruped range-space-quadruped--pupper", style: `--robot-color:${color}` });
+  const bodyBottom = height * 0.56;
+  const bodyTop = height * 0.86;
+  const bodyCornersBottom = [
+    localPoint(pose, -17, -9, bodyBottom), localPoint(pose, 17, -9, bodyBottom),
+    localPoint(pose, 17, 9, bodyBottom), localPoint(pose, -17, 9, bodyBottom),
+  ];
+  const bodyCornersTop = bodyCornersBottom.map((point) => ({ ...point, z: bodyTop }));
+  projectedPolygon(group, bodyCornersTop, "range-space-pupper-top");
+  projectedPolygon(group, [bodyCornersBottom[0], bodyCornersBottom[1], bodyCornersTop[1], bodyCornersTop[0]], "range-space-pupper-side");
+  projectedPolygon(group, [bodyCornersBottom[1], bodyCornersBottom[2], bodyCornersTop[2], bodyCornersTop[1]], "range-space-pupper-front");
+  const legs = [
+    { forward: -15, lateral: -8 }, { forward: -15, lateral: 8 },
+    { forward: 15, lateral: -8 }, { forward: 15, lateral: 8 },
+  ];
+  legs.forEach((leg, index) => {
+    const cue = cues.legs[index];
+    const side = Math.sign(leg.lateral);
+    const hipAbduction = localPoint(pose, leg.forward, leg.lateral, bodyBottom + 2);
+    const hipPitch = localPoint(pose, leg.forward, leg.lateral + side * 3.2, bodyBottom + 1);
+    const knee = localPoint(pose, leg.forward + cue.swingDegrees / 4, leg.lateral + side * 7, height * 0.34 + cue.liftPx);
+    const foot = localPoint(pose, leg.forward + cue.swingDegrees / 2.5, side * 22, cue.liftPx);
+    const chain = [hipAbduction, hipPitch, knee, foot];
+    projectedPath(group, chain, "range-space-limb-outline");
+    projectedPath(group, chain, "range-space-source-limb range-space-source-limb--pupper");
+    sourceJoints(group, chain.slice(0, -1), 3.2);
+  });
+}
+
+function renderDrone(svg, pose, color, asset, progress, playing) {
+  const floor = projectSpatialPoint({ ...pose, z: 0 });
+  if (!asset) return renderUnavailableSpatialRobot(svg, pose, color);
   const point = projectSpatialPoint(pose);
-  append(svg, "ellipse", {
-    cx: floor.x,
-    cy: floor.y + 5,
-    rx: platform === "drone" ? 27 : 22,
-    ry: platform === "drone" ? 10 : 8,
-    class: "range-space-robot-shadow",
+  const cues = robotMotionCues(asset, progress);
+  const half = (measurementValue(asset, "widthMm") || 92) / 10;
+  const rotorRadius = (asset.display.rotorDiameterMm / 5) / 2;
+  const offset = half - rotorRadius;
+  append(svg, "ellipse", { cx: floor.x, cy: floor.y + 5, rx: 14, ry: 5, class: "range-space-robot-shadow" });
+  const group = append(svg, "g", { class: `range-space-robot range-space-drone range-space-drone--crazyflie ${playing ? "is-playing" : ""}`, style: `--robot-color:${color}` });
+  append(group, "circle", { cx: point.x, cy: point.y, r: 16, class: "range-space-selection-halo" });
+  const rotorWorld = [
+    localPoint(pose, -offset, -offset, pose.z), localPoint(pose, offset, -offset, pose.z),
+    localPoint(pose, -offset, offset, pose.z), localPoint(pose, offset, offset, pose.z),
+  ];
+  projectedPath(group, [rotorWorld[0], rotorWorld[3]], "range-space-drone-arm");
+  projectedPath(group, [rotorWorld[1], rotorWorld[2]], "range-space-drone-arm");
+  rotorWorld.forEach((world, index) => {
+    const rotor = projectSpatialPoint(world);
+    append(group, "ellipse", {
+      cx: rotor.x,
+      cy: rotor.y,
+      rx: 3.8,
+      ry: 1.8,
+      transform: `rotate(${cues.rotorDegrees + index * 90} ${rotor.x} ${rotor.y})`,
+      class: "range-space-rotor range-space-rotor--crazyflie",
+    });
   });
-  const angle = (pose.heading * 180) / Math.PI;
-  const group = append(svg, "g", {
-    class: `range-space-robot range-space-${platform} ${playing ? "is-playing" : ""}`,
-    transform: `translate(${point.x} ${point.y}) rotate(${angle * 0.45})`,
-    style: `--robot-color:${color}`,
-  });
-  if (platform === "drone") {
-    append(group, "path", { d: "M-24-14 24 14M24-14-24 14", class: "range-space-mobile-limbs" });
-    [[-24, -14], [24, -14], [-24, 14], [24, 14]].forEach(([cx, cy]) => append(group, "ellipse", { cx, cy, rx: 12, ry: 5, class: "range-space-rotor" }));
-    append(group, "rect", { x: -12, y: -8, width: 24, height: 16, rx: 6, class: "range-space-mobile-body" });
-  } else if (platform === "quadruped") {
-    append(group, "rect", { x: -25, y: -15, width: 49, height: 25, rx: 10, class: "range-space-mobile-body" });
-    append(group, "rect", { x: 17, y: -12, width: 18, height: 17, rx: 6, class: "range-space-mobile-head" });
-    append(group, "path", { d: "M-17 5l-8 19M-6 7l-2 19M13 6l3 20M22 4l9 17", class: "range-space-mobile-limbs" });
-  } else {
-    append(group, "circle", { cx: 0, cy: -31, r: 9, class: "range-space-mobile-head" });
-    append(group, "rect", { x: -12, y: -22, width: 24, height: 30, rx: 9, class: "range-space-mobile-body" });
-    append(group, "path", { d: "M-8 5l-8 23M8 5l9 23M-11-13l-17 11M11-13 27-1", class: "range-space-mobile-limbs" });
-  }
+  const boardHalf = (asset.display.boardWidthMm / 5) / 2;
+  projectedPolygon(group, [
+    localPoint(pose, -boardHalf, -boardHalf, pose.z + 0.8), localPoint(pose, boardHalf, -boardHalf, pose.z + 0.8),
+    localPoint(pose, boardHalf, boardHalf, pose.z + 0.8), localPoint(pose, -boardHalf, boardHalf, pose.z + 0.8),
+  ], "range-space-crazyflie-board");
+}
+
+function renderUnavailableSpatialRobot(svg, pose, color) {
+  const point = projectSpatialPoint({ ...pose, z: Math.max(pose.z || 0, 18) });
+  const group = append(svg, "g", { class: "range-space-robot range-space-robot--unavailable", style: `--robot-color:${color}` });
+  append(group, "rect", { x: point.x - 25, y: point.y - 18, width: 50, height: 36, rx: 5, class: "range-space-unavailable-envelope" });
+  append(group, "path", { d: `M${point.x - 17} ${point.y - 11}l34 22M${point.x + 17} ${point.y - 11}l-34 22`, class: "range-space-unavailable-cross" });
+  append(group, "text", { x: point.x, y: point.y + 31, class: "range-space-unavailable-label", "text-anchor": "middle" }, "ROBOT MODEL NOT LOADED");
 }
 
 function renderMissionObject(svg, definition, plan, progress, pose) {
@@ -210,6 +354,7 @@ export function renderSpatialStage(svg, {
   progress,
   robotColor,
   playing = false,
+  visualAsset = null,
 }) {
   svg.replaceChildren();
   append(svg, "title", { id: "range-space-title" }, "Three-dimensional robot spatial preview");
@@ -222,18 +367,32 @@ export function renderSpatialStage(svg, {
   const pose = spatialRobotPose({ platform, plan, definition, progress });
   renderMissionObject(svg, definition, plan, progress, pose);
   renderTarget(svg, target, plan?.valid === false ? "blocked" : plan?.status || "ready", platform, definition);
-  if (platform === "arm") renderArm(svg, pose, robotColor);
-  else renderMobileRobot(svg, pose, platform, robotColor, playing);
+  if (platform === "arm") renderArm(svg, pose, robotColor, visualAsset, progress);
+  else if (platform === "humanoid") renderHumanoid(svg, pose, robotColor, visualAsset, progress);
+  else if (platform === "quadruped") renderQuadruped(svg, pose, robotColor, visualAsset, progress);
+  else if (platform === "drone") renderDrone(svg, pose, robotColor, visualAsset, progress, playing);
+  else renderUnavailableSpatialRobot(svg, pose, robotColor);
   renderAxes(svg);
   const title = append(svg, "g", { class: "range-space-caption" });
-  append(title, "text", { x: 38, y: 48, class: "range-space-kicker" }, "3D SPACE / SAME MISSION STATE");
-  append(title, "text", { x: 38, y: 72, class: "range-space-title" }, "Spatial geometry preview");
-  const disclosure = spatialSceneDisclosure(platform);
-  const breakpoint = disclosure.lastIndexOf(" ", 82);
-  const lines = breakpoint > 45
-    ? [disclosure.slice(0, breakpoint), disclosure.slice(breakpoint + 1)]
-    : [disclosure];
+  append(title, "text", { x: 38, y: 48, class: "range-space-kicker" }, "SPATIAL VIEW / SAME MISSION STATE");
+  append(title, "text", { x: 38, y: 72, class: "range-space-title" }, visualAsset?.representation.label || "Robot model unavailable");
+  const disclosure = visualAsset
+    ? `${visualAsset.representation.fidelity.replaceAll("-", " ")}. ${spatialSceneDisclosure(platform)}`
+    : "No reviewed robot-specific geometry is loaded. Only the mission position is shown.";
+  const words = disclosure.split(" ");
+  const lines = [];
+  words.forEach((word) => {
+    const current = lines.at(-1) || "";
+    if (!current || `${current} ${word}`.length <= 76) {
+      if (lines.length === 0) lines.push(word);
+      else lines[lines.length - 1] = `${current} ${word}`;
+    } else if (lines.length < 3) {
+      lines.push(word);
+    }
+  });
   const disclosureText = append(title, "text", { x: 38, y: 94, class: "range-space-disclosure" });
   lines.forEach((line, index) => append(disclosureText, "tspan", { x: 38, dy: index === 0 ? 0 : 13 }, line));
-  append(title, "text", { x: 38, y: 127, class: "range-space-scale-note" }, "SHARED X/Y SCALE · ILLUSTRATIVE FIXTURE HEIGHTS");
+  append(title, "text", { x: 38, y: 140, class: "range-space-scale-note" }, visualAsset
+    ? "ROBOT DRAWN AT SHARED XYZ SCALE · FIXTURE HEIGHTS ILLUSTRATIVE"
+    : "POSITION ONLY · NO ROBOT-SPECIFIC GEOMETRY");
 }

@@ -57,6 +57,9 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /id="range-view-toggle"/);
   assert.match(html, /id="range-progress"/);
   assert.match(html, /id="range-input-fingerprint"/);
+  assert.match(html, /id="range-robot-reference"/);
+  assert.match(html, /id="range-robot-photo"/);
+  assert.match(html, /id="range-render-boundary"/);
   assert.match(html, /data-range-platform="arm"/);
   assert.match(html, /data-range-platform="humanoid"/);
   assert.match(html, /data-range-platform="quadruped"/);
@@ -149,6 +152,9 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(testRangeApp, /createMissionOutcome/);
   assert.match(testRangeApp, /renderSpatialStage/);
   assert.match(testRangeApp, /unprojectSpatialFloor/);
+  assert.match(testRangeApp, /getRobotVisualAsset/);
+  assert.match(testRangeApp, /robotMotionCues/);
+  assert.match(testRangeApp, /MODEL NOT LOADED/);
   assert.match(testRangeApp, /prefers-reduced-motion/);
   assert.match(spaceStudioApp, /createCustomerSpace/);
   assert.match(spaceStudioApp, /createIsometricTransform/);
