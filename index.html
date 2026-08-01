@@ -14,7 +14,9 @@
       {
         "imports": {
           "three": "/node_modules/three/build/three.module.js",
-          "three/addons/": "/node_modules/three/examples/jsm/"
+          "three/addons/": "/node_modules/three/examples/jsm/",
+          "three/examples/jsm/": "/node_modules/three/examples/jsm/",
+          "urdf-loader": "/node_modules/urdf-loader/src/URDFLoader.js"
         }
       }
     </script>
@@ -332,17 +334,17 @@
                 <desc id="range-space-description">An isometric spatial view of the same floor geometry, route, target, and robot state shown in the two-dimensional plan. Fixture heights are illustrative and robot physics are not validated.</desc>
               </svg>
               <div id="range-widowx-stage" class="range-widowx-stage" data-state="loading" hidden>
-                <canvas id="range-widowx-canvas" tabindex="-1" aria-label="Loading the source-mesh WidowX 250S view"></canvas>
+                <canvas id="range-widowx-canvas" tabindex="-1" aria-label="Loading the verified source-robot 3D view"></canvas>
                 <div class="range-widowx-source-badge" aria-hidden="true">
                   <i></i>
-                  <span><strong>WidowX 250S</strong>Official vendor geometry</span>
+                  <span><strong>Source robot</strong>Verified geometry</span>
                 </div>
                 <div class="range-widowx-pose" aria-hidden="true">
-                  <span>Source-joint pose</span>
-                  <strong id="range-widowx-pose-value">Preparing 10 meshes…</strong>
+                  <span>Source model playback</span>
+                  <strong id="range-widowx-pose-value">Preparing geometry…</strong>
                 </div>
                 <div class="range-widowx-mast" aria-hidden="true"><i></i><span>1 m reference mast</span></div>
-                <button id="range-widowx-reset-camera" type="button" aria-label="Reset the WidowX 3D camera">Reset view</button>
+                <button id="range-widowx-reset-camera" type="button" aria-label="Reset the source-robot 3D camera">Reset view</button>
                 <div id="range-widowx-loading" class="range-widowx-loading" role="status" aria-live="polite">
                   <i></i><span>Loading official source meshes…</span>
                 </div>

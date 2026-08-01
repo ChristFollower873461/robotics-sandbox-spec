@@ -24,7 +24,8 @@ import {
 } from "./robotVisualAssets.js";
 import { SPATIAL_VIEWBOX, unprojectSpatialFloor } from "../core/visualization/spatialScene.js";
 import { renderSpatialStage } from "./spatialStageView.js";
-import { createWidowXThreeStage } from "./widowXThreeStage.js";
+import { hasSourceRobotModel, getSourceRobotModel } from "../core/robot/sourceRobotModels.js";
+import { createSourceRobotThreeStage } from "./sourceRobotThreeStage.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MM_PER_PIXEL = 5;
@@ -185,8 +186,9 @@ const elements = Object.fromEntries(
 );
 const stageViewport = document.querySelector(".range-stage-viewport");
 const spaceFidelity = document.querySelector(".range-space-fidelity");
-let widowXThreeStage = null;
-let widowXThreeStageFailed = false;
+let sourceRobotThreeStage = null;
+let sourceRobotStageProfileId = null;
+const failedSourceRobotProfiles = new Set();
 
 elements.rangeRobotPhoto.addEventListener("error", () => {
   elements.rangeRobotReference.dataset.mediaState = "unavailable";
@@ -197,17 +199,21 @@ elements.rangeRobotPhoto.addEventListener("load", () => {
   elements.rangeRobotReference.dataset.mediaState = "ready";
 });
 
-elements.rangeWidowxCanvas.addEventListener("widowxstagechange", (event) => {
+elements.rangeWidowxCanvas.addEventListener("sourcerobotstagechange", (event) => {
   const detail = event.detail || {};
+  if (detail.profileId !== state.profileId) return;
   elements.rangeWidowxStage.dataset.state = detail.status;
+  const model = getSourceRobotModel(detail.profileId);
+  const badge = elements.rangeWidowxStage.querySelector(".range-widowx-source-badge span");
+  if (badge && model) badge.innerHTML = `<strong>${model.label}</strong>${model.sourceKind.replaceAll("-", " ")}`;
   if (detail.status === "loading") {
-    elements.rangeWidowxLoading.querySelector("span").textContent = `Loading official source meshes ${detail.loaded || 0}/${detail.total || 10}…`;
+    elements.rangeWidowxLoading.querySelector("span").textContent = `Loading verified source geometry ${detail.loaded || 0}/${detail.total || 0}…`;
   } else if (detail.status === "ready") {
-    elements.rangeWidowxLoading.querySelector("span").textContent = "Official source geometry ready";
+    elements.rangeWidowxLoading.querySelector("span").textContent = `${detail.label} source geometry ready`;
   } else if (detail.status === "pose") {
-    elements.rangeWidowxPoseValue.textContent = `${detail.distanceMm} mm target · ${detail.residualMm} mm solve residual`;
+    elements.rangeWidowxPoseValue.textContent = detail.poseText || `${detail.label} source pose`;
   } else if (detail.status === "error") {
-    widowXThreeStageFailed = true;
+    failedSourceRobotProfiles.add(detail.profileId);
     elements.rangeWidowxLoading.querySelector("span").textContent = "3D unavailable — showing the geometric fallback";
     renderSpatialFallback();
     syncStageView();
@@ -216,7 +222,7 @@ elements.rangeWidowxCanvas.addEventListener("widowxstagechange", (event) => {
 });
 
 elements.rangeWidowxResetCamera.addEventListener("click", () => {
-  widowXThreeStage?.resetCamera();
+  sourceRobotThreeStage?.resetCamera();
   elements.rangeWidowxCanvas.focus();
 });
 
@@ -725,9 +731,9 @@ function renderTarget() {
   appendSvg(group, "text", { x: 22, y: -20 }, label);
 }
 
-function usesWidowXSourceMeshStage() {
-  return state.profileId === "interbotix-wx250s"
-    && visualAsset()?.display?.spatialRenderer === "widowx-source-mesh";
+function usesSourceRobotMeshStage() {
+  return hasSourceRobotModel(state.profileId)
+    && visualAsset()?.representation?.fidelity === "source-mesh";
 }
 
 function spatialStageInput() {
@@ -753,26 +759,33 @@ function renderSpatialFallback(asset = visualAsset()) {
   });
 }
 
-function ensureWidowXThreeStage() {
-  if (widowXThreeStage || widowXThreeStageFailed) return widowXThreeStage;
+function ensureSourceRobotThreeStage() {
+  if (failedSourceRobotProfiles.has(state.profileId)) return null;
+  if (sourceRobotThreeStage && sourceRobotStageProfileId !== state.profileId) {
+    sourceRobotThreeStage.destroy();
+    sourceRobotThreeStage = null;
+    sourceRobotStageProfileId = null;
+  }
+  if (sourceRobotThreeStage) return sourceRobotThreeStage;
   try {
-    widowXThreeStage = createWidowXThreeStage(elements.rangeWidowxCanvas);
+    sourceRobotThreeStage = createSourceRobotThreeStage(elements.rangeWidowxCanvas, state.profileId);
+    sourceRobotStageProfileId = state.profileId;
   } catch (error) {
-    widowXThreeStageFailed = true;
+    failedSourceRobotProfiles.add(state.profileId);
     elements.rangeWidowxStage.dataset.state = "error";
     elements.rangeWidowxLoading.querySelector("span").textContent = `3D unavailable: ${error instanceof Error ? error.message : "unknown browser error"}`;
   }
-  return widowXThreeStage;
+  return sourceRobotThreeStage;
 }
 
 function renderSpace() {
   if (state.stageView !== "space") return;
   const asset = visualAsset();
-  const sourceMeshStage = usesWidowXSourceMeshStage() && !widowXThreeStageFailed;
+  const sourceMeshStage = usesSourceRobotMeshStage() && !failedSourceRobotProfiles.has(state.profileId);
   elements.rangeWidowxStage.hidden = !sourceMeshStage;
   elements.rangeSpaceStage.hidden = sourceMeshStage;
   if (sourceMeshStage) {
-    const stage = ensureWidowXThreeStage();
+    const stage = ensureSourceRobotThreeStage();
     if (!stage) {
       elements.rangeWidowxStage.hidden = true;
       elements.rangeSpaceStage.hidden = false;
@@ -786,7 +799,7 @@ function renderSpace() {
   }
   spaceFidelity.innerHTML = asset
     ? sourceMeshStage
-      ? "<i></i><span><strong>10 official STL meshes</strong> · source-joint position solve · fixture heights illustrative · no physics</span>"
+      ? `<i></i><span><strong>${getSourceRobotModel(state.profileId)?.loadingLabel || "Verified source geometry"}</strong> · ${getSourceRobotModel(state.profileId)?.boundary || "geometry only"}</span>`
       : `<i></i><span><strong>${asset.representation.label}</strong> · ${asset.representation.fidelity.replaceAll("-", " ")} · geometry only</span>`
     : "<i></i><span><strong>Model unavailable</strong> · envelope only; no robot-specific geometry is loaded</span>";
 }
@@ -1021,14 +1034,16 @@ function syncStageView() {
     button.tabIndex = selected ? 0 : -1;
   });
   const showingSpace = state.stageView === "space";
-  const showingWidowX = showingSpace && usesWidowXSourceMeshStage() && !widowXThreeStageFailed;
+  const showingSourceRobot = showingSpace
+    && usesSourceRobotMeshStage()
+    && !failedSourceRobotProfiles.has(state.profileId);
   stageViewport.dataset.activeView = state.stageView;
   elements.rangeStage.toggleAttribute("hidden", showingSpace);
   elements.rangeStage.tabIndex = showingSpace ? -1 : 0;
-  elements.rangeSpaceStage.toggleAttribute("hidden", !showingSpace || showingWidowX);
-  elements.rangeSpaceStage.tabIndex = showingSpace && !showingWidowX ? 0 : -1;
-  elements.rangeWidowxStage.toggleAttribute("hidden", !showingWidowX);
-  elements.rangeWidowxCanvas.tabIndex = showingWidowX ? 0 : -1;
+  elements.rangeSpaceStage.toggleAttribute("hidden", !showingSpace || showingSourceRobot);
+  elements.rangeSpaceStage.tabIndex = showingSpace && !showingSourceRobot ? 0 : -1;
+  elements.rangeWidowxStage.toggleAttribute("hidden", !showingSourceRobot);
+  elements.rangeWidowxCanvas.tabIndex = showingSourceRobot ? 0 : -1;
   spaceFidelity.hidden = !showingSpace;
 }
 

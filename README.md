@@ -24,8 +24,9 @@ workspace described below; it is infrastructure, not the frontend host.
   room, mark the robot base and task, and receive an evidence-backed shortlist.
   The image never leaves the browser and is never included in JSON exports.
 - A playable four-class test range with draggable targets, class-specific
-  missions, a source-mesh/source-joint WidowX 250S 3D stage, robot-specific
-  source-kinematic or source-dimensioned renditions for the other defaults,
+  missions, and verified 3D source geometry for all four default robots:
+  WidowX 250S, ToddlerBot 2.0, Pupper v3, and Crazyflie 2.x. The stage uses
+  pinned URDF/Xacro/SDF transforms, actual source joints or rotor locations,
   normalized arm screening IK, footprint-aware 2D routing,
   scrubbable playback, and progressive friendly/engineer explanations.
 - A reusable Challenge Mode with three deterministic starter missions:
@@ -278,13 +279,18 @@ const plan = planWaypointTrajectory({
   stage now loads ten exact upstream STL files and poses the six source joints
   with deterministic position-only IK; it is still not a collision model,
   orientation-complete solver, dynamics simulation, or digital twin.
+- ToddlerBot keeps the complete pinned URDF visual topology and every source
+  triangle, losslessly repacked as browser GLB. Pupper instantiates the four
+  unique upstream STLs across its 13 URDF visuals. Crazyflie uses the official
+  MIT-licensed CF2 simulation component assembly and rotor locations; it is not
+  asserted to be revision-specific Crazyflie 2.1+ product CAD.
 - Decision results are rough screening, not safety, purchasing, deployment, or
   sim-to-real proof. A pass means the candidate deserves deeper validation.
 - Approximate/hatching-aware plan and elevation graphics are not collision
   meshes, swept volumes, gait, aerodynamics, or dynamics.
-- Humanoid and quadruped records do not yet have a locomotion engine; drone
-  records do not yet have a flight-dynamics engine. They are deliberately
-  catalog-only.
+- Humanoid and quadruped playback is an illustrative source-joint cycle, not a
+  locomotion engine; drone playback is source-geometry pose and rotor motion,
+  not a flight-dynamics engine.
 - Project origin does not prove a wholly American or European supply chain.
   Supply-chain status is shown separately and remains `not-assessed` unless
   primary documentation supports a stronger statement.
@@ -298,7 +304,7 @@ const plan = planWaypointTrajectory({
 - Collision checking is discretized and sampled, not continuous.
 - It does not model full high-DOF geometry, dynamics, torque, self-collision,
   uncertainty, safety-rated controls, or hardware execution.
-- Full source-mesh loading remains future work for the other robots, and
-  full-DOF dynamics remain future work for every robot. The four default
-  browser renditions now use pinned STL/URDF topology, mesh bounds, or
-  published dimensions under the governed visual-fidelity contract.
+- Full-DOF dynamics remain future work for every robot. The four default
+  browser renditions now use pinned, hash-audited source geometry under the
+  governed visual-fidelity contract; geometry fidelity must not be read as
+  validated motion, contact, control, perception, battery, or safety behavior.

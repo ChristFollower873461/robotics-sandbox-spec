@@ -1,0 +1,168 @@
+{
+  "format": "basement-boys/source-mesh-manifest/v1",
+  "profileId": "crazyflie-2-1-plus",
+  "source": {
+    "repositoryUrl": "https://github.com/bitcraze/crazyflie-simulation",
+    "commit": "7e93752dbc803af2488c1db46bb79b3da55f5d8c",
+    "modelPath": "simulator_files/gazebo/crazyflie/model.sdf",
+    "license": "MIT"
+  },
+  "derivation": {
+    "purpose": "Exact upstream binary STL bytes; extension uses .bin for reliable static delivery.",
+    "algorithm": "identity"
+  },
+  "assets": [
+    {
+      "assetFile": "cf_body.stl.bin",
+      "sha256": "d3aef73f6cc8fdc0578b7d66390fb19f227f59ba473a9833100f704edaa93deb",
+      "bytes": 15784,
+      "faces": 314,
+      "boundsM": [
+        [
+          -0.02888532355427742,
+          -0.029466921463608742,
+          0.013752976432442665
+        ],
+        [
+          0.02888532169163227,
+          0.02946692518889904,
+          0.01831110753118992
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "2_pinheaders.stl.bin",
+      "sha256": "17a06c057414c6e0cdade2669fd7a07dcb6d2c3d9d4b4598767f830764b06a9b",
+      "bytes": 13284,
+      "faces": 264,
+      "boundsM": [
+        [
+          -0.010000000707805157,
+          -0.012000000104308128,
+          0.010456591844558716
+        ],
+        [
+          0.010000001639127731,
+          0.012000000104308128,
+          0.028456591069698334
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "4_motormounts.stl.bin",
+      "sha256": "a243c7638e8b9e56ed8ae179c32ca1b6e100ce87d4e14cdd1d594e936645b2ef",
+      "bytes": 95284,
+      "faces": 1904,
+      "boundsM": [
+        [
+          -0.03820687159895897,
+          -0.03820830211043358,
+          0.0012804828584194183
+        ],
+        [
+          0.03820686787366867,
+          0.03820829093456268,
+          0.01831972971558571
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "4_motors.stl.bin",
+      "sha256": "a72eaf4fb2c39742b2b33d6debf315dd9c1567f40f40c62f929ad525c8efde92",
+      "bytes": 12084,
+      "faces": 240,
+      "boundsM": [
+        [
+          -0.03422956541180611,
+          -0.03409780189394951,
+          0.008709807880222797
+        ],
+        [
+          0.03422956541180611,
+          0.034097809344530106,
+          0.019290193915367126
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "battery.stl.bin",
+      "sha256": "b960215858ad3e883b91126594edc2fff640aebce22533456437fba8ac48ed23",
+      "bytes": 2284,
+      "faces": 44,
+      "boundsM": [
+        [
+          -0.014000000432133675,
+          -0.008999999612569809,
+          0.017540685832500458
+        ],
+        [
+          0.014000000432133675,
+          0.008999999612569809,
+          0.02245931327342987
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "battery_holder.stl.bin",
+      "sha256": "9fa87c527be5738cd00fc889d997a953f7e70d250842512ea26d599fe4488ccb",
+      "bytes": 3884,
+      "faces": 76,
+      "boundsM": [
+        [
+          -0.009999999776482582,
+          -0.013999998569488525,
+          0.024500001221895218
+        ],
+        [
+          0.009999999776482582,
+          0.014000000432133675,
+          0.027499999850988388
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "ccw_prop.stl.bin",
+      "sha256": "4e7b53f2405b6334b75b25caf4bbb650d25bc944b31175ad6f9dd15e22ba1576",
+      "bytes": 13984,
+      "faces": 278,
+      "boundsM": [
+        [
+          -0.02336519956588745,
+          -0.004229120910167694,
+          -0.0020000000949949026
+        ],
+        [
+          0.023601293563842773,
+          0.004439056850969791,
+          0.0020000000949949026
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "cw_prop.stl.bin",
+      "sha256": "eb00cfb524c20d6387494ce8fbf6717654f5d2c99e0c0e1ff1fe2895c43a3099",
+      "bytes": 13984,
+      "faces": 278,
+      "boundsM": [
+        [
+          -0.023483246564865112,
+          -0.00454560574144125,
+          -0.0020000000949949026
+        ],
+        [
+          0.023483246564865112,
+          0.004122572485357523,
+          0.0020000000949949026
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    }
+  ]
+}

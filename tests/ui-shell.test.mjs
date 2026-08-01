@@ -46,7 +46,7 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /id="range-space-stage"/);
   assert.match(html, /id="range-widowx-stage"/);
   assert.match(html, /id="range-widowx-canvas"/);
-  assert.match(html, /Official vendor geometry/);
+  assert.match(html, /Verified geometry/);
   assert.match(html, /id="range-widowx-reset-camera"/);
   assert.match(html, /data-range-stage-view="plan"/);
   assert.match(html, /data-range-stage-view="space"/);
@@ -118,13 +118,13 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
 });
 
 test("browser workbench imports the tested core modules", async () => {
-  const [app, decisionApp, testRangeApp, spaceStudioApp, customerScreening, widowXThreeStage] = await Promise.all([
+  const [app, decisionApp, testRangeApp, spaceStudioApp, customerScreening, sourceRobotThreeStage] = await Promise.all([
     readFile(new URL("../src/ui/app.js", import.meta.url), "utf8"),
     readFile(new URL("../src/ui/decisionApp.js", import.meta.url), "utf8"),
     readFile(new URL("../src/ui/testRangeApp.js", import.meta.url), "utf8"),
     readFile(new URL("../src/ui/spaceStudioApp.js", import.meta.url), "utf8"),
     readFile(new URL("../src/core/decision/customerSpaceScreening.js", import.meta.url), "utf8"),
-    readFile(new URL("../src/ui/widowXThreeStage.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/ui/sourceRobotThreeStage.js", import.meta.url), "utf8"),
   ]);
 
   assert.match(app, /inverseKinematics/);
@@ -156,16 +156,18 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(testRangeApp, /renderChallengeScene/);
   assert.match(testRangeApp, /createMissionOutcome/);
   assert.match(testRangeApp, /renderSpatialStage/);
-  assert.match(testRangeApp, /createWidowXThreeStage/);
+  assert.match(testRangeApp, /createSourceRobotThreeStage/);
   assert.match(testRangeApp, /unprojectSpatialFloor/);
   assert.match(testRangeApp, /getRobotVisualAsset/);
   assert.match(testRangeApp, /robotMotionCues/);
   assert.match(testRangeApp, /MODEL NOT LOADED/);
   assert.match(testRangeApp, /prefers-reduced-motion/);
-  assert.match(widowXThreeStage, /STLLoader/);
-  assert.match(widowXThreeStage, /OrbitControls/);
-  assert.match(widowXThreeStage, /widowXStageTarget/);
-  assert.match(widowXThreeStage, /WIDOWX_SOURCE_MODEL/);
+  assert.match(sourceRobotThreeStage, /STLLoader/);
+  assert.match(sourceRobotThreeStage, /GLTFLoader/);
+  assert.match(sourceRobotThreeStage, /URDFLoader/);
+  assert.match(sourceRobotThreeStage, /OrbitControls/);
+  assert.match(sourceRobotThreeStage, /widowXStageTarget/);
+  assert.match(sourceRobotThreeStage, /WIDOWX_SOURCE_MODEL/);
   assert.match(spaceStudioApp, /createCustomerSpace/);
   assert.match(spaceStudioApp, /createIsometricTransform/);
   assert.match(spaceStudioApp, /customerSpaceDecisionEnvironment/);

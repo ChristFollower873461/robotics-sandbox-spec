@@ -624,11 +624,12 @@ body { overflow-x: clip; }
 .range-space-axis--z { stroke: #6fb9de; }
 .range-space-axis-label { fill: #d4e3dc; font: 800 8px/1 var(--guide-mono); }
 
-/* Source-mesh WidowX stage — real vendor geometry, restrained exhibit controls. */
+/* Source-robot stage — verified geometry, restrained exhibit controls. */
 .range-widowx-stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 920 / 650;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   isolation: isolate;
   background:
@@ -931,6 +932,7 @@ body { overflow-x: clip; }
   .range-console-tools .range-platform-tabs { flex: 1; }
   .range-console-body { display: flex; flex-direction: column; }
   .range-stage-shell { order: 1; }
+  .range-widowx-stage { height: auto; aspect-ratio: 920 / 650; }
   .range-mission-panel { order: 2; border-top: 1px solid var(--range-line); border-right: 0; }
   .range-inspector { order: 3; display: block; }
   .range-missions { grid-template-columns: repeat(3, 1fr); }
