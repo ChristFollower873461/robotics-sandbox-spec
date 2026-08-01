@@ -17,6 +17,8 @@ import {
   getRobotProfile,
   getRobotProfilesByPlatformClass,
 } from "./robotProfiles.js";
+import { SPATIAL_VIEWBOX, unprojectSpatialFloor } from "../core/visualization/spatialScene.js";
+import { renderSpatialStage } from "./spatialStageView.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MM_PER_PIXEL = 5;
@@ -106,6 +108,7 @@ const state = {
   animationFrame: null,
   dragging: false,
   engineerView: false,
+  stageView: "plan",
   plan: null,
   missionOutcome: null,
 };
@@ -122,6 +125,7 @@ const ids = [
   "range-missions",
   "range-control-hint",
   "range-stage",
+  "range-space-stage",
   "range-challenge-layer",
   "range-reach-layer",
   "range-route-layer",
@@ -163,6 +167,8 @@ const elements = Object.fromEntries(
     document.querySelector(`#${id}`),
   ])
 );
+const stageViewport = document.querySelector(".range-stage-viewport");
+const spaceFidelity = document.querySelector(".range-space-fidelity");
 
 function svgElement(name, attributes = {}, text = null) {
   const node = document.createElementNS(SVG_NS, name);
@@ -556,6 +562,21 @@ function renderTarget() {
   appendSvg(group, "text", { x: 22, y: -20 }, label);
 }
 
+function renderSpace() {
+  if (state.stageView !== "space") return;
+  renderSpatialStage(elements.rangeSpaceStage, {
+    arena: ARENA,
+    fixtures: FIXTURES,
+    platform: state.platform,
+    plan: state.plan,
+    definition: isChallengeMode() ? challenge() : null,
+    target: state.target,
+    progress: state.progress,
+    robotColor: profile().visual.primary,
+    playing: state.animationFrame !== null,
+  });
+}
+
 function challengeResultContent() {
   const definition = challenge();
   if (!state.challengeAttempted) {
@@ -758,6 +779,21 @@ function syncModeTabs() {
   });
 }
 
+function syncStageView() {
+  document.querySelectorAll("[data-range-stage-view]").forEach((button) => {
+    const selected = button.dataset.rangeStageView === state.stageView;
+    button.setAttribute("aria-selected", String(selected));
+    button.tabIndex = selected ? 0 : -1;
+  });
+  const showingSpace = state.stageView === "space";
+  stageViewport.dataset.activeView = state.stageView;
+  elements.rangeStage.toggleAttribute("hidden", showingSpace);
+  elements.rangeStage.tabIndex = showingSpace ? -1 : 0;
+  elements.rangeSpaceStage.toggleAttribute("hidden", !showingSpace);
+  elements.rangeSpaceStage.tabIndex = showingSpace ? 0 : -1;
+  spaceFidelity.hidden = !showingSpace;
+}
+
 function renderAll() {
   updatePlan();
   if (isChallengeMode()) {
@@ -769,6 +805,7 @@ function renderAll() {
   renderRoute();
   renderRobot();
   renderTarget();
+  renderSpace();
   renderInspector();
   renderTransport();
   elements.rangeApp.dataset.platform = state.platform;
@@ -793,6 +830,7 @@ function renderAll() {
   elements.rangeReset.textContent = isChallengeMode() ? "Reset mission" : "Reset scene";
   syncPlatformTabs();
   syncModeTabs();
+  syncStageView();
 }
 
 function stopPlayback() {
@@ -836,6 +874,7 @@ function play() {
       renderChallengeScene(elements.rangeChallengeLayer, challenge(), state.plan, state.progress);
     }
     renderRobot();
+    renderSpace();
     renderTransport();
     if (state.progress < 1) {
       state.animationFrame = requestAnimationFrame(tick);
@@ -945,6 +984,18 @@ function stagePoint(event) {
   };
 }
 
+function spatialStagePoint(event) {
+  const rect = elements.rangeSpaceStage.getBoundingClientRect();
+  const point = unprojectSpatialFloor({
+    x: ((event.clientX - rect.left) / rect.width) * SPATIAL_VIEWBOX.width,
+    y: ((event.clientY - rect.top) / rect.height) * SPATIAL_VIEWBOX.height,
+  });
+  return {
+    x: Math.min(Math.max(point.x, 20), ARENA.width - 20),
+    y: Math.min(Math.max(point.y, 20), ARENA.height - 20),
+  };
+}
+
 function moveTarget(point) {
   stopPlayback();
   if (isChallengeMode()) {
@@ -1032,10 +1083,40 @@ elements.rangeViewToggle.addEventListener("click", () => {
   elements.rangeApp.classList.toggle("show-engineer-view", state.engineerView);
 });
 
+function setStageView(view) {
+  if (!["plan", "space"].includes(view) || state.stageView === view) return;
+  state.stageView = view;
+  if (view === "space") renderSpace();
+  syncStageView();
+  const label = view === "space" ? "3D spatial preview" : "2D plan view";
+  elements.rangeLiveSummary.textContent = `${label}. Mission state and result are unchanged.`;
+}
+
+document.querySelectorAll("[data-range-stage-view]").forEach((button) => {
+  button.addEventListener("click", () => setStageView(button.dataset.rangeStageView));
+  button.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const buttons = [...document.querySelectorAll("[data-range-stage-view]")];
+    const currentIndex = buttons.indexOf(button);
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? buttons.length - 1
+        : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    setStageView(buttons[nextIndex].dataset.rangeStageView);
+    buttons[nextIndex].focus();
+  });
+});
+
 elements.rangeProgress.addEventListener("input", () => {
   stopPlayback();
   state.progress = Number(elements.rangeProgress.value) / 1000;
+  if (isChallengeMode()) {
+    renderChallengeScene(elements.rangeChallengeLayer, challenge(), state.plan, state.progress);
+  }
   renderRobot();
+  renderSpace();
   renderTransport();
 });
 
@@ -1057,7 +1138,7 @@ const endDrag = (event) => {
 };
 elements.rangeStage.addEventListener("pointerup", endDrag);
 elements.rangeStage.addEventListener("pointercancel", endDrag);
-elements.rangeStage.addEventListener("keydown", (event) => {
+function handleStageKeyboard(event) {
   const delta = event.shiftKey ? 20 : 6;
   const movement = {
     ArrowLeft: { x: -delta, y: 0 },
@@ -1075,7 +1156,29 @@ elements.rangeStage.addEventListener("keydown", (event) => {
     event.preventDefault();
     play();
   }
+}
+
+elements.rangeStage.addEventListener("keydown", handleStageKeyboard);
+
+elements.rangeSpaceStage.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  state.dragging = true;
+  elements.rangeSpaceStage.setPointerCapture(event.pointerId);
+  moveTarget(spatialStagePoint(event));
 });
+elements.rangeSpaceStage.addEventListener("pointermove", (event) => {
+  if (!state.dragging) return;
+  moveTarget(spatialStagePoint(event));
+});
+const endSpaceDrag = (event) => {
+  state.dragging = false;
+  if (elements.rangeSpaceStage.hasPointerCapture(event.pointerId)) {
+    elements.rangeSpaceStage.releasePointerCapture(event.pointerId);
+  }
+};
+elements.rangeSpaceStage.addEventListener("pointerup", endSpaceDrag);
+elements.rangeSpaceStage.addEventListener("pointercancel", endSpaceDrag);
+elements.rangeSpaceStage.addEventListener("keydown", handleStageKeyboard);
 
 window.addEventListener("beforeunload", stopPlayback);
 

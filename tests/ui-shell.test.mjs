@@ -8,6 +8,9 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /id="arm-canvas"/);
   assert.match(html, /id="test-range"/);
   assert.match(html, /id="range-stage"/);
+  assert.match(html, /id="range-space-stage"/);
+  assert.match(html, /data-range-stage-view="plan"/);
+  assert.match(html, /data-range-stage-view="space"/);
   assert.match(html, /id="range-challenges"/);
   assert.match(html, /id="range-challenge-layer"/);
   assert.match(html, /data-range-mode="challenge"/);
@@ -107,5 +110,7 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(testRangeApp, /renderChallengeCards/);
   assert.match(testRangeApp, /renderChallengeScene/);
   assert.match(testRangeApp, /createMissionOutcome/);
+  assert.match(testRangeApp, /renderSpatialStage/);
+  assert.match(testRangeApp, /unprojectSpatialFloor/);
   assert.match(testRangeApp, /prefers-reduced-motion/);
 });
