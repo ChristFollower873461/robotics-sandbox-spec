@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://basementboys.org/schemas/customer-space-screening-package.v1.schema.json",
+  "title": "Basement Boys Customer Space Screening Package v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "generatedAt", "privacy", "space", "recommendationReceipt"],
+  "properties": {
+    "format": { "const": "basement-boys/customer-space-screen/v1" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["referenceImageIncluded", "statement"],
+      "properties": {
+        "referenceImageIncluded": { "const": false },
+        "statement": { "type": "string", "minLength": 20 }
+      }
+    },
+    "space": { "$ref": "./customer-space.v1.schema.json" },
+    "recommendationReceipt": { "$ref": "./robot-recommendation-receipt.v1.schema.json" }
+  }
+}

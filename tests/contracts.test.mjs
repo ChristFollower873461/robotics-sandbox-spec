@@ -6,6 +6,8 @@ import {
   WORKCELL_FORMAT,
   validateWorkcellSnapshot,
 } from "../src/core/environment/workcell.js";
+import { CUSTOMER_SPACE_FORMAT } from "../src/core/environment/customerSpace.js";
+import { CUSTOMER_SPACE_SCREENING_PACKAGE_FORMAT } from "../src/core/decision/customerSpaceScreening.js";
 import {
   ROBOT_PROFILE_FORMAT,
   validateRobotProfile,
@@ -26,9 +28,11 @@ async function readJson(relativePath) {
 }
 
 test("published JSON schemas match the runtime contract identifiers", async () => {
-  const [robotSchema, workcellSchema, catalogSchema, scenarioSchema, reportSchema, snapshotSchema, receiptSchema, missionSchema] = await Promise.all([
+  const [robotSchema, workcellSchema, customerSpaceSchema, customerScreeningSchema, catalogSchema, scenarioSchema, reportSchema, snapshotSchema, receiptSchema, missionSchema] = await Promise.all([
     readJson("../schemas/robot-profile.v1.schema.json"),
     readJson("../schemas/robot-workcell.v2.schema.json"),
+    readJson("../schemas/customer-space.v1.schema.json"),
+    readJson("../schemas/customer-space-screening-package.v1.schema.json"),
     readJson("../schemas/robot-decision-catalog.v1.schema.json"),
     readJson("../schemas/robot-decision-scenario.v1.schema.json"),
     readJson("../schemas/robot-decision-report.v1.schema.json"),
@@ -39,6 +43,8 @@ test("published JSON schemas match the runtime contract identifiers", async () =
 
   assert.equal(robotSchema.value.properties.format.const, ROBOT_PROFILE_FORMAT);
   assert.equal(workcellSchema.value.properties.format.const, WORKCELL_FORMAT);
+  assert.equal(customerSpaceSchema.value.properties.format.const, CUSTOMER_SPACE_FORMAT);
+  assert.equal(customerScreeningSchema.value.properties.format.const, CUSTOMER_SPACE_SCREENING_PACKAGE_FORMAT);
   assert.equal(catalogSchema.value.properties.format.const, ROBOT_DECISION_CATALOG_FORMAT);
   assert.equal(scenarioSchema.value.properties.format.const, DECISION_SCENARIO_FORMAT);
   assert.equal(reportSchema.value.properties.format.const, DECISION_REPORT_FORMAT);

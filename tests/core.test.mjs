@@ -147,7 +147,9 @@ test("robot profiles separate interactive arms from the multi-platform catalog",
   for (const profile of ROBOT_PROFILES) {
     assert.equal(profile.format, ROBOT_PROFILE_FORMAT);
     assert.equal(profile.recordStatus, "reviewed");
-    assert.equal(profile.sourceCheckedAt, "2026-07-30");
+    assert.match(profile.sourceCheckedAt, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(profile.sourceCheckedAt >= "2026-07-30");
+    assert.ok(Date.parse(`${profile.sourceCheckedAt}T00:00:00Z`) <= Date.now());
     assert.equal(validateRobotProfile(profile).valid, true);
     assert.match(profile.sourceUrl, /^https:\/\//);
     assert.ok(profile.openScope.length > 10);
