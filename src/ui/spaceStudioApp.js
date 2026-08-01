@@ -22,6 +22,14 @@ import {
 import { createRecommendationReceipt } from "../core/decision/foundation.js";
 import { createDecisionScenario } from "../core/decision/scenario.js";
 import { loadDecisionFoundation } from "./decisionData.js";
+import {
+  advanceSpaceWorkflow,
+  createSpaceWorkflowState,
+  retreatSpaceWorkflow,
+  selectSpaceWorkflowStep,
+  spaceWorkflowProgress,
+  spaceWorkflowStep,
+} from "./spaceWorkflow.js";
 
 const app = document.querySelector("#space-app");
 
@@ -59,6 +67,12 @@ if (app) {
       "space-job",
       "space-run-study",
       "space-form-message",
+      "space-flow-kicker",
+      "space-flow-title",
+      "space-flow-time",
+      "space-step-back",
+      "space-step-count",
+      "space-step-next",
       "space-plan-stage",
       "space-3d-stage",
       "space-reference-inset",
@@ -84,6 +98,7 @@ if (app) {
       "space-product-link",
       "space-result-why",
       "space-result-evidence",
+      "space-result-close",
       "space-download",
       "space-open-compare",
     ].map((id) => [id.replace(/-([a-z0-9])/g, (_, character) => character.toUpperCase()), document.querySelector(`#${id}`)])
@@ -226,6 +241,8 @@ if (app) {
     rankedEvaluations: [],
     resultIndex: 0,
     exampleActive: true,
+    workflow: createSpaceWorkflowState(),
+    resultOpen: false,
   };
 
   function fixtureInput(id, preset, xMm, yMm, method = "manual") {
@@ -328,6 +345,9 @@ if (app) {
     state.rankedEvaluations = [];
     state.resultIndex = 0;
     app.dataset.result = "ready";
+    state.resultOpen = false;
+    app.classList.remove("is-result-open");
+    document.querySelector(".space-result-panel")?.setAttribute("aria-hidden", "true");
     if (!hadResult) return;
     elements.spaceResultKicker.textContent = "Inputs changed · run again";
     elements.spaceResultPlatform.textContent = "Fresh screen needed";
@@ -345,6 +365,38 @@ if (app) {
     elements.spaceRobotIllustration.hidden = false;
     elements.spaceRobotMediaLabel.textContent = "A fresh source-shaped preview will appear after screening";
     elements.spaceDownload.textContent = "Download space JSON";
+  }
+
+  function renderWorkflow() {
+    const meta = spaceWorkflowStep(state.workflow);
+    const progress = spaceWorkflowProgress(state.workflow);
+    app.dataset.activeStep = String(meta.id);
+    elements.spaceFlowKicker.textContent = meta.kicker;
+    elements.spaceFlowTitle.textContent = meta.title;
+    elements.spaceFlowTime.textContent = meta.time;
+    elements.spaceStepCount.textContent = `${progress.current} of ${progress.total}`;
+    elements.spaceStepBack.hidden = progress.isFirst;
+    elements.spaceStepNext.hidden = progress.isLast;
+    elements.spaceRunStudy.hidden = !progress.isLast;
+    if (meta.nextLabel) {
+      elements.spaceStepNext.innerHTML = `${escapeHtml(meta.nextLabel)} <span>→</span>`;
+    }
+    document.querySelectorAll(".space-step[data-step]").forEach((section) => {
+      section.hidden = Number(section.dataset.step) !== meta.id;
+    });
+    document.querySelectorAll("[data-space-step-target]").forEach((button) => {
+      const current = Number(button.dataset.spaceStepTarget) === meta.id;
+      if (current) button.setAttribute("aria-current", "step");
+      else button.removeAttribute("aria-current");
+    });
+  }
+
+  function selectWorkflowStep(step, { focus = false } = {}) {
+    state.workflow = selectSpaceWorkflowStep(state.workflow, step);
+    const meta = spaceWorkflowStep(state.workflow);
+    renderWorkflow();
+    setView(meta.preferredView);
+    if (focus) elements.spaceFlowTitle.focus({ preventScroll: true });
   }
 
   function renderMeasurementControls() {
@@ -442,6 +494,51 @@ if (app) {
     append(hatch, "line", { x1: 0, y1: 0, x2: 0, y2: 12, class: "space-plan-hatch-line" });
     const clip = append(defs, "clipPath", { id: "customer-photo-clip" });
     append(clip, "rect", { x: transform.x, y: transform.y, width: transform.width, height: transform.depth, rx: 8 });
+  }
+
+  function addSpaceDefinitions(svg) {
+    const defs = append(svg, "defs");
+    const floor = append(defs, "linearGradient", {
+      id: "customer-iso-floor",
+      x1: "0%",
+      y1: "0%",
+      x2: "100%",
+      y2: "100%",
+    });
+    append(floor, "stop", { offset: "0%", "stop-color": "#3a423d" });
+    append(floor, "stop", { offset: "100%", "stop-color": "#1f2521" });
+    const backWall = append(defs, "linearGradient", {
+      id: "customer-iso-wall-back",
+      x1: "0%",
+      y1: "0%",
+      x2: "0%",
+      y2: "100%",
+    });
+    append(backWall, "stop", { offset: "0%", "stop-color": "#56605a" });
+    append(backWall, "stop", { offset: "100%", "stop-color": "#2b322e" });
+    const leftWall = append(defs, "linearGradient", {
+      id: "customer-iso-wall-left",
+      x1: "0%",
+      y1: "0%",
+      x2: "100%",
+      y2: "100%",
+    });
+    append(leftWall, "stop", { offset: "0%", "stop-color": "#465049" });
+    append(leftWall, "stop", { offset: "100%", "stop-color": "#252b27" });
+    const shadow = append(defs, "filter", {
+      id: "customer-iso-object-shadow",
+      x: "-25%",
+      y: "-25%",
+      width: "150%",
+      height: "170%",
+    });
+    append(shadow, "feDropShadow", {
+      dx: 0,
+      dy: 8,
+      stdDeviation: 6,
+      "flood-color": "#070907",
+      "flood-opacity": 0.38,
+    });
   }
 
   function renderPlan(space) {
@@ -591,6 +688,27 @@ if (app) {
     const basePoint = isometricPoint(base, transform);
     const targetPoint = isometricPoint(target, transform);
     const group = append(svg, "g", { class: `space-iso-robot space-iso-robot--${profile.platformClass}`, style: `--space-robot:${profile.visual.primary}` });
+    if (Number.isFinite(reach) && reach > 0) {
+      const envelope = Array.from({ length: 40 }, (_, index) => {
+        const angle = (Math.PI * 2 * index) / 40;
+        return isometricPoint({
+          xMm: base.xMm + Math.cos(angle) * reach,
+          yMm: base.yMm + Math.sin(angle) * reach,
+          zMm: base.zMm,
+        }, transform);
+      });
+      const envelopeLabel = isometricPoint({ xMm: base.xMm, yMm: base.yMm - reach, zMm: base.zMm }, transform);
+      append(group, "polygon", {
+        points: polygonPoints(envelope),
+        class: `space-iso-reach-envelope${requiredReach > reach ? " is-blocked" : ""}`,
+      });
+      append(group, "text", {
+        x: envelopeLabel.x,
+        y: envelopeLabel.y - 9,
+        "text-anchor": "middle",
+        class: "space-iso-reach-envelope-label",
+      }, `PUBLISHED REACH PLANE / ${Math.round(reach).toLocaleString("en-US")} MM`);
+    }
     append(group, "ellipse", { cx: baseFloor.x, cy: baseFloor.y + 7, rx: 28, ry: 10, class: "space-iso-robot-shadow" });
     if (profile.platformClass === "arm") {
       const shoulderWorld = { ...base, zMm: base.zMm + 110 };
@@ -651,6 +769,7 @@ if (app) {
     svg.replaceChildren();
     append(svg, "title", { id: "space-3d-title" }, "Three-dimensional rough reconstruction of your space");
     append(svg, "desc", { id: "space-3d-description" }, "The same measured room, fixtures, robot base, and task point shown in the editable plan. Geometry only; no physics.");
+    addSpaceDefinitions(svg);
     const transform = createIsometricTransform(space, VIEWPORT, 62);
     renderIsoWalls(svg, space, transform);
     [...space.fixtures]
@@ -705,6 +824,7 @@ if (app) {
       return;
     }
     renderCaptureState();
+    renderWorkflow();
     renderInspector();
     renderPlan(space);
     renderSpace(space);
@@ -734,6 +854,9 @@ if (app) {
     const recommendation = state.receipt.recommendations.find((item) => item.profileId === profile.id);
     const media = ROBOT_MEDIA[profile.id];
     app.dataset.result = evaluation.outcome;
+    state.resultOpen = true;
+    app.classList.add("is-result-open");
+    document.querySelector(".space-result-panel")?.setAttribute("aria-hidden", "false");
     elements.spaceResultKicker.textContent = state.resultIndex === 0 ? "Best current lead" : `Alternative ${state.resultIndex + 1} of ${state.rankedEvaluations.length}`;
     elements.spaceResultPlatform.textContent = `${titleize(profile.platformClass)} · ${profile.country}`;
     elements.spaceResultModel.textContent = titleize(profile.model);
@@ -770,6 +893,7 @@ if (app) {
     }
     elements.spaceDownload.textContent = "Download screening package";
     render();
+    elements.spaceResultKicker.focus({ preventScroll: true });
   }
 
   function runStudy() {
@@ -804,8 +928,9 @@ if (app) {
       state.resultIndex = 0;
       elements.spaceFormMessage.textContent = "";
       renderResult();
-      if (window.matchMedia("(max-width: 760px)").matches) {
-        document.querySelector(".space-result-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!window.matchMedia("(max-width: 760px)").matches) {
+        app.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       }
     } catch (error) {
       elements.spaceFormMessage.textContent = error.message;
@@ -857,6 +982,8 @@ if (app) {
         input.dispatchEvent(new Event("input", { bubbles: true }));
       }
     });
+    const supportingLabs = document.querySelector("#supporting-labs");
+    if (supportingLabs) supportingLabs.open = true;
     document.querySelector("#decision-lab")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -1033,7 +1160,7 @@ if (app) {
       state.exampleActive = true;
       renderMeasurementControls();
       invalidateResult();
-      setView("space");
+      selectWorkflowStep(2, { focus: true });
     });
     elements.spaceUnits.addEventListener("change", () => {
       state.unitMode = elements.spaceUnits.value;
@@ -1053,6 +1180,17 @@ if (app) {
     elements.spaceFixtureDepth.addEventListener("input", () => updateFixtureDimension("depthMm", elements.spaceFixtureDepth));
     elements.spaceFixtureHeight.addEventListener("input", () => updateFixtureDimension("heightMm", elements.spaceFixtureHeight));
     document.querySelectorAll("[data-space-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.spaceView)));
+    document.querySelectorAll("[data-space-step-target]").forEach((button) => {
+      button.addEventListener("click", () => selectWorkflowStep(Number(button.dataset.spaceStepTarget)));
+    });
+    elements.spaceStepNext.addEventListener("click", () => {
+      state.workflow = advanceSpaceWorkflow(state.workflow);
+      selectWorkflowStep(state.workflow.step, { focus: true });
+    });
+    elements.spaceStepBack.addEventListener("click", () => {
+      state.workflow = retreatSpaceWorkflow(state.workflow);
+      selectWorkflowStep(state.workflow.step, { focus: true });
+    });
     elements.spacePlanStage.addEventListener("pointerdown", (event) => {
       const entity = entityFromTarget(event.target);
       if (!entity) return;
@@ -1093,6 +1231,12 @@ if (app) {
     });
     elements.spaceJob.addEventListener("change", invalidateResult);
     elements.spaceRunStudy.addEventListener("click", runStudy);
+    elements.spaceResultClose.addEventListener("click", () => {
+      state.resultOpen = false;
+      app.classList.remove("is-result-open");
+      document.querySelector(".space-result-panel")?.setAttribute("aria-hidden", "true");
+      elements.spaceRunStudy.focus();
+    });
     elements.spaceTryNext.addEventListener("click", () => {
       if (state.rankedEvaluations.length === 0) return;
       state.resultIndex = (state.resultIndex + 1) % state.rankedEvaluations.length;
@@ -1104,5 +1248,6 @@ if (app) {
 
   renderMeasurementControls();
   attachEvents();
+  renderWorkflow();
   setView("space");
 }
