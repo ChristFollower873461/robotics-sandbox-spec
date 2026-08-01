@@ -53,7 +53,7 @@
           <header class="range-console-bar">
             <div class="range-console-title">
               <span><i></i>LIVE TEST RANGE</span>
-              <small>2D GEOMETRIC SCREENING / 4.6 × 2.6 M FLOOR</small>
+              <small>GEOMETRIC SCREENING / 2D PLAN + 3D PREVIEW</small>
             </div>
             <div class="range-console-tools">
               <div class="range-mode-switch" role="tablist" aria-label="Test range mode">
@@ -96,11 +96,16 @@
               <header class="range-stage-head">
                 <div id="range-status" class="range-status" data-state="ready"><i></i><span>Ready to test</span></div>
                 <div class="range-stage-actions">
+                  <div class="range-stage-view-switch" role="tablist" aria-label="Stage view">
+                    <button type="button" role="tab" data-range-stage-view="plan" aria-selected="true">2D plan</button>
+                    <button type="button" role="tab" data-range-stage-view="space" aria-selected="false">3D space</button>
+                  </div>
                   <button id="range-reset" type="button">Reset scene</button>
                 </div>
               </header>
 
-              <svg id="range-stage" viewBox="0 0 920 650" role="img" aria-labelledby="range-stage-title range-stage-description" tabindex="0">
+              <div class="range-stage-viewport" data-active-view="plan">
+              <svg id="range-stage" class="range-stage-view range-stage-view--plan" viewBox="0 0 920 650" role="img" aria-labelledby="range-stage-title range-stage-description" tabindex="0">
                 <title id="range-stage-title">Interactive robot test range</title>
                 <desc id="range-stage-description">A scaled two-dimensional room with draggable target, obstacles, planned route, and selected robot.</desc>
                 <defs>
@@ -134,6 +139,13 @@
                 <g id="range-robot-layer"></g>
                 <g id="range-target-layer"></g>
               </svg>
+
+              <svg id="range-space-stage" class="range-stage-view range-stage-view--space" viewBox="0 0 920 650" role="img" aria-labelledby="range-space-title range-space-description" tabindex="-1" hidden>
+                <title id="range-space-title">Three-dimensional robot spatial preview</title>
+                <desc id="range-space-description">An isometric spatial view of the same floor geometry, route, target, and robot state shown in the two-dimensional plan. Fixture heights are illustrative and robot physics are not validated.</desc>
+              </svg>
+              <div class="range-space-fidelity" hidden><i></i><span><strong>Geometry preview</strong> Shared x/y geometry · illustrative fixture heights · no physics</span></div>
+              </div>
 
               <div class="range-transport" aria-label="Simulation playback">
                 <button id="range-play" type="button"><span>▶</span> Run the route</button>
