@@ -2,6 +2,22 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Cloudflare deployment is pinned to the zone-owning account", async () => {
+  const [configurationText, packageText] = await Promise.all([
+    readFile(new URL("../worker/wrangler.json", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+  const configuration = JSON.parse(configurationText);
+  const packageJson = JSON.parse(packageText);
+
+  assert.equal(configuration.name, "robotics-sandbox");
+  assert.equal(configuration.account_id, "10c5a04d39502818093715beede0cb07");
+  assert.match(
+    packageJson.scripts["deploy:cloudflare"],
+    /--domain robotics\.basementboys\.org/
+  );
+});
+
 test("browser workbench exposes the simulator controls and module entrypoint", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 

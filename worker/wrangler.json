@@ -1,5 +1,6 @@
 {
   "name": "robotics-sandbox",
+  "account_id": "10c5a04d39502818093715beede0cb07",
   "main": "index.js",
   "compatibility_date": "2026-07-31",
   "assets": {
