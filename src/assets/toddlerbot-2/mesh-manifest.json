@@ -1,0 +1,1855 @@
+{
+  "format": "basement-boys/source-mesh-manifest/v1",
+  "profileId": "toddlerbot-2",
+  "source": {
+    "repositoryUrl": "https://github.com/hshi74/toddlerbot",
+    "commit": "e337f3b177b4b53abff70b31d1695a7b66cc6d2e",
+    "urdfPath": "toddlerbot/descriptions/toddlerbot_2xc_gripper/toddlerbot_2xc_gripper.urdf",
+    "license": "MIT"
+  },
+  "derivation": {
+    "purpose": "Lossless browser delivery: source triangles and bounds are unchanged; duplicate STL vertices are welded and repacked as binary glTF.",
+    "algorithm": "trimesh process=True followed by export_glb; no decimation",
+    "trimeshVersion": "5.0.0",
+    "numpyVersion": "2.5.1",
+    "networkxVersion": "3.5"
+  },
+  "assets": [
+    {
+      "sourcePath": "assets/torso_visual.stl",
+      "assetFile": "torso_visual.glb",
+      "sourceSha256": "ea1a8f583641f1cb6fbc976880002d81264bb4ed315053904cee5c246f416955",
+      "derivedSha256": "63c733817f96eac8ef21b976e806234bf46e0891969bf81c1e2a83337a15bd50",
+      "sourceBytes": 3145784,
+      "derivedBytes": 1124524,
+      "sourceFaces": 62914,
+      "derivedFaces": 62914,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.09690939635038376,
+          -0.0647391825914383,
+          -0.06743490695953369
+        ],
+        [
+          0.04409060999751091,
+          0.07306081801652908,
+          0.06131730228662491
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.09690939635038376,
+          -0.0647391825914383,
+          -0.06743490695953369
+        ],
+        [
+          0.04409060999751091,
+          0.07306081801652908,
+          0.06131730228662491
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/neck_yaw_gear_drive_visual.stl",
+      "assetFile": "neck_yaw_gear_drive_visual.glb",
+      "sourceSha256": "3d373f09fa0b364866b06f0a1e94595677586601c8fb7218d6467fbe6da6b362",
+      "derivedSha256": "c56d7e1c83c668cf650f58d13cf6111b839c89b77508d1efc0402dba72721a98",
+      "sourceBytes": 377884,
+      "derivedBytes": 136844,
+      "sourceFaces": 7556,
+      "derivedFaces": 7556,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01099478267133236,
+          -0.01099478267133236,
+          -0.0033841023687273264
+        ],
+        [
+          0.01099478267133236,
+          0.01099478267133236,
+          0.0031158975325524807
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01099478267133236,
+          -0.01099478267133236,
+          -0.0033841023687273264
+        ],
+        [
+          0.01099478267133236,
+          0.01099478267133236,
+          0.0031158975325524807
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/neck_yaw_link_visual.stl",
+      "assetFile": "neck_yaw_link_visual.glb",
+      "sourceSha256": "548b1c25986e87da7229e971c1fbbe9f29a88a72d08846b162211b6b996d7d70",
+      "derivedSha256": "532bffa2d8f806d3fe55cc0ccf521ab560c2cf1ba59bbe5e8ca1abdb6020b94a",
+      "sourceBytes": 357084,
+      "derivedBytes": 129332,
+      "sourceFaces": 7140,
+      "derivedFaces": 7140,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.011991649866104126,
+          -0.011921974830329418,
+          -0.01221561525017023
+        ],
+        [
+          0.011998463422060013,
+          0.011921978555619717,
+          0.013784385286271572
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.011991649866104126,
+          -0.011921974830329418,
+          -0.01221561525017023
+        ],
+        [
+          0.011998463422060013,
+          0.011921978555619717,
+          0.013784385286271572
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/head_visual.stl",
+      "assetFile": "head_visual.glb",
+      "sourceSha256": "f13dc3c29cf7a1c6dc499a07a1332ff24aa53840a52012690f7bade6badc6d4f",
+      "derivedSha256": "094d705ad991808c2cb62e243a1691c8d61bae144fae53124ad40150b21fa9c8",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1126456,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.03501484543085098,
+          -0.05661008879542351,
+          -0.049869850277900696
+        ],
+        [
+          0.03498515486717224,
+          0.047389913350343704,
+          0.03863015025854111
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.03501484543085098,
+          -0.05661008879542351,
+          -0.049869850277900696
+        ],
+        [
+          0.03498515486717224,
+          0.047389913350343704,
+          0.03863015025854111
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/neck_pitch_plate_visual.stl",
+      "assetFile": "neck_pitch_plate_visual.glb",
+      "sourceSha256": "669efe1f5833097c077ca0e8f313889d7d23b0a5909f9e694edb0ccdbf7aa289",
+      "derivedSha256": "10f20eee30fcce52b182bea55c579cc6947d442fdb60587b522eb34f75ecd5d9",
+      "sourceBytes": 192984,
+      "derivedBytes": 70224,
+      "sourceFaces": 3858,
+      "derivedFaces": 3858,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009999934583902359,
+          -0.0026718229055404663,
+          -0.009999934583902359
+        ],
+        [
+          0.009999934583902359,
+          0.0028281768318265676,
+          0.009999934583902359
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009999934583902359,
+          -0.0026718229055404663,
+          -0.009999934583902359
+        ],
+        [
+          0.009999934583902359,
+          0.0028281768318265676,
+          0.009999934583902359
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/neck_rod_visual.stl",
+      "assetFile": "neck_rod_visual.glb",
+      "sourceSha256": "c74e13e3953622ccbbfec6bafa24e1bc5ac3a0ba4a4d67b79b8e9e9e3fe76211",
+      "derivedSha256": "4a793aa3a1c7c5d459c79fb106d0f5f6819710d0a69baaf3166841c6ca8a65f1",
+      "sourceBytes": 124684,
+      "derivedBytes": 45720,
+      "sourceFaces": 2492,
+      "derivedFaces": 2492,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.018979864194989204,
+          -0.0015091383829712868,
+          -0.02181429974734783
+        ],
+        [
+          0.018958115950226784,
+          0.0015908618224784732,
+          0.021817579865455627
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.018979864194989204,
+          -0.0015091383829712868,
+          -0.02181429974734783
+        ],
+        [
+          0.018958115950226784,
+          0.0015908618224784732,
+          0.021817579865455627
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/neck_rod_2_visual.stl",
+      "assetFile": "neck_rod_2_visual.glb",
+      "sourceSha256": "e9678673735b436dc851db70793c76e121e9ee493977259b7b54b99574f88ef4",
+      "derivedSha256": "724a87eb8dda7a2576873f2e92fc9df034e5e7c1430a497d39671e3a3b86f9ef",
+      "sourceBytes": 124684,
+      "derivedBytes": 45728,
+      "sourceFaces": 2492,
+      "derivedFaces": 2492,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.018985535949468613,
+          -0.0015091383829712868,
+          -0.02180998958647251
+        ],
+        [
+          0.018976131454110146,
+          0.0015908618224784732,
+          0.021802430972456932
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.018985535949468613,
+          -0.0015091383829712868,
+          -0.02180998958647251
+        ],
+        [
+          0.018976131454110146,
+          0.0015908618224784732,
+          0.021802430972456932
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/waist_gears_visual.stl",
+      "assetFile": "waist_gears_visual.glb",
+      "sourceSha256": "e1f8594f6e29dee5f378e22dac201d25d82ca00adf43d684d2f49f0f15a5d6b9",
+      "derivedSha256": "385c93c194cd1fd7f658a1885de4809555a9657166eed8af78daebc6ab25c60e",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1131744,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023007865995168686,
+          -0.015514208003878593,
+          -0.016522562131285667
+        ],
+        [
+          0.023007865995168686,
+          0.015514204278588295,
+          0.014505850151181221
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023007865995168686,
+          -0.015514208003878593,
+          -0.016522562131285667
+        ],
+        [
+          0.023007865995168686,
+          0.015514204278588295,
+          0.014505850151181221
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/pelvis_link_visual.stl",
+      "assetFile": "pelvis_link_visual.glb",
+      "sourceSha256": "e0589e7fc8d79acf76e5156509ba115a3fa5abaa73787326e73a2a82724a48ae",
+      "derivedSha256": "074291b2f42e1a232a648fae5f053eed04f110644c78a202c64bdf610e7b0a0f",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1128256,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.03459551930427551,
+          -0.05999999865889549,
+          -0.03251940384507179
+        ],
+        [
+          0.03540448099374771,
+          0.05999999865889549,
+          0.03298059478402138
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.03459551930427551,
+          -0.05999999865889549,
+          -0.03251940384507179
+        ],
+        [
+          0.03540448099374771,
+          0.05999999865889549,
+          0.03298059478402138
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/waist_gear_drive_visual.stl",
+      "assetFile": "waist_gear_drive_visual.glb",
+      "sourceSha256": "aafd8c948357156518bda23fb7f32be2b9e78c543e3ab2f5bf11ed1956f97712",
+      "derivedSha256": "5e24d9223f84193d5084f95918c49cf43ccf37fc2a0ee0c65b01cba6a402e369",
+      "sourceBytes": 771684,
+      "derivedBytes": 278700,
+      "sourceFaces": 15432,
+      "derivedFaces": 15432,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.0075968187302351,
+          -0.007514717057347298,
+          -0.006718237418681383
+        ],
+        [
+          0.007596817798912525,
+          0.007514718919992447,
+          0.005279459524899721
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.0075968187302351,
+          -0.007514717057347298,
+          -0.006718237418681383
+        ],
+        [
+          0.007596817798912525,
+          0.007514718919992447,
+          0.005279459524899721
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/waist_gear_drive_2_visual.stl",
+      "assetFile": "waist_gear_drive_2_visual.glb",
+      "sourceSha256": "0e97d39949aa80c53fa1042b9ef9f5f4481bff9939ab125659e8ed3b180866a7",
+      "derivedSha256": "4118dbd96d8ce507b43e3f47be4d0709d79f1ee8e73e10320ffbd1bfd6dab420",
+      "sourceBytes": 771684,
+      "derivedBytes": 278708,
+      "sourceFaces": 15432,
+      "derivedFaces": 15432,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.007595372851938009,
+          -0.007489191368222237,
+          -0.006718237418681383
+        ],
+        [
+          0.007595371920615435,
+          0.007489193230867386,
+          0.005279459524899721
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.007595372851938009,
+          -0.007489191368222237,
+          -0.006718237418681383
+        ],
+        [
+          0.007595371920615435,
+          0.007489193230867386,
+          0.005279459524899721
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_hip_pitch_link_visual.stl",
+      "assetFile": "left_hip_pitch_link_visual.glb",
+      "sourceSha256": "7cc36419f52f2d1b037c744666580c8a564667faa3a0757aded34062769f4de5",
+      "derivedSha256": "c36ce0c28923f3b39b7fc8f7dc5ad45a04b500d42590b26f7a744fbb626b0e36",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1121240,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.020495980978012085,
+          -0.020404111593961716,
+          -0.023250151425600052
+        ],
+        [
+          0.020404018461704254,
+          0.020495887845754623,
+          0.023249849677085876
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.020495980978012085,
+          -0.020404111593961716,
+          -0.023250151425600052
+        ],
+        [
+          0.020404018461704254,
+          0.020495887845754623,
+          0.023249849677085876
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_hip_roll_link_visual.stl",
+      "assetFile": "left_hip_roll_link_visual.glb",
+      "sourceSha256": "e30f94c40c117d4488f1b289beba307aff90085efa474c1be5c6fb4ced58e6b8",
+      "derivedSha256": "9e36e2d617261b560630c3d1f56fdead3cd1728c74ff0e095db485d8d27ae6c0",
+      "sourceBytes": 608284,
+      "derivedBytes": 219448,
+      "sourceFaces": 12164,
+      "derivedFaces": 12164,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023007502779364586,
+          -0.0139966681599617,
+          -0.01608416810631752
+        ],
+        [
+          0.02299249731004238,
+          0.014003332704305649,
+          0.0279158316552639
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023007502779364586,
+          -0.0139966681599617,
+          -0.01608416810631752
+        ],
+        [
+          0.02299249731004238,
+          0.014003332704305649,
+          0.0279158316552639
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_hip_yaw_link_visual.stl",
+      "assetFile": "left_hip_yaw_link_visual.glb",
+      "sourceSha256": "259b01e9b67f88aa721b8ebc03c4a2b1d92fc703357127352075fc5a78c4de85",
+      "derivedSha256": "6c6dc800e9ae1aa1a32b0dc0045987be589cfcb732fea77c781a8b2301e3919a",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1124012,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.029376409947872162,
+          -0.02457183599472046,
+          -0.027619460597634315
+        ],
+        [
+          0.029673591256141663,
+          0.0233781635761261,
+          0.03533053770661354
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.029376409947872162,
+          -0.02457183599472046,
+          -0.027619460597634315
+        ],
+        [
+          0.029673591256141663,
+          0.0233781635761261,
+          0.03533053770661354
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_hip_yaw_gear_drive_visual.stl",
+      "assetFile": "left_hip_yaw_gear_drive_visual.glb",
+      "sourceSha256": "5b7b0449b7fcc22713ee33f24eb4b014e61de514bbf2fa9ebbd2bd741775e798",
+      "derivedSha256": "39da6fc0220fab8a81ba1e53c9aec663fee1c39977ecf991430adb8712cb50b6",
+      "sourceBytes": 282484,
+      "derivedBytes": 102520,
+      "sourceFaces": 5648,
+      "derivedFaces": 5648,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009907624684274197,
+          -0.009992587380111217,
+          -0.0017500000540167093
+        ],
+        [
+          0.009907624684274197,
+          0.009992587380111217,
+          0.0017500000540167093
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009907624684274197,
+          -0.009992587380111217,
+          -0.0017500000540167093
+        ],
+        [
+          0.009907624684274197,
+          0.009992587380111217,
+          0.0017500000540167093
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_knee_link_visual.stl",
+      "assetFile": "left_knee_link_visual.glb",
+      "sourceSha256": "175699809041ea6f397ecccc9ace5a1bf5e1d85e75c6da0b4d3088593fafb1e5",
+      "derivedSha256": "d1c17d5dc766e07730bf79e2f115a0e54544dc8903b17903ed1c4ec01a265085",
+      "sourceBytes": 319184,
+      "derivedBytes": 115380,
+      "sourceFaces": 6382,
+      "derivedFaces": 6382,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.019523313269019127,
+          -0.023000000044703484,
+          -0.06673568487167358
+        ],
+        [
+          0.010476683266460896,
+          0.023000000044703484,
+          0.06556951254606247
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.019523313269019127,
+          -0.023000000044703484,
+          -0.06673568487167358
+        ],
+        [
+          0.010476683266460896,
+          0.023000000044703484,
+          0.06556951254606247
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_ankle_pitch_link_visual.stl",
+      "assetFile": "left_ankle_pitch_link_visual.glb",
+      "sourceSha256": "1ba73747cbaf6b5391df5f459259c38fee3a61f7f1a0b20d9023b4ebd01370a6",
+      "derivedSha256": "c04d2a4fe3dd09e34a66601bed82d8a1869a85f9787597f8cbf75f4dd3df5f4d",
+      "sourceBytes": 3145784,
+      "derivedBytes": 1125132,
+      "sourceFaces": 62914,
+      "derivedFaces": 62914,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.04403084143996239,
+          -0.023207372054457664,
+          -0.02333916909992695
+        ],
+        [
+          0.04286915808916092,
+          0.01919262669980526,
+          0.02316083200275898
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.04403084143996239,
+          -0.023207372054457664,
+          -0.02333916909992695
+        ],
+        [
+          0.04286915808916092,
+          0.01919262669980526,
+          0.02316083200275898
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_ankle_roll_link_visual.stl",
+      "assetFile": "left_ankle_roll_link_visual.glb",
+      "sourceSha256": "e8be108071f5a4141077d9e4202544bfdb3ae160b4bcc0a906237345ab4e2971",
+      "derivedSha256": "bce2682de60351b46e174dc6e17f3b3cd9f763d5c50dae58f0eb329f1ec6591a",
+      "sourceBytes": 799784,
+      "derivedBytes": 288592,
+      "sourceFaces": 15994,
+      "derivedFaces": 15994,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.052192915230989456,
+          -0.020978597924113274,
+          -0.012243743985891342
+        ],
+        [
+          0.058234862983226776,
+          0.020976921543478966,
+          0.037722934037446976
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.052192915230989456,
+          -0.020978597924113274,
+          -0.012243743985891342
+        ],
+        [
+          0.058234862983226776,
+          0.020976921543478966,
+          0.037722934037446976
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_hip_pitch_link_visual.stl",
+      "assetFile": "right_hip_pitch_link_visual.glb",
+      "sourceSha256": "5717073381e8d30c9e94b9a81ba89bc3a6c71b6a1010224b658f53ad43780db8",
+      "derivedSha256": "1d3f6081a5457ff13746b32ab110ee502e567ee34f79b8ca859ffe0c5663e7de",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1121244,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.020404111593961716,
+          -0.020495980978012085,
+          -0.023249849677085876
+        ],
+        [
+          0.020495887845754623,
+          0.020404018461704254,
+          0.023250151425600052
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.020404111593961716,
+          -0.020495980978012085,
+          -0.023249849677085876
+        ],
+        [
+          0.020495887845754623,
+          0.020404018461704254,
+          0.023250151425600052
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_hip_roll_link_visual.stl",
+      "assetFile": "right_hip_roll_link_visual.glb",
+      "sourceSha256": "e30f94c40c117d4488f1b289beba307aff90085efa474c1be5c6fb4ced58e6b8",
+      "derivedSha256": "5b94ac17a174a9312b7107e5351754307d051694db7aea35401559c9451250d9",
+      "sourceBytes": 608284,
+      "derivedBytes": 219452,
+      "sourceFaces": 12164,
+      "derivedFaces": 12164,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023007502779364586,
+          -0.0139966681599617,
+          -0.01608416810631752
+        ],
+        [
+          0.02299249731004238,
+          0.014003332704305649,
+          0.0279158316552639
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023007502779364586,
+          -0.0139966681599617,
+          -0.01608416810631752
+        ],
+        [
+          0.02299249731004238,
+          0.014003332704305649,
+          0.0279158316552639
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_hip_yaw_link_visual.stl",
+      "assetFile": "right_hip_yaw_link_visual.glb",
+      "sourceSha256": "ae4d53688a3f52006df05fe3960229582b0963dc177cbe3b14711874baef1d20",
+      "derivedSha256": "0fee3a58696a712b0dcf50d510c45495a20148d28b884f288e2429f1e8e0fa44",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1123308,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.02937743254005909,
+          -0.02337847836315632,
+          -0.02761967107653618
+        ],
+        [
+          0.029672568663954735,
+          0.02457152120769024,
+          0.03533032909035683
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.02937743254005909,
+          -0.02337847836315632,
+          -0.02761967107653618
+        ],
+        [
+          0.029672568663954735,
+          0.02457152120769024,
+          0.03533032909035683
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_hip_yaw_gear_drive_visual.stl",
+      "assetFile": "right_hip_yaw_gear_drive_visual.glb",
+      "sourceSha256": "d139b38852c5263dcb839c8cbc54554e618a9baa22ef02336ae78d8f1dce32ff",
+      "derivedSha256": "42c9265040ad5b5bebdff22e9ee20bfb88c976a24e8a33a67eecb483f8faa1dd",
+      "sourceBytes": 282484,
+      "derivedBytes": 102524,
+      "sourceFaces": 5648,
+      "derivedFaces": 5648,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009907624684274197,
+          -0.009992587380111217,
+          -0.0017500000540167093
+        ],
+        [
+          0.009907624684274197,
+          0.009992587380111217,
+          0.0017500000540167093
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009907624684274197,
+          -0.009992587380111217,
+          -0.0017500000540167093
+        ],
+        [
+          0.009907624684274197,
+          0.009992587380111217,
+          0.0017500000540167093
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_knee_link_visual.stl",
+      "assetFile": "right_knee_link_visual.glb",
+      "sourceSha256": "175699809041ea6f397ecccc9ace5a1bf5e1d85e75c6da0b4d3088593fafb1e5",
+      "derivedSha256": "dfce2848dcfe18ef2025e00e8f646e1e81dfcf6e742a1d92e1f349c381ef01fc",
+      "sourceBytes": 319184,
+      "derivedBytes": 115384,
+      "sourceFaces": 6382,
+      "derivedFaces": 6382,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.019523313269019127,
+          -0.023000000044703484,
+          -0.06673568487167358
+        ],
+        [
+          0.010476683266460896,
+          0.023000000044703484,
+          0.06556951254606247
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.019523313269019127,
+          -0.023000000044703484,
+          -0.06673568487167358
+        ],
+        [
+          0.010476683266460896,
+          0.023000000044703484,
+          0.06556951254606247
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_ankle_pitch_link_visual.stl",
+      "assetFile": "right_ankle_pitch_link_visual.glb",
+      "sourceSha256": "52f1e4d9f6ba6d167173598198b95c202c12d3fab6268ed24007600c35bd11c6",
+      "derivedSha256": "c1bc47f257c802a3e9c831af94b54fabef46e86dde9f09d17de09f1bcaff51f3",
+      "sourceBytes": 3145784,
+      "derivedBytes": 1125124,
+      "sourceFaces": 62914,
+      "derivedFaces": 62914,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.04403084143996239,
+          -0.019188035279512405,
+          -0.02333916909992695
+        ],
+        [
+          0.04286915808916092,
+          0.02321196347475052,
+          0.02316083200275898
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.04403084143996239,
+          -0.019188035279512405,
+          -0.02333916909992695
+        ],
+        [
+          0.04286915808916092,
+          0.02321196347475052,
+          0.02316083200275898
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_ankle_roll_link_visual.stl",
+      "assetFile": "right_ankle_roll_link_visual.glb",
+      "sourceSha256": "e8be108071f5a4141077d9e4202544bfdb3ae160b4bcc0a906237345ab4e2971",
+      "derivedSha256": "8920d19553caac01f2abf2514e3f0776f006152e1a62311950a7f150340435e3",
+      "sourceBytes": 799784,
+      "derivedBytes": 288596,
+      "sourceFaces": 15994,
+      "derivedFaces": 15994,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.052192915230989456,
+          -0.020978597924113274,
+          -0.012243743985891342
+        ],
+        [
+          0.058234862983226776,
+          0.020976921543478966,
+          0.037722934037446976
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.052192915230989456,
+          -0.020978597924113274,
+          -0.012243743985891342
+        ],
+        [
+          0.058234862983226776,
+          0.020976921543478966,
+          0.037722934037446976
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_shoulder_pitch_link_visual.stl",
+      "assetFile": "left_shoulder_pitch_link_visual.glb",
+      "sourceSha256": "158beede5a7ca1736f803a4c5ad74a2579c77c4b1cf1f13b797c293651ffff35",
+      "derivedSha256": "de7ee2affd2da6fc54a68bb8140d8b40e3242ee2596c2ce73dfb28f4c55387c4",
+      "sourceBytes": 304484,
+      "derivedBytes": 110204,
+      "sourceFaces": 6088,
+      "derivedFaces": 6088,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.012913228943943977,
+          -0.014000000432133675
+        ],
+        [
+          0.023000000044703484,
+          0.025086769834160805,
+          0.014000000432133675
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.012913228943943977,
+          -0.014000000432133675
+        ],
+        [
+          0.023000000044703484,
+          0.025086769834160805,
+          0.014000000432133675
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_shoulder_roll_link_visual.stl",
+      "assetFile": "left_shoulder_roll_link_visual.glb",
+      "sourceSha256": "f2034c61e682834aef64de8391e5d807078a62f23775f49d7cac91b4f248faa6",
+      "derivedSha256": "5496a8fbc0aef6c5579adc50dd28411510cd67b72c06f1dba47d8f2905de9db9",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1122932,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.02044018544256687,
+          -0.023023588582873344,
+          -0.02396351657807827
+        ],
+        [
+          0.020459815859794617,
+          0.023476412519812584,
+          0.022036483511328697
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.02044018544256687,
+          -0.023023588582873344,
+          -0.02396351657807827
+        ],
+        [
+          0.020459815859794617,
+          0.023476412519812584,
+          0.022036483511328697
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_shoulder_gear_drive_visual.stl",
+      "assetFile": "left_shoulder_gear_drive_visual.glb",
+      "sourceSha256": "6954254e2176960c53bd3fce9749b401ae69e14706446b5a866cef3fdf4eef19",
+      "derivedSha256": "d2c2f8d021346a678fca043f158436670e0bf61c38e31cec76acfad5627f24f0",
+      "sourceBytes": 409784,
+      "derivedBytes": 148348,
+      "sourceFaces": 8194,
+      "derivedFaces": 8194,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_shoulder_yaw_link_visual.stl",
+      "assetFile": "left_shoulder_yaw_link_visual.glb",
+      "sourceSha256": "1497cc1281a8baaf405d46e111202d6ebd71999b3e123f997c2d1f3e3eb33db6",
+      "derivedSha256": "b982a84e7d842ef8464ef78da65c18bdc8807e281a68190f9d1778c1d15ad1da",
+      "sourceBytes": 1110484,
+      "derivedBytes": 399420,
+      "sourceFaces": 22208,
+      "derivedFaces": 22208,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.01299245748668909,
+          -0.04571568965911865
+        ],
+        [
+          0.023000000044703484,
+          0.01299245748668909,
+          0.025784309953451157
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.01299245748668909,
+          -0.04571568965911865
+        ],
+        [
+          0.023000000044703484,
+          0.01299245748668909,
+          0.025784309953451157
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_elbow_roll_link_visual.stl",
+      "assetFile": "left_elbow_roll_link_visual.glb",
+      "sourceSha256": "91ffe6d4119ca9890a3fdd78bb544650ade1a293080b67de4e1a77c56ad19e36",
+      "derivedSha256": "0dce63380f74ca9d13cfd294cefc8c312d4d80fafd3abde01686e9637e5e89a9",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1122920,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.02044018544256687,
+          -0.023023588582873344,
+          -0.02396351657807827
+        ],
+        [
+          0.020459815859794617,
+          0.023476412519812584,
+          0.022036483511328697
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.02044018544256687,
+          -0.023023588582873344,
+          -0.02396351657807827
+        ],
+        [
+          0.020459815859794617,
+          0.023476412519812584,
+          0.022036483511328697
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_elbow_gear_drive_visual.stl",
+      "assetFile": "left_elbow_gear_drive_visual.glb",
+      "sourceSha256": "4aa173a89e6bc05b5dac310d56a5393eb4ce76db48c000da40a0662a5c4957b2",
+      "derivedSha256": "d12f510e9ed4dc36a12fb0ba7d333e6602e8d4590be25f751b4d779aefd9165a",
+      "sourceBytes": 409784,
+      "derivedBytes": 148336,
+      "sourceFaces": 8194,
+      "derivedFaces": 8194,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_elbow_yaw_link_visual.stl",
+      "assetFile": "left_elbow_yaw_link_visual.glb",
+      "sourceSha256": "07a62b9006305f0f9b09d9f4b861adf74eed59d91c9889fb00ecf40952b2d626",
+      "derivedSha256": "08eedf2223f7fec0fc6e24600793ae019149cae7e0f41ad09e3a8a0d6fcc4ee2",
+      "sourceBytes": 1823784,
+      "derivedBytes": 654492,
+      "sourceFaces": 36474,
+      "derivedFaces": 36474,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.0323445163667202,
+          -0.040632665157318115
+        ],
+        [
+          0.01299245748668909,
+          0.026955483481287956,
+          0.033359792083501816
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.0323445163667202,
+          -0.040632665157318115
+        ],
+        [
+          0.01299245748668909,
+          0.026955483481287956,
+          0.033359792083501816
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_wrist_pitch_link_visual.stl",
+      "assetFile": "left_wrist_pitch_link_visual.glb",
+      "sourceSha256": "e84d8866816f53c72a01254c9170ec36361bda752de5ff923ff24997ba8cc430",
+      "derivedSha256": "0c1f504606b9ab4254798a790aa6698dbd9b6ccf83938912c5dc001990c1fabb",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1122636,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.02048494666814804,
+          -0.02213304117321968,
+          -0.02274654433131218
+        ],
+        [
+          0.020415054634213448,
+          0.022866958752274513,
+          0.02375345677137375
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.02048494666814804,
+          -0.02213304117321968,
+          -0.02274654433131218
+        ],
+        [
+          0.020415054634213448,
+          0.022866958752274513,
+          0.02375345677137375
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_wrist_gear_drive_visual.stl",
+      "assetFile": "left_wrist_gear_drive_visual.glb",
+      "sourceSha256": "97e004faa61152f073a5e29bec9bad1145f792d61caa18b88e1d556f8189f46b",
+      "derivedSha256": "8da8cf7bdfa7622da2eb3157d091453c5496791b8a941d5bcfc58d90482c3519",
+      "sourceBytes": 409784,
+      "derivedBytes": 148332,
+      "sourceFaces": 8194,
+      "derivedFaces": 8194,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.005034375935792923,
+          -0.01299245748668909
+        ],
+        [
+          0.01299245748668909,
+          0.00436562392860651,
+          0.01299245748668909
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.005034375935792923,
+          -0.01299245748668909
+        ],
+        [
+          0.01299245748668909,
+          0.00436562392860651,
+          0.01299245748668909
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_gripper_link_visual.stl",
+      "assetFile": "left_gripper_link_visual.glb",
+      "sourceSha256": "a77c7c6ff844456693c6eb244d09a5e2a6f6796d8883da5304e98a85c40289bf",
+      "derivedSha256": "ed6dd81167f182ab50c12f9edf6d1b5a22ad345f01cc018ad48478e051fe0746",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1129856,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.03128674998879433,
+          -0.025440186262130737,
+          -0.01668315939605236
+        ],
+        [
+          0.05871325358748436,
+          0.023909812793135643,
+          0.040816839784383774
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.03128674998879433,
+          -0.025440186262130737,
+          -0.01668315939605236
+        ],
+        [
+          0.05871325358748436,
+          0.023909812793135643,
+          0.040816839784383774
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_gripper_gear_drive_visual.stl",
+      "assetFile": "left_gripper_gear_drive_visual.glb",
+      "sourceSha256": "5575661044555589718885e0aba411be54a8654c42956433d730bccb5600e600",
+      "derivedSha256": "21e34b1432c201f2b21866c42f30d4fb05b8e62b445ae8064bc03dd353f9309d",
+      "sourceBytes": 268084,
+      "derivedBytes": 97336,
+      "sourceFaces": 5360,
+      "derivedFaces": 5360,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009901515208184719,
+          -0.009994196705520153,
+          -0.0024999999441206455
+        ],
+        [
+          0.009901515208184719,
+          0.009994196705520153,
+          0.0024999999441206455
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009901515208184719,
+          -0.009994196705520153,
+          -0.0024999999441206455
+        ],
+        [
+          0.009901515208184719,
+          0.009994196705520153,
+          0.0024999999441206455
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_gripper_finger_visual.stl",
+      "assetFile": "left_gripper_finger_visual.glb",
+      "sourceSha256": "fc082109fa6af5c2670756275384e4e68b0fe915f65a2f6fafc7e9b29ae320dd",
+      "derivedSha256": "2e7f8638913772f7cd2bb7cd6bce6640643850479dc7e1912b8ed5e81a230319",
+      "sourceBytes": 129584,
+      "derivedBytes": 47572,
+      "sourceFaces": 2590,
+      "derivedFaces": 2590,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009818156249821186,
+          -0.02027721516788006,
+          -0.02531452104449272
+        ],
+        [
+          0.0435638427734375,
+          0.020422782748937607,
+          0.038685478270053864
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009818156249821186,
+          -0.02027721516788006,
+          -0.02531452104449272
+        ],
+        [
+          0.0435638427734375,
+          0.020422782748937607,
+          0.038685478270053864
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/left_gripper_finger_2_visual.stl",
+      "assetFile": "left_gripper_finger_2_visual.glb",
+      "sourceSha256": "f71b5f6254fd5ba42d552e01181ab1949eeaa87380fc5943bda114f042210e9e",
+      "derivedSha256": "e4d222452c5385f633ba8753aa36bccad9d5fb9a2792cb7b9f844bd329b32c57",
+      "sourceBytes": 129584,
+      "derivedBytes": 47580,
+      "sourceFaces": 2590,
+      "derivedFaces": 2590,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.0435638427734375,
+          -0.020422782748937607,
+          -0.02531452104449272
+        ],
+        [
+          0.009818156249821186,
+          0.02027721516788006,
+          0.038685478270053864
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.0435638427734375,
+          -0.020422782748937607,
+          -0.02531452104449272
+        ],
+        [
+          0.009818156249821186,
+          0.02027721516788006,
+          0.038685478270053864
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_shoulder_pitch_link_visual.stl",
+      "assetFile": "right_shoulder_pitch_link_visual.glb",
+      "sourceSha256": "24f6e765bc925405359e6494aee86b0e7473c8f79c1ee833eea6064242468ae6",
+      "derivedSha256": "a26a7640958793e193427eca22acb921abbd4d23b7297b344fb9f7722992b609",
+      "sourceBytes": 304484,
+      "derivedBytes": 110208,
+      "sourceFaces": 6088,
+      "derivedFaces": 6088,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.025086769834160805,
+          -0.014000000432133675
+        ],
+        [
+          0.023000000044703484,
+          0.012913228943943977,
+          0.014000000432133675
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.025086769834160805,
+          -0.014000000432133675
+        ],
+        [
+          0.023000000044703484,
+          0.012913228943943977,
+          0.014000000432133675
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_shoulder_roll_link_visual.stl",
+      "assetFile": "right_shoulder_roll_link_visual.glb",
+      "sourceSha256": "70ad0da60d786d35f3f416883e003d3b92255e518174dcf1ce311c59e819509b",
+      "derivedSha256": "582b4c1ea388dd71e838942327b3e7b53f1fde88e682af13ca537fb3789fc5b9",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1122936,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.020459815859794617,
+          -0.023476412519812584,
+          -0.02396351657807827
+        ],
+        [
+          0.02044018544256687,
+          0.023023588582873344,
+          0.022036483511328697
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.020459815859794617,
+          -0.023476412519812584,
+          -0.02396351657807827
+        ],
+        [
+          0.02044018544256687,
+          0.023023588582873344,
+          0.022036483511328697
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_shoulder_gear_drive_visual.stl",
+      "assetFile": "right_shoulder_gear_drive_visual.glb",
+      "sourceSha256": "0c1b3f9fb24a62e5a8e72423869a1d1296adb74e914c0bfa4f4ad3c627765f6b",
+      "derivedSha256": "edda5fa775f323bcb25c12e0f126dc653d821f656e344805aae4d1172829bf34",
+      "sourceBytes": 409784,
+      "derivedBytes": 148352,
+      "sourceFaces": 8194,
+      "derivedFaces": 8194,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_shoulder_yaw_link_visual.stl",
+      "assetFile": "right_shoulder_yaw_link_visual.glb",
+      "sourceSha256": "375331b667411ff841fd547bb3458213b59247016f0b0553d59738f9dba436bc",
+      "derivedSha256": "15c9661e431a6d42f563a7aad50c31785e4304d47da12f8b474828a5fc09b62c",
+      "sourceBytes": 1110484,
+      "derivedBytes": 399424,
+      "sourceFaces": 22208,
+      "derivedFaces": 22208,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.01299245748668909,
+          -0.04571568965911865
+        ],
+        [
+          0.023000000044703484,
+          0.01299245748668909,
+          0.025784309953451157
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.023000000044703484,
+          -0.01299245748668909,
+          -0.04571568965911865
+        ],
+        [
+          0.023000000044703484,
+          0.01299245748668909,
+          0.025784309953451157
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_elbow_roll_link_visual.stl",
+      "assetFile": "right_elbow_roll_link_visual.glb",
+      "sourceSha256": "59c51b63962d8213194a8ced55c2e57ab4d0e299d84bd9e100761617a7bc6f50",
+      "derivedSha256": "67a21fab09c45a3df9ed6e3900753d251779186875b59f25a2fbccb13e92a6b2",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1122924,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.020459815859794617,
+          -0.023476412519812584,
+          -0.02396351657807827
+        ],
+        [
+          0.02044018544256687,
+          0.023023588582873344,
+          0.022036483511328697
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.020459815859794617,
+          -0.023476412519812584,
+          -0.02396351657807827
+        ],
+        [
+          0.02044018544256687,
+          0.023023588582873344,
+          0.022036483511328697
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_elbow_gear_drive_visual.stl",
+      "assetFile": "right_elbow_gear_drive_visual.glb",
+      "sourceSha256": "72d6e278ed8346d68812593a0e6fe6d990180bb9247a44d9b10f29960ed2ee9c",
+      "derivedSha256": "a011363048cc194e2174067c33030dbfbbe1bcb1027419b1397b461339abc5ea",
+      "sourceBytes": 409784,
+      "derivedBytes": 148340,
+      "sourceFaces": 8194,
+      "derivedFaces": 8194,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.01299245748668909,
+          -0.0057761394418776035
+        ],
+        [
+          0.01299245748668909,
+          0.01299245748668909,
+          0.006623860914260149
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_elbow_yaw_link_visual.stl",
+      "assetFile": "right_elbow_yaw_link_visual.glb",
+      "sourceSha256": "e632646385bf7c4aac0efa38e53e811f3714fd05c7c3d4bb036da235639ed6ac",
+      "derivedSha256": "efc2f60ce1aa8453cd0ef3c0810b1c23a17428aa37ecddaa941ec5a5e15d540b",
+      "sourceBytes": 1823784,
+      "derivedBytes": 654496,
+      "sourceFaces": 36474,
+      "derivedFaces": 36474,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.026955483481287956,
+          -0.040632665157318115
+        ],
+        [
+          0.01299245748668909,
+          0.0323445163667202,
+          0.033359792083501816
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.026955483481287956,
+          -0.040632665157318115
+        ],
+        [
+          0.01299245748668909,
+          0.0323445163667202,
+          0.033359792083501816
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_wrist_pitch_link_visual.stl",
+      "assetFile": "right_wrist_pitch_link_visual.glb",
+      "sourceSha256": "67be1ecc3f5edce01559270aa762dcde771e427ab2c2eb69be9be3977f7feebb",
+      "derivedSha256": "bb44901e9a6f73263823e43a9cad802215e4129778cd8d98a3a76739e9b0a930",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1122640,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.020415054634213448,
+          -0.022866958752274513,
+          -0.02274654433131218
+        ],
+        [
+          0.02048494666814804,
+          0.02213304117321968,
+          0.02375345677137375
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.020415054634213448,
+          -0.022866958752274513,
+          -0.02274654433131218
+        ],
+        [
+          0.02048494666814804,
+          0.02213304117321968,
+          0.02375345677137375
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_wrist_gear_drive_visual.stl",
+      "assetFile": "right_wrist_gear_drive_visual.glb",
+      "sourceSha256": "ff02d69a77883ee14ec8ca5f71ac6383138f7dffca8b390c6c17784327236708",
+      "derivedSha256": "cad81031c397ca462304d3309f3d374618c0b66079a08365eb725fbc603a4357",
+      "sourceBytes": 409784,
+      "derivedBytes": 148336,
+      "sourceFaces": 8194,
+      "derivedFaces": 8194,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.00436562392860651,
+          -0.01299245748668909
+        ],
+        [
+          0.01299245748668909,
+          0.005034375935792923,
+          0.01299245748668909
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.01299245748668909,
+          -0.00436562392860651,
+          -0.01299245748668909
+        ],
+        [
+          0.01299245748668909,
+          0.005034375935792923,
+          0.01299245748668909
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_gripper_link_visual.stl",
+      "assetFile": "right_gripper_link_visual.glb",
+      "sourceSha256": "f550a2942c0d5f4ecff399c62b4c942ac1e5ca8629e1bab05ab0f62d718f3265",
+      "derivedSha256": "914e8d5d75ef35b3d388c8abb1ef25b13bdb91f83196bd01431a38410952f74f",
+      "sourceBytes": 3145684,
+      "derivedBytes": 1129908,
+      "sourceFaces": 62912,
+      "derivedFaces": 62912,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.03128325566649437,
+          -0.023846302181482315,
+          -0.01668315939605236
+        ],
+        [
+          0.05871674790978432,
+          0.025503696873784065,
+          0.040816839784383774
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.03128325566649437,
+          -0.023846302181482315,
+          -0.01668315939605236
+        ],
+        [
+          0.05871674790978432,
+          0.025503696873784065,
+          0.040816839784383774
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_gripper_gear_drive_visual.stl",
+      "assetFile": "right_gripper_gear_drive_visual.glb",
+      "sourceSha256": "87a0051d2067d81401dc581156c41c46c2a7d838136187e650489c119e3ca1b8",
+      "derivedSha256": "9a497f3d1d62beb6adedcbd6e1bcdb72db0e1d94692d1b7f704eb222c54ffbff",
+      "sourceBytes": 268084,
+      "derivedBytes": 97340,
+      "sourceFaces": 5360,
+      "derivedFaces": 5360,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009901515208184719,
+          -0.009994196705520153,
+          -0.0024999999441206455
+        ],
+        [
+          0.009901515208184719,
+          0.009994196705520153,
+          0.0024999999441206455
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009901515208184719,
+          -0.009994196705520153,
+          -0.0024999999441206455
+        ],
+        [
+          0.009901515208184719,
+          0.009994196705520153,
+          0.0024999999441206455
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_gripper_finger_visual.stl",
+      "assetFile": "right_gripper_finger_visual.glb",
+      "sourceSha256": "fc082109fa6af5c2670756275384e4e68b0fe915f65a2f6fafc7e9b29ae320dd",
+      "derivedSha256": "aef9ae547fc9a799124b80ddcbdc2627cc5e3440bedd141e1c6f30404b096e2e",
+      "sourceBytes": 129584,
+      "derivedBytes": 47576,
+      "sourceFaces": 2590,
+      "derivedFaces": 2590,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.009818156249821186,
+          -0.02027721516788006,
+          -0.02531452104449272
+        ],
+        [
+          0.0435638427734375,
+          0.020422782748937607,
+          0.038685478270053864
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.009818156249821186,
+          -0.02027721516788006,
+          -0.02531452104449272
+        ],
+        [
+          0.0435638427734375,
+          0.020422782748937607,
+          0.038685478270053864
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    },
+    {
+      "sourcePath": "assets/right_gripper_finger_2_visual.stl",
+      "assetFile": "right_gripper_finger_2_visual.glb",
+      "sourceSha256": "f71b5f6254fd5ba42d552e01181ab1949eeaa87380fc5943bda114f042210e9e",
+      "derivedSha256": "9cd54c4ffa822954629f8da3a5b74e1fd8432da7a63f5f5175352ad52fa44fe4",
+      "sourceBytes": 129584,
+      "derivedBytes": 47584,
+      "sourceFaces": 2590,
+      "derivedFaces": 2590,
+      "transform": "lossless-topology-repack",
+      "sourceBoundsM": [
+        [
+          -0.0435638427734375,
+          -0.020422782748937607,
+          -0.02531452104449272
+        ],
+        [
+          0.009818156249821186,
+          0.02027721516788006,
+          0.038685478270053864
+        ]
+      ],
+      "derivedBoundsM": [
+        [
+          -0.0435638427734375,
+          -0.020422782748937607,
+          -0.02531452104449272
+        ],
+        [
+          0.009818156249821186,
+          0.02027721516788006,
+          0.038685478270053864
+        ]
+      ],
+      "maxBoundsErrorM": 0
+    }
+  ]
+}

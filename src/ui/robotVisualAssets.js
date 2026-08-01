@@ -80,9 +80,9 @@ const DEFINITIONS = [
     profileId: "toddlerbot-2",
     platformClass: "humanoid",
     representation: {
-      fidelity: "source-kinematic",
-      label: "30-DOF-informed articulated silhouette",
-      boundary: "The browser draws the major chains from the official 30-DOF topology and published height as a clean technical rendition; not every axis is separately visible, and this is not a shaded CAD mesh, gait simulation, balance model, or digital twin.",
+      fidelity: "source-mesh",
+      label: "Lossless official URDF mesh assembly",
+      boundary: "The 3D stage preserves every triangle, link transform, and supported joint from the pinned ToddlerBot 2XC gripper URDF; the source STLs are losslessly repacked as GLB for delivery. Playback is illustrative, not a gait, balance, contact, collision, policy, or controller simulation.",
     },
     geometry: {
       widthMm: sourced(260, ["toddlerbot-display-envelope"], "Low-confidence standing display envelope retained for route screening; not a published operating width.", "approximate"),
@@ -109,7 +109,7 @@ const DEFINITIONS = [
     },
     display: {
       planRenderer: "toddlerbot-2",
-      spatialRenderer: "toddlerbot-2",
+      spatialRenderer: "toddlerbot-source-mesh",
       standingHeightMm: 560,
       shoulderJointSpanMm: 134,
       hipSpanMm: 74,
@@ -122,11 +122,12 @@ const DEFINITIONS = [
     provenance: {
       repositoryUrl: "https://github.com/hshi74/toddlerbot",
       commit: "e337f3b177b4b53abff70b31d1695a7b66cc6d2e",
-      license: "MIT repository; hardware terms vary by artifact",
+      license: "MIT for the pinned repository source assets",
       sourceIds: ["toddlerbot-display-envelope", "toddlerbot-paper", "toddlerbot-urdf"],
       artifactPaths: [
         "toddlerbot/descriptions/toddlerbot_2xc_gripper/toddlerbot_2xc_gripper.urdf",
         "toddlerbot/descriptions/toddlerbot_2xc_gripper/toddlerbot_2xc_gripper.xml",
+        "toddlerbot/descriptions/toddlerbot_2xc_gripper/assets/torso_visual.stl",
       ],
       checkedAt: "2026-08-01",
     },
@@ -136,9 +137,9 @@ const DEFINITIONS = [
     profileId: "pupper-v3",
     platformClass: "quadruped",
     representation: {
-      fidelity: "source-kinematic",
-      label: "Official 12-DOF leg layout",
-      boundary: "The browser uses the official four-leg, three-joint topology and published crouched envelope; link shells are simplified and gait, contact, friction, and stability are not simulated.",
+      fidelity: "source-mesh",
+      label: "Official URDF meshes + 12 source joints",
+      boundary: "The 3D stage loads the four unique official Pupper v3 STL assets into all 13 URDF visual instances and articulates the 12 source joints. The moving stance is illustrative; gait, contact, footholds, friction, stability, terrain, motors, and control are not simulated.",
     },
     geometry: {
       widthMm: sourced(250, ["pupper-specifications"], "Published crouched length mapped to the plan-view long axis."),
@@ -159,7 +160,7 @@ const DEFINITIONS = [
     },
     display: {
       planRenderer: "pupper-v3",
-      spatialRenderer: "pupper-v3",
+      spatialRenderer: "pupper-source-mesh",
       hipXOffsetsMm: [-75, 75],
       hipYOffsetsMm: [-83.5, -72.5, 72.5, 83.5],
       upperLegMm: 68.5,
@@ -178,6 +179,7 @@ const DEFINITIONS = [
       artifactPaths: [
         "ros2_ws/src/pupper_v3_description/description/urdf/pupper_v3.urdf",
         "ros2_ws/src/pupper_v3_description/description/mujoco_xml/pupper_v3_complete.mjx.xml",
+        "ros2_ws/src/pupper_v3_description/description/meshes/stl/BodyV4v70_001.stl",
       ],
       checkedAt: "2026-08-01",
     },
@@ -187,9 +189,9 @@ const DEFINITIONS = [
     profileId: "crazyflie-2-1-plus",
     platformClass: "drone",
     representation: {
-      fidelity: "source-dimensioned",
-      label: "Published 92 mm airframe",
-      boundary: "The browser uses a parametric silhouette at the published overall size; it does not redistribute the restricted mechanics CAD or model propeller thrust, sensors, aerodynamics, localization, or control.",
+      fidelity: "source-mesh",
+      label: "Official CF2 simulation mesh assembly",
+      boundary: "The 3D stage assembles the permissively licensed official Bitcraze CF2 simulation components and four source rotor locations. This is CF2-family simulation geometry, not revision-specific Crazyflie 2.1+ product CAD, and it does not model thrust, sensing, aerodynamics, localization, battery, collision, or control.",
     },
     geometry: {
       widthMm: sourced(92, ["crazyflie-product"], "Published overall width including the airframe and propellers."),
@@ -210,7 +212,7 @@ const DEFINITIONS = [
     },
     display: {
       planRenderer: "crazyflie-2-1-plus",
-      spatialRenderer: "crazyflie-2-1-plus",
+      spatialRenderer: "crazyflie-source-mesh",
       overallWidthMm: 92,
       rotorDiameterMm: 45,
       boardWidthMm: 28,
@@ -222,11 +224,16 @@ const DEFINITIONS = [
       sourceUrl: "https://www.bitcraze.io/products/crazyflie-2-1-plus/",
     },
     provenance: {
-      repositoryUrl: "https://github.com/bitcraze/bitcraze-mechanics",
-      commit: "c70aa74368e713734ddebbf14238fd6c3c2079c6",
-      license: "CC BY-NC-SA 3.0 mechanics; browser silhouette is independently parametric",
-      sourceIds: ["crazyflie-product", "crazyflie-mechanics"],
-      artifactPaths: ["models/cf2_model.skp", "propellers/BCP47-17_1000_vertices.stl"],
+      repositoryUrl: "https://github.com/bitcraze/crazyflie-simulation",
+      commit: "7e93752dbc803af2488c1db46bb79b3da55f5d8c",
+      license: "MIT for the pinned simulation source assets",
+      sourceIds: ["crazyflie-product", "crazyflie-simulation"],
+      artifactPaths: [
+        "simulator_files/gazebo/crazyflie/model.sdf",
+        "meshes/stl_files/cf_body.stl",
+        "meshes/stl_files/ccw_prop.stl",
+        "meshes/stl_files/cw_prop.stl",
+      ],
       checkedAt: "2026-08-01",
     },
   },

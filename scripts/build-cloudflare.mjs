@@ -23,7 +23,7 @@ await Promise.all([
   fs.copyFile(path.join(rootDir, "worker", "wrangler.json"), path.join(serverDir, "wrangler.json")),
 ]);
 
-// The test range includes Three.js and the STL loader. Bundle only this entry so
+// The test range includes Three.js plus audited STL, GLB, and URDF loaders. Bundle only this entry so
 // the rest of the dependency-free application keeps its existing native-module
 // delivery, while the browser never has to resolve packages from node_modules.
 await build({

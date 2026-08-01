@@ -18,8 +18,11 @@ const RENDERERS = new Set([
   "widowx-250s",
   "widowx-source-mesh",
   "toddlerbot-2",
+  "toddlerbot-source-mesh",
   "pupper-v3",
+  "pupper-source-mesh",
   "crazyflie-2-1-plus",
+  "crazyflie-source-mesh",
   "unavailable",
 ]);
 

@@ -1,0 +1,92 @@
+{
+  "format": "basement-boys/source-mesh-manifest/v1",
+  "profileId": "pupper-v3",
+  "source": {
+    "repositoryUrl": "https://github.com/Nate711/pupperv3-monorepo",
+    "commit": "6f96c5e79faa05492992c19918f8cd90b9243281",
+    "urdfPath": "ros2_ws/src/pupper_v3_description/description/urdf/pupper_v3.urdf",
+    "license": "MIT"
+  },
+  "derivation": {
+    "purpose": "Exact upstream binary STL bytes; extension uses .bin for reliable static delivery.",
+    "algorithm": "identity"
+  },
+  "assets": [
+    {
+      "assetFile": "body.stl.bin",
+      "sha256": "703137e327683555c1f6d12d39b99fd721479af0e0785e61805ad755a8f782a8",
+      "bytes": 1641284,
+      "faces": 32824,
+      "boundsM": [
+        [
+          -0.061319999396800995,
+          -0.12779460847377777,
+          -0.1511755734682083
+        ],
+        [
+          0.061319999396800995,
+          0.03167999908328056,
+          0.10825708508491516
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "leg-1.stl.bin",
+      "sha256": "ef36b14858126b237f15c43d9176ffb9da25d98bdb903c49cf3623234bb79a0a",
+      "bytes": 512434,
+      "faces": 10247,
+      "boundsM": [
+        [
+          -0.01850000023841858,
+          -0.036555975675582886,
+          -0.006599999964237213
+        ],
+        [
+          0.02264999970793724,
+          0.02660941518843174,
+          0.05448994040489197
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "leg-2.stl.bin",
+      "sha256": "83d9b19ac0fb616cf2619228f851b01f3adac08b52344cf47080687f451fc474",
+      "bytes": 593734,
+      "faces": 11873,
+      "boundsM": [
+        [
+          0.010850001126527786,
+          -0.01850000023841858,
+          0.007800001185387373
+        ],
+        [
+          0.0950426384806633,
+          0.07592958211898804,
+          0.04650000110268593
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    },
+    {
+      "assetFile": "leg-3.stl.bin",
+      "sha256": "175081bce9491118bedde36677989dee7c274a1c37022ffad33a70488cbcd835",
+      "bytes": 347884,
+      "faces": 6956,
+      "boundsM": [
+        [
+          -0.01390788797289133,
+          0.030875006690621376,
+          0.026000000536441803
+        ],
+        [
+          0.08695578575134277,
+          0.13150982558727264,
+          0.06599999964237213
+        ]
+      ],
+      "transform": "exact-source-bytes"
+    }
+  ]
+}

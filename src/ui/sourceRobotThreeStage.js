@@ -1,18 +1,25 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import URDFLoader from "urdf-loader";
 import { spatialRobotPose } from "../core/visualization/spatialScene.js";
+import { robotMotionCues } from "../core/robot/visualPose.js";
 import { widowXStageTarget } from "../core/robot/widowxKinematics.js";
 import {
   WIDOWX_SOURCE_MODEL,
   widowXMeshAssetUrl,
 } from "../core/robot/widowxSourceModel.js";
+import {
+  getSourceRobotModel,
+  sourceRobotAssetUrl,
+  sourceRobotMotionPose,
+} from "../core/robot/sourceRobotModels.js";
 
 const MM_PER_PIXEL = 5;
 const METRES_PER_PIXEL = MM_PER_PIXEL / 1000;
 const FIXTURE_HEIGHT_M = Object.freeze({ bench: 0.22, pallet: 0.14, rack: 0.63, divider: 0.41 });
 const FIXTURE_COLOR = Object.freeze({ bench: 0xf2c64f, pallet: 0xe77d5a, rack: 0x7da9ba, divider: 0xc7cbc4 });
-const SOURCE_MESH_COUNT = Object.keys(WIDOWX_SOURCE_MODEL.meshes).length;
 
 const URDF_TO_THREE = new THREE.Matrix4().set(
   1, 0, 0, 0,
@@ -64,9 +71,12 @@ function disposeObject(root) {
   });
 }
 
-export class WidowXThreeStage {
-  constructor(canvas) {
-    if (!(canvas instanceof HTMLCanvasElement)) throw new TypeError("A canvas is required for the WidowX stage.");
+export class SourceRobotThreeStage {
+  constructor(canvas, profileId) {
+    if (!(canvas instanceof HTMLCanvasElement)) throw new TypeError("A canvas is required for the source-robot stage.");
+    this.modelDefinition = getSourceRobotModel(profileId);
+    if (!this.modelDefinition) throw new RangeError(`No source-robot stage is registered for ${profileId}.`);
+    this.profileId = profileId;
     this.canvas = canvas;
     this.contextLost = false;
     this.ready = false;
@@ -74,6 +84,10 @@ export class WidowXThreeStage {
     this.lastInput = null;
     this.lastRouteFingerprint = "";
     this.meshesLoaded = 0;
+    this.assetCache = new Map();
+    this.robot = null;
+    this.arm = null;
+    this.lastRobotFocusPoint = null;
     this.resizeObserver = null;
     this.boundRender = () => this.render();
     this.boundKeyDown = (event) => this.handleKeyDown(event);
@@ -128,8 +142,10 @@ export class WidowXThreeStage {
     this.scene.add(this.targetGroup);
     this.partGroup = this.createPart();
     this.scene.add(this.partGroup);
-    this.arm = this.createArmSkeleton();
-    this.scene.add(this.arm.root);
+    if (this.profileId === "interbotix-wx250s") {
+      this.arm = this.createArmSkeleton();
+      this.scene.add(this.arm.root);
+    }
     this.createMeasurementMast();
 
     canvas.addEventListener("keydown", this.boundKeyDown);
@@ -137,14 +153,21 @@ export class WidowXThreeStage {
     canvas.addEventListener("webglcontextrestored", this.boundContextRestored);
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
-    this.emit("loading", { loaded: 0, total: SOURCE_MESH_COUNT });
-    this.loadSourceMeshes();
+    this.emit("loading", { loaded: 0 });
+    this.loadSourceModel();
   }
 
   emit(status, extra = {}) {
-    this.canvas.dispatchEvent(new CustomEvent("widowxstagechange", {
+    this.canvas.dispatchEvent(new CustomEvent("sourcerobotstagechange", {
       bubbles: true,
-      detail: { status, loaded: this.meshesLoaded, total: SOURCE_MESH_COUNT, ...extra },
+      detail: {
+        status,
+        profileId: this.profileId,
+        label: this.modelDefinition.label,
+        loaded: this.meshesLoaded,
+        total: this.modelDefinition.meshCount,
+        ...extra,
+      },
     }));
   }
 
@@ -211,45 +234,209 @@ export class WidowXThreeStage {
     };
   }
 
-  async loadSourceMeshes() {
-    const loader = new STLLoader();
-    const material = new THREE.MeshStandardMaterial({ color: 0x252a29, roughness: 0.56, metalness: 0.32 });
-    const entries = Object.entries(WIDOWX_SOURCE_MODEL.meshes);
+  async loadSourceModel() {
     try {
-      const geometries = await Promise.all(entries.map(async ([name, definition]) => {
-        const geometry = await loader.loadAsync(widowXMeshAssetUrl(definition.assetFile));
-        geometry.applyMatrix4(URDF_TO_THREE);
-        geometry.computeBoundingSphere();
-        this.meshesLoaded += 1;
-        this.emit("loading", { loaded: this.meshesLoaded, total: SOURCE_MESH_COUNT });
-        return [name, geometry];
-      }));
-      if (this.destroyed) {
-        geometries.forEach(([, geometry]) => geometry.dispose());
-        material.dispose();
-        return;
-      }
-      geometries.forEach(([name, geometry]) => {
-        const targets = name === "finger"
-          ? [this.arm.meshAnchors.leftFinger, this.arm.meshAnchors.rightFinger]
-          : [this.arm.meshAnchors[name]];
-        targets.filter(Boolean).forEach((anchor) => {
-          const sourceMesh = new THREE.Mesh(geometry, material);
-          sourceMesh.name = WIDOWX_SOURCE_MODEL.meshes[name].id;
-          sourceMesh.scale.setScalar(WIDOWX_SOURCE_MODEL.renderer.meshScale);
-          sourceMesh.castShadow = true;
-          sourceMesh.receiveShadow = true;
-          anchor.add(sourceMesh);
-        });
-      });
+      if (this.profileId === "interbotix-wx250s") await this.loadWidowXSourceMeshes();
+      else if (["pupper-v3", "toddlerbot-2"].includes(this.profileId)) await this.loadUrdfSourceModel();
+      else if (this.profileId === "crazyflie-2-1-plus") await this.loadCrazyflieSourceModel();
+      else throw new RangeError(`Unsupported source model: ${this.profileId}`);
+      if (this.destroyed) return;
       this.ready = true;
-      this.emit("ready", { loaded: this.meshesLoaded, total: SOURCE_MESH_COUNT });
+      this.emit("ready");
       if (this.lastInput) this.update(this.lastInput);
       else this.render();
     } catch (error) {
-      material.dispose();
       this.emit("error", { message: error instanceof Error ? error.message : "The source meshes could not be loaded." });
     }
+  }
+
+  async loadWidowXSourceMeshes() {
+    const loader = new STLLoader();
+    const material = new THREE.MeshStandardMaterial({ color: 0x252a29, roughness: 0.56, metalness: 0.32 });
+    const entries = Object.entries(WIDOWX_SOURCE_MODEL.meshes);
+    const geometries = await Promise.all(entries.map(async ([name, definition]) => {
+      const geometry = await loader.loadAsync(widowXMeshAssetUrl(definition.assetFile));
+      geometry.applyMatrix4(URDF_TO_THREE);
+      geometry.computeBoundingSphere();
+      this.meshesLoaded += 1;
+      this.emit("loading");
+      return [name, geometry];
+    }));
+    if (this.destroyed) {
+      geometries.forEach(([, geometry]) => geometry.dispose());
+      material.dispose();
+      return;
+    }
+    geometries.forEach(([name, geometry]) => {
+      const targets = name === "finger"
+        ? [this.arm.meshAnchors.leftFinger, this.arm.meshAnchors.rightFinger]
+        : [this.arm.meshAnchors[name]];
+      targets.filter(Boolean).forEach((anchor) => {
+        const sourceMesh = new THREE.Mesh(geometry, material);
+        sourceMesh.name = WIDOWX_SOURCE_MODEL.meshes[name].id;
+        sourceMesh.scale.setScalar(WIDOWX_SOURCE_MODEL.renderer.meshScale);
+        sourceMesh.castShadow = true;
+        sourceMesh.receiveShadow = true;
+        anchor.add(sourceMesh);
+      });
+    });
+  }
+
+  sourceMaterial(sourcePath) {
+    const name = String(sourcePath).toLowerCase();
+    let color = 0x262c2a;
+    let metalness = 0.18;
+    let roughness = 0.58;
+    if (this.profileId === "pupper-v3") {
+      color = name.includes("body") ? 0x212926 : 0xd6c7a9;
+      metalness = name.includes("body") ? 0.3 : 0.08;
+    } else if (this.profileId === "toddlerbot-2") {
+      if (/(gear|rod|waist_gears)/.test(name)) color = 0x343a37;
+      else if (/(gripper|finger)/.test(name)) color = 0xe58059;
+      else if (/(head|torso|pelvis)/.test(name)) color = 0xeee7d7;
+      else color = 0xd5cbb8;
+    }
+    return new THREE.MeshStandardMaterial({ color, roughness, metalness });
+  }
+
+  async loadUrdfAsset(sourcePath) {
+    const assetUrl = sourceRobotAssetUrl(this.profileId, sourcePath);
+    if (!this.assetCache.has(assetUrl)) {
+      const promise = assetUrl.endsWith(".glb")
+        ? new GLTFLoader().loadAsync(assetUrl).then(({ scene }) => scene)
+        : new STLLoader().loadAsync(assetUrl).then((geometry) => new THREE.Mesh(geometry));
+      this.assetCache.set(assetUrl, promise);
+    }
+    const sourceObject = await this.assetCache.get(assetUrl);
+    const object = sourceObject.clone(true);
+    const material = this.sourceMaterial(sourcePath);
+    object.traverse((child) => {
+      if (!child.isMesh) return;
+      child.material = material;
+      child.castShadow = true;
+      child.receiveShadow = true;
+    });
+    return object;
+  }
+
+  applyUrdfPose(pose) {
+    if (!this.robot?.model) return;
+    Object.entries(pose || {}).forEach(([name, value]) => {
+      if (this.robot.model.joints?.[name]) this.robot.model.setJointValue(name, value);
+    });
+    this.robot.model.updateMatrixWorld(true);
+  }
+
+  alignUrdfModelToFloor() {
+    const { axisRoot } = this.robot;
+    axisRoot.position.y = 0;
+    axisRoot.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(axisRoot);
+    if (!bounds.isEmpty() && Number.isFinite(bounds.min.y)) axisRoot.position.y = -bounds.min.y + 0.004;
+    axisRoot.updateMatrixWorld(true);
+  }
+
+  async loadUrdfSourceModel() {
+    const response = await fetch(this.modelDefinition.urdfUrl);
+    if (!response.ok) throw new Error(`Source URDF request failed (${response.status}).`);
+    const urdfText = await response.text();
+    const pending = [];
+    const loader = new URDFLoader();
+    loader.parseCollision = false;
+    loader.loadMeshCb = (sourcePath, manager, material, onComplete) => {
+      const promise = this.loadUrdfAsset(sourcePath)
+        .then((object) => {
+          this.meshesLoaded += 1;
+          this.emit("loading");
+          onComplete(object);
+        })
+        .catch((error) => {
+          onComplete(null, error);
+          throw error;
+        });
+      pending.push(promise);
+    };
+    const model = loader.parse(urdfText, "");
+    await Promise.all(pending);
+    if (this.destroyed) {
+      disposeObject(model);
+      return;
+    }
+    const axisRoot = new THREE.Group();
+    axisRoot.rotation.x = -Math.PI / 2;
+    axisRoot.add(model);
+    const root = new THREE.Group();
+    root.rotation.order = "YXZ";
+    root.add(axisRoot);
+    this.scene.add(root);
+    this.robot = { root, axisRoot, model };
+    this.applyUrdfPose(this.modelDefinition.homePose);
+    this.alignUrdfModelToFloor();
+  }
+
+  crazyflieMaterial(name) {
+    const colors = {
+      board: 0x2e7662,
+      hardware: 0xe8dfc9,
+      mount: 0x2b302e,
+      motor: 0xb8b5ad,
+      battery: 0x6888a7,
+      prop: 0x282d2b,
+    };
+    return new THREE.MeshStandardMaterial({
+      color: colors[name] || colors.hardware,
+      roughness: name === "motor" ? 0.32 : 0.62,
+      metalness: name === "motor" || name === "hardware" ? 0.42 : 0.08,
+      transparent: name === "prop",
+      opacity: name === "prop" ? 0.88 : 1,
+    });
+  }
+
+  async loadCrazyflieGeometry(assetFile) {
+    const url = `/src/assets/crazyflie-2-simulation/${assetFile}`;
+    if (!this.assetCache.has(url)) this.assetCache.set(url, new STLLoader().loadAsync(url));
+    return this.assetCache.get(url);
+  }
+
+  async loadCrazyflieSourceModel() {
+    const root = new THREE.Group();
+    root.rotation.order = "YXZ";
+    const body = new THREE.Group();
+    root.add(body);
+    const rotors = [];
+    const tasks = [
+      ...this.modelDefinition.bodyAssets.map(async (definition) => {
+        const geometry = await this.loadCrazyflieGeometry(definition.assetFile);
+        const mapped = geometry.clone().applyMatrix4(URDF_TO_THREE);
+        const mesh = new THREE.Mesh(mapped, this.crazyflieMaterial(definition.material));
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        body.add(mesh);
+        this.meshesLoaded += 1;
+        this.emit("loading");
+      }),
+      ...this.modelDefinition.rotors.map(async (definition) => {
+        const geometry = await this.loadCrazyflieGeometry(definition.assetFile);
+        const mapped = geometry.clone().applyMatrix4(URDF_TO_THREE);
+        const rotor = new THREE.Group();
+        rotor.name = definition.name;
+        rotor.position.set(...definition.position);
+        const mesh = new THREE.Mesh(mapped, this.crazyflieMaterial("prop"));
+        mesh.castShadow = true;
+        rotor.add(mesh);
+        root.add(rotor);
+        rotors.push({ ...definition, root: rotor });
+        this.meshesLoaded += 1;
+        this.emit("loading");
+      }),
+    ];
+    await Promise.all(tasks);
+    if (this.destroyed) {
+      disposeObject(root);
+      return;
+    }
+    this.scene.add(root);
+    this.robot = { root, body, rotors };
   }
 
   createEnvironment({ arena, fixtures }) {
@@ -361,11 +548,30 @@ export class WidowXThreeStage {
     if (this.environment.children.length === 0) this.createEnvironment(input);
     const definition = input.definition || null;
     const pose = spatialRobotPose({
-      platform: "arm",
+      platform: input.platform,
       plan: input.plan,
       definition,
       progress: input.progress,
     });
+    this.updateRoute(input.plan?.path || [], input.plan?.valid !== false);
+    this.targetGroup.position.copy(stagePoint(input.target));
+    const statusColor = input.plan?.valid === false ? 0xe95d50 : input.plan?.status === "unknown" ? 0x78b4d1 : 0x66d3a7;
+    this.targetGroup.userData.ring.material.color.setHex(statusColor);
+    this.partGroup.visible = input.platform === "arm" && definition?.id === "bring-part-home";
+
+    if (!this.ready) {
+      this.canvas.setAttribute("aria-label", `Loading the source-backed ${this.modelDefinition.label} three-dimensional view.`);
+      this.render();
+      return;
+    }
+
+    if (this.profileId === "interbotix-wx250s") this.updateWidowX(input, pose, definition);
+    else if (this.profileId === "crazyflie-2-1-plus") this.updateCrazyflie(input, pose);
+    else this.updateUrdfRobot(input, pose);
+    this.render();
+  }
+
+  updateWidowX(input, pose, definition) {
     const fingerOpeningM = pose.carrying
       ? WIDOWX_SOURCE_MODEL.renderer.closedFingerM
       : WIDOWX_SOURCE_MODEL.renderer.openFingerM;
@@ -389,11 +595,6 @@ export class WidowXThreeStage {
     this.arm.rightFinger.position.z = solution.pose.fingerOpeningM;
     this.arm.markers.forEach((marker) => { marker.visible = Boolean(input.engineerView); });
 
-    this.updateRoute(input.plan?.path || [], input.plan?.valid !== false);
-    this.targetGroup.position.copy(stagePoint(input.target));
-    const statusColor = input.plan?.valid === false ? 0xe95d50 : input.plan?.status === "unknown" ? 0x78b4d1 : 0x66d3a7;
-    this.targetGroup.userData.ring.material.color.setHex(statusColor);
-
     const tool = solution.reachable
       ? new THREE.Vector3(
           base.x + solution.target.xM,
@@ -408,12 +609,12 @@ export class WidowXThreeStage {
     } else {
       this.partGroup.position.copy(stagePoint(definition?.stage?.pickup || input.target, 0.255));
     }
-    this.partGroup.visible = definition?.id === "bring-part-home";
     this.canvas.setAttribute(
       "aria-label",
       `Interactive source-mesh WidowX 250S view. Six source joints are posed to a ${Math.round(solution.distanceM * 1000)} millimetre target. ${solution.reachable ? "The position-only source-joint solve reaches this pose." : "The source-joint solve cannot reach this pose."} Contact, payload, collision and control are not modeled.`
     );
     this.emit("pose", {
+      poseText: `${Math.round(solution.distanceM * 1000)} mm target · ${Number((solution.residualM * 1000).toFixed(1))} mm solve residual`,
       reachable: solution.reachable,
       distanceMm: Math.round(solution.distanceM * 1000),
       residualMm: Number((solution.residualM * 1000).toFixed(1)),
@@ -422,10 +623,80 @@ export class WidowXThreeStage {
           .map((name) => [name, Number((solution.pose[name] * 180 / Math.PI).toFixed(1))])
       ),
     });
-    this.render();
+  }
+
+  routeHeading(input, pose) {
+    const next = spatialRobotPose({
+      platform: input.platform,
+      plan: input.plan,
+      definition: input.definition || null,
+      progress: Math.min(1, Number(input.progress || 0) + 0.012),
+    });
+    const dx = next.x - pose.x;
+    const dz = next.y - pose.y;
+    return Math.hypot(dx, dz) > 0.001 ? -Math.atan2(dz, dx) : this.robot.root.rotation.y;
+  }
+
+  updateUrdfRobot(input, pose) {
+    const cues = robotMotionCues(input.visualAsset, input.progress);
+    const jointPose = sourceRobotMotionPose(this.profileId, cues);
+    this.applyUrdfPose(jointPose);
+    this.robot.root.position.copy(stagePoint(pose));
+    this.robot.root.rotation.y = this.routeHeading(input, pose);
+    this.followRobotCamera();
+    const progressPercent = Math.round(Number(input.progress || 0) * 100);
+    const jointCount = Object.keys(jointPose).length;
+    const poseText = `${this.modelDefinition.poseLabel} · ${progressPercent}% route`;
+    this.canvas.setAttribute(
+      "aria-label",
+      `Interactive source-mesh ${this.modelDefinition.label} view at ${progressPercent} percent of the route. ${this.modelDefinition.boundary}`
+    );
+    this.emit("pose", { poseText, progressPercent, articulatedJointCount: jointCount });
+  }
+
+  updateCrazyflie(input, pose) {
+    const cues = robotMotionCues(input.visualAsset, input.progress);
+    this.robot.root.position.copy(stagePoint(pose, pose.z * METRES_PER_PIXEL));
+    this.robot.root.rotation.y = this.routeHeading(input, pose);
+    this.robot.root.rotation.z = (Number(cues.bankDegrees || 0) * Math.PI) / 180;
+    this.followRobotCamera();
+    const rotorRadians = (Number(cues.rotorDegrees || 0) * Math.PI) / 180;
+    this.robot.rotors.forEach((rotor) => { rotor.root.rotation.y = rotorRadians * rotor.direction; });
+    const altitudeMm = Math.round(pose.z * MM_PER_PIXEL);
+    const poseText = `${altitudeMm} mm study height · four source rotor axes`;
+    this.canvas.setAttribute(
+      "aria-label",
+      `Interactive official-source Crazyflie family simulation geometry at ${altitudeMm} millimetres study height. ${this.modelDefinition.boundary}`
+    );
+    this.emit("pose", { poseText, altitudeMm, rotorDegrees: Number(cues.rotorDegrees || 0) });
+  }
+
+  followRobotCamera(force = false) {
+    if (!this.robot?.root || !this.modelDefinition.camera) return;
+    const cameraConfig = this.modelDefinition.camera;
+    const nextFocus = this.robot.root.position.clone();
+    nextFocus.y += cameraConfig.targetHeightM;
+    this.controls.minDistance = cameraConfig.minDistanceM;
+    if (force || !this.lastRobotFocusPoint) {
+      this.controls.target.copy(nextFocus);
+      this.camera.position.copy(nextFocus).add(new THREE.Vector3(...cameraConfig.offsetM));
+    } else {
+      const delta = nextFocus.clone().sub(this.lastRobotFocusPoint);
+      this.controls.target.add(delta);
+      this.camera.position.add(delta);
+    }
+    this.lastRobotFocusPoint = nextFocus;
+    this.camera.lookAt(this.controls.target);
+    this.controls.update();
   }
 
   resetCamera() {
+    if (this.robot?.root && this.modelDefinition.camera) {
+      this.lastRobotFocusPoint = null;
+      this.followRobotCamera(true);
+      this.render();
+      return;
+    }
     this.controls?.target.set(1.69, 0.25, 1.43);
     this.camera.position.set(3.05, 1.42, 2.95);
     this.camera.lookAt(1.69, 0.25, 1.43);
@@ -492,6 +763,6 @@ export class WidowXThreeStage {
   }
 }
 
-export function createWidowXThreeStage(canvas) {
-  return new WidowXThreeStage(canvas);
+export function createSourceRobotThreeStage(canvas, profileId) {
+  return new SourceRobotThreeStage(canvas, profileId);
 }

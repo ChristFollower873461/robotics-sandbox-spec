@@ -54,17 +54,23 @@ test("the source models retain the audited physical and kinematic distinctions",
 
   assert.equal(toddler.kinematics.dof, 30);
   assert.equal(toddler.kinematics.joints.length, 30);
+  assert.equal(toddler.representation.fidelity, "source-mesh");
+  assert.equal(toddler.display.spatialRenderer, "toddlerbot-source-mesh");
   assert.equal(measurementValue(toddler, "heightMm"), 560);
   assert.equal(toddler.geometry.widthMm.status, "approximate");
 
   assert.equal(pupper.kinematics.dof, 12);
   assert.equal(pupper.kinematics.joints.length, 12);
+  assert.equal(pupper.representation.fidelity, "source-mesh");
+  assert.equal(pupper.display.spatialRenderer, "pupper-source-mesh");
   assert.equal(measurementValue(pupper, "widthMm"), 250);
   assert.ok(!JSON.stringify(pupper.display).toLowerCase().includes("head"));
 
   assert.equal(measurementValue(crazyflie, "widthMm"), 92);
   assert.equal(crazyflie.display.overallWidthMm / 5, 18.4);
-  assert.equal(crazyflie.representation.fidelity, "source-dimensioned");
+  assert.equal(crazyflie.representation.fidelity, "source-mesh");
+  assert.equal(crazyflie.display.spatialRenderer, "crazyflie-source-mesh");
+  assert.match(crazyflie.representation.boundary, /not revision-specific/i);
 });
 
 test("unknown models do not silently inherit a generic robot identity", () => {
