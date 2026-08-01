@@ -19,12 +19,12 @@
           <span><small>BASEMENT BOYS / OPEN LAB</small><strong>Robot Field Guide</strong></span>
         </a>
         <nav aria-label="Primary navigation">
-          <a href="#space-studio">Build my space</a>
-          <a href="#test-range">Play</a>
-          <a href="#decision-lab">Compare</a>
+          <a href="#space-studio" aria-current="page">Space study</a>
+          <a href="#supporting-labs">Experiments</a>
+          <a href="#engineering-lab">Engineer lab</a>
         </nav>
         <div class="masthead-actions">
-          <span>13 sourced records</span>
+          <span>13 sourced robot records</span>
           <a href="https://github.com/ChristFollower873461/robotics-sandbox-spec">View source ↗</a>
         </div>
       </header>
@@ -32,26 +32,32 @@
       <section id="space-studio" class="space-studio" aria-labelledby="space-studio-title">
         <header class="space-studio-intro">
           <div>
-            <p class="eyebrow">Your space is the starting point</p>
-            <h1 id="space-studio-title">Show us your space.<br /><em>See what might work there.</em></h1>
+            <p class="eyebrow">Robot fit study / browser-local</p>
+            <h1 id="space-studio-title">Show us your space.<br /><em>We’ll help you see what might work.</em></h1>
           </div>
           <div class="space-studio-promise">
-            <p>Start with one photo or floor plan and three measurements. We’ll turn them into an editable rough 3D room, place a real robot candidate inside it, and explain what the evidence can—and cannot—tell you.</p>
+            <p>Add one view and three measurements. Then test a sourced robot in a rough 3D reconstruction and see the limiting dimension directly in your space.</p>
             <div class="space-trust-row" aria-label="Privacy and fidelity summary">
-              <span><i></i>Image stays on this device</span>
-              <span><i></i>You control the scale</span>
-              <span><i></i>Unknowns stay visible</span>
+              <span><i></i>Photo stays here</span>
+              <span><i></i>Your measurements set scale</span>
+              <span><i></i>Limits stay visible</span>
             </div>
           </div>
         </header>
 
-        <div id="space-app" class="space-app" data-view="space" data-result="ready">
+        <div id="space-app" class="space-app" data-view="space" data-result="ready" data-active-step="1">
           <aside class="space-flow" aria-label="Build your space">
             <header class="space-flow-heading">
-              <span>Guided reconstruction</span>
-              <strong>Build a useful first draft</strong>
-              <small>About 3 minutes · no robotics knowledge needed</small>
+              <span id="space-flow-kicker">Step 1 / Reference</span>
+              <strong id="space-flow-title" tabindex="-1">Start with one useful view</strong>
+              <small id="space-flow-time">About 1 minute · the example works too</small>
             </header>
+            <nav class="space-flow-progress" aria-label="Space study progress">
+              <button type="button" data-space-step-target="1" aria-current="step"><b>1</b><span>View</span></button>
+              <button type="button" data-space-step-target="2"><b>2</b><span>Scale</span></button>
+              <button type="button" data-space-step-target="3"><b>3</b><span>Place</span></button>
+              <button type="button" data-space-step-target="4"><b>4</b><span>Test</span></button>
+            </nav>
 
             <section class="space-step" data-step="1">
               <header><b>1</b><span><strong>Add a view of the space</strong><small>A photo or floor plan is enough to start.</small></span></header>
@@ -73,7 +79,7 @@
               <button id="space-use-example" class="space-text-action" type="button">Or use the example workshop →</button>
             </section>
 
-            <section class="space-step" data-step="2">
+            <section class="space-step" data-step="2" hidden>
               <header><b>2</b><span><strong>Give it a real scale</strong><small>Measure wall-to-wall and floor-to-ceiling.</small></span></header>
               <div class="space-unit-row">
                 <label for="space-units">Units</label>
@@ -87,7 +93,7 @@
               <label class="space-confirm-measurements"><input id="space-measurements-confirmed" type="checkbox" /><span><strong>I measured these</strong><small>Otherwise we keep them labeled as estimates.</small></span></label>
             </section>
 
-            <section class="space-step" data-step="3">
+            <section class="space-step" data-step="3" hidden>
               <header><b>3</b><span><strong>Add what matters</strong><small>Place the big obstacles; skip the small stuff.</small></span></header>
               <div class="space-fixture-palette" role="group" aria-label="Add an object">
                 <button type="button" data-add-space-fixture="bench"><i></i>Work bench</button>
@@ -106,7 +112,7 @@
               </div>
             </section>
 
-            <section class="space-step space-step--job" data-step="4">
+            <section class="space-step space-step--job" data-step="4" hidden>
               <header><b>4</b><span><strong>What should happen here?</strong><small>This chooses the right robot classes to screen.</small></span></header>
               <label class="space-job-select" for="space-job">
                 <span>Closest job</span>
@@ -118,9 +124,14 @@
                   <option value="aerial-inspection">Inspect from the air</option>
                 </select>
               </label>
-              <button id="space-run-study" class="space-primary-action" type="button">See what might work <span>→</span></button>
-              <output id="space-form-message" class="space-form-message" aria-live="polite"></output>
             </section>
+            <footer class="space-flow-actions">
+              <button id="space-step-back" class="space-back-action" type="button" hidden>← Back</button>
+              <span id="space-step-count">1 of 4</span>
+              <button id="space-step-next" class="space-primary-action" type="button">Set the scale <span>→</span></button>
+              <button id="space-run-study" class="space-primary-action" type="button" hidden>Test this space <span>→</span></button>
+              <output id="space-form-message" class="space-form-message" aria-live="polite"></output>
+            </footer>
           </aside>
 
           <div class="space-stage-shell">
@@ -155,8 +166,8 @@
             <p id="space-live-summary" class="sr-only" aria-live="polite"></p>
           </div>
 
-          <aside class="space-result-panel" aria-label="Robot screening result">
-            <header><span>Current screen</span><strong id="space-result-kicker">Ready when you are</strong></header>
+          <aside class="space-result-panel" aria-label="Robot screening result" aria-hidden="true">
+            <header><span>Current screen</span><strong id="space-result-kicker" tabindex="-1">Ready when you are</strong><button id="space-result-close" type="button" aria-label="Close robot screening result">×</button></header>
             <div class="space-robot-media" data-has-image="false">
               <img id="space-robot-photo" alt="" hidden loading="lazy" referrerpolicy="no-referrer" />
               <div id="space-robot-illustration" class="space-robot-illustration" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -190,6 +201,13 @@
         </div>
       </section>
 
+      <details id="supporting-labs" class="supporting-labs">
+        <summary>
+          <span><small>Already know what you want to test?</small><strong>Open the existing robot experiments</strong></span>
+          <p>Challenge Mode and the comparison workbench remain available without competing with the customer-space study.</p>
+          <b>Open experiments ↓</b>
+        </summary>
+        <div class="supporting-labs-content">
       <section id="test-range" class="range-hero" aria-labelledby="range-title">
         <header class="range-intro">
           <div>
@@ -497,6 +515,8 @@
           <footer class="decision-disclosure"><strong>Screening, not certification.</strong><p>A promising result means “worth investigating in a higher-fidelity simulator.” It is not a safety, purchase, deployment, or sim-to-real claim.</p></footer>
         </section>
       </section>
+        </div>
+      </details>
 
       <details id="engineering-lab" class="engineering-lab-shell">
         <summary><span><small>Want the math?</small><strong>Open the engineer lab</strong></span><p>Inspect source records, planar kinematics, collision checks, configuration space, and the workcell builder.</p><b>Open lab ↓</b></summary>

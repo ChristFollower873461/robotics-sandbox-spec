@@ -33,6 +33,12 @@ test("browser workbench exposes the simulator controls and module entrypoint", a
   assert.match(html, /data-space-view="space"/);
   assert.match(html, /data-add-space-fixture="bench"/);
   assert.match(html, /id="space-run-study"/);
+  assert.match(html, /id="space-flow-title"/);
+  assert.match(html, /data-space-step-target="1"/);
+  assert.match(html, /data-space-step-target="4"/);
+  assert.match(html, /id="space-step-next"/);
+  assert.match(html, /id="space-result-close"/);
+  assert.match(html, /id="supporting-labs"/);
   assert.match(html, /id="space-result-evidence"/);
   assert.match(html, /src="\/src\/ui\/spaceStudioApp\.js"/);
   assert.match(html, /id="test-range"/);
@@ -153,6 +159,9 @@ test("browser workbench imports the tested core modules", async () => {
   assert.match(spaceStudioApp, /URL\.revokeObjectURL/);
   assert.match(spaceStudioApp, /createCustomerSpaceScreeningPackage/);
   assert.match(spaceStudioApp, /Official image unavailable/);
+  assert.match(spaceStudioApp, /createSpaceWorkflowState/);
+  assert.match(spaceStudioApp, /spaceWorkflowProgress/);
+  assert.match(spaceStudioApp, /customer-iso-reach-envelope|space-iso-reach-envelope/);
   for (const profileId of [
     "interbotix-wx250s",
     "niryo-ned2",
