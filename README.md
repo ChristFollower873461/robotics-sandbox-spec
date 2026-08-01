@@ -24,8 +24,9 @@ workspace described below; it is infrastructure, not the frontend host.
   room, mark the robot base and task, and receive an evidence-backed shortlist.
   The image never leaves the browser and is never included in JSON exports.
 - A playable four-class test range with draggable targets, class-specific
-  missions, normalized arm IK, footprint-aware 2D routing, scrubbable
-  playback, and progressive friendly/engineer explanations.
+  missions, robot-specific source-kinematic or source-dimensioned renditions
+  for the four defaults, normalized arm IK, footprint-aware 2D routing,
+  scrubbable playback, and progressive friendly/engineer explanations.
 - A reusable Challenge Mode with three deterministic starter missions:
   **Bring the Part Home**, **Cross the Workshop**, and **Inspect the High
   Shelf**. Each exposes its modeled success/caution/failure/unknown state,
@@ -272,7 +273,9 @@ const plan = planWaypointTrajectory({
 
 ## Limitations and next steps
 
-- This is a normalized two-link teaching model, not a vendor-accurate digital twin.
+- Arm task screening still uses a normalized planar solver. The reviewed
+  default renditions improve robot identity, scale, and joint topology; they
+  are not vendor-accurate digital twins.
 - Decision results are rough screening, not safety, purchasing, deployment, or
   sim-to-real proof. A pass means the candidate deserves deeper validation.
 - Approximate/hatching-aware plan and elevation graphics are not collision
@@ -293,4 +296,6 @@ const plan = planWaypointTrajectory({
 - Collision checking is discretized and sampled, not continuous.
 - It does not model full high-DOF geometry, dynamics, torque, self-collision,
   uncertainty, safety-rated controls, or hardware execution.
-- CAD/mesh import and URDF-derived robot geometry remain future work.
+- Full CAD/mesh loading and full-DOF simulation remain future work. The four
+  default browser renditions now use pinned URDF topology, mesh bounds, or
+  published dimensions under the governed visual-fidelity contract.

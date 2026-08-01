@@ -13,10 +13,15 @@ import {
 import { evidenceBasis } from "../core/decision/foundation.js";
 import { createMissionOutcome } from "../core/decision/missionOutcome.js";
 import { getDecisionRecord } from "./decisionCatalog.js";
+import { robotMotionCues, robotPlanDimensions } from "../core/robot/visualPose.js";
 import {
   getRobotProfile,
   getRobotProfilesByPlatformClass,
 } from "./robotProfiles.js";
+import {
+  getRobotVisualAsset,
+  robotVisualFidelityLabel,
+} from "./robotVisualAssets.js";
 import { SPATIAL_VIEWBOX, unprojectSpatialFloor } from "../core/visualization/spatialScene.js";
 import { renderSpatialStage } from "./spatialStageView.js";
 
@@ -43,8 +48,8 @@ const PLATFORM_DEFAULTS = {
 const PLATFORM_COPY = {
   arm: {
     label: "Robot arm",
-    hint: "The circle uses published reach. The two-link pose is a normalized teaching model, not vendor geometry.",
-    mode: "NORMALIZED ARM REACH",
+    hint: "Published reach screens the target. The robot-specific joint rendition is source-informed; the moving reach solve remains a rough 2D check.",
+    mode: "SOURCE JOINT LAYOUT / ROUGH 2D REACH",
     speed: null,
   },
   humanoid: {
@@ -141,6 +146,11 @@ const ids = [
   "range-platform-label",
   "range-model",
   "range-maker",
+  "range-robot-reference",
+  "range-robot-media-link",
+  "range-robot-photo",
+  "range-render-label",
+  "range-render-boundary",
   "range-result",
   "range-distance-label",
   "range-distance",
@@ -170,6 +180,15 @@ const elements = Object.fromEntries(
 const stageViewport = document.querySelector(".range-stage-viewport");
 const spaceFidelity = document.querySelector(".range-space-fidelity");
 
+elements.rangeRobotPhoto.addEventListener("error", () => {
+  elements.rangeRobotReference.dataset.mediaState = "unavailable";
+  elements.rangeRobotPhoto.alt = "Official reference image unavailable; open the source link.";
+});
+
+elements.rangeRobotPhoto.addEventListener("load", () => {
+  elements.rangeRobotReference.dataset.mediaState = "ready";
+});
+
 function svgElement(name, attributes = {}, text = null) {
   const node = document.createElementNS(SVG_NS, name);
   Object.entries(attributes).forEach(([key, value]) => {
@@ -187,6 +206,10 @@ function appendSvg(parent, name, attributes = {}, text = null) {
 
 function profile() {
   return getRobotProfile(state.profileId);
+}
+
+function visualAsset() {
+  return getRobotVisualAsset(state.profileId);
 }
 
 function challenge() {
@@ -479,8 +502,11 @@ function renderArm(progress) {
   const pose = armPoseAtProgress(progress);
   if (!pose) return;
   const base = activeArmBase();
+  const asset = visualAsset();
+  const scale = robotPlanDimensions(asset, MM_PER_PIXEL);
+  const cues = robotMotionCues(asset, progress);
   const group = appendSvg(elements.rangeRobotLayer, "g", {
-    class: "range-robot range-robot--arm",
+    class: `range-robot range-robot--arm ${asset ? "range-robot--source" : "range-robot--unavailable"}`,
     style: `--robot-color:${profile().visual.primary}`,
     filter: "url(#range-shadow)",
   });
@@ -488,17 +514,49 @@ function renderArm(progress) {
     x: base.x + point.x / MM_PER_PIXEL,
     y: base.y - point.y / MM_PER_PIXEL,
   }));
-  appendSvg(group, "ellipse", { cx: base.x, cy: base.y + 12, rx: 34, ry: 12, class: "range-arm-base-shadow" });
-  appendSvg(group, "rect", { x: base.x - 27, y: base.y - 4, width: 54, height: 26, rx: 9, class: "range-arm-base" });
-  appendSvg(group, "path", { d: `M${points[0].x} ${points[0].y}L${points[1].x} ${points[1].y}L${points[2].x} ${points[2].y}`, class: "range-arm-links" });
-  points.forEach((point, index) => appendSvg(group, "circle", { cx: point.x, cy: point.y, r: index === 2 ? 8 : 11, class: "range-arm-joint" }));
-  appendSvg(group, "path", { d: `M${points[2].x - 9} ${points[2].y - 5}l-8-9m17 14 9 7`, class: "range-arm-gripper" });
+  if (!asset) {
+    appendSvg(group, "ellipse", { cx: base.x, cy: base.y + 11, rx: 30, ry: 13, class: "range-arm-base-shadow" });
+    appendSvg(group, "rect", { x: base.x - 24, y: base.y - 17, width: 48, height: 34, rx: 5, class: "range-model-envelope" });
+    appendSvg(group, "path", { d: `M${base.x - 17} ${base.y - 10}l34 20M${base.x + 17} ${base.y - 10}l-34 20`, class: "range-model-envelope-cross" });
+    appendSvg(group, "text", { x: base.x, y: base.y + 31, class: "range-model-unavailable", "text-anchor": "middle" }, "MODEL NOT LOADED");
+    return;
+  }
+  const baseWidth = scale?.widthPx || 54;
+  const baseDepth = scale?.depthPx || 26;
+  appendSvg(group, "ellipse", { cx: base.x, cy: base.y + 11, rx: baseWidth / 2 + 5, ry: baseDepth / 2, class: "range-arm-base-shadow" });
+  appendSvg(group, "rect", { x: base.x - baseWidth / 2, y: base.y - baseDepth / 2, width: baseWidth, height: baseDepth, rx: 7, class: "range-arm-base range-arm-base--widowx" });
+  appendSvg(group, "circle", { cx: base.x, cy: base.y, r: 12, class: "range-arm-waist" });
+
+  const interpolate = (from, to, amount) => ({
+    x: from.x + (to.x - from.x) * amount,
+    y: from.y + (to.y - from.y) * amount,
+  });
+  const forearmRoll = interpolate(points[1], points[2], 0.46);
+  const wristAngle = interpolate(points[1], points[2], 0.76);
+  const wristRotate = interpolate(points[1], points[2], 0.9);
+  const sourceChain = [points[0], points[1], forearmRoll, wristAngle, wristRotate, points[2]];
+  appendSvg(group, "path", {
+    d: pathData(sourceChain),
+    class: "range-arm-links range-arm-links--widowx",
+  });
+  sourceChain.forEach((point, index) => appendSvg(group, "circle", {
+    cx: point.x,
+    cy: point.y,
+    r: index === 0 ? 10 : index === sourceChain.length - 1 ? 6 : index < 2 ? 9 : 6,
+    class: `range-arm-joint range-arm-joint--${index + 1}`,
+  }));
+  appendSvg(group, "g", {
+    transform: `translate(${points[2].x} ${points[2].y}) rotate(${cues.wristDegrees || 0})`,
+    class: "range-arm-tool",
+  }).append(
+    svgElement("path", { d: "M-7-4l-9-8M7 4l9 8M-7-4 7 4", class: "range-arm-gripper" })
+  );
 }
 
 function spriteGroup(position) {
   const angle = (position.heading * 180) / Math.PI;
   return appendSvg(elements.rangeRobotLayer, "g", {
-    class: `range-robot range-robot--${state.platform}`,
+    class: `range-robot range-robot--${state.platform} ${visualAsset() ? "range-robot--source" : "range-robot--unavailable"}`,
     transform: `translate(${position.x} ${position.y}) rotate(${angle})`,
     style: `--robot-color:${profile().visual.primary}`,
     filter: "url(#range-shadow)",
@@ -506,29 +564,103 @@ function spriteGroup(position) {
 }
 
 function renderHumanoid(position) {
+  const asset = visualAsset();
+  if (!asset) return renderUnavailableRobot(position);
+  const scale = robotPlanDimensions(asset, MM_PER_PIXEL);
+  const cues = robotMotionCues(asset, state.progress);
   const group = spriteGroup(position);
-  appendSvg(group, "circle", { cx: 10, cy: 0, r: 9, class: "range-humanoid-head" });
-  appendSvg(group, "rect", { x: -14, y: -13, width: 30, height: 26, rx: 11, class: "range-humanoid-body" });
-  appendSvg(group, "path", { d: "M-7 12-16 28M7 12 17 27M-13-3-27 8M14-3 27 8", class: "range-humanoid-limbs" });
-  appendSvg(group, "circle", { cx: 0, cy: 0, r: state.plan.clearance, class: "range-footprint" });
+  group.classList.add("range-robot--toddlerbot");
+  appendSvg(group, "ellipse", { cx: 0, cy: 0, rx: scale.depthPx / 2, ry: scale.widthPx / 2, class: "range-footprint range-footprint--true-scale" });
+  const body = appendSvg(group, "g", { transform: `rotate(${cues.torsoRollDegrees})` });
+  appendSvg(body, "rect", { x: -9, y: -9, width: 19, height: 18, rx: 5, class: "range-humanoid-body range-humanoid-body--toddler" });
+  appendSvg(body, "circle", { cx: 11.5, cy: 0, r: 6, class: "range-humanoid-head range-humanoid-head--toddler" });
+  const limbs = [
+    { d: "M4-8L0-17L-6-23", rotation: cues.leftArmDegrees, pivot: "4 -8" },
+    { d: "M4 8L0 17L-6 23", rotation: cues.rightArmDegrees, pivot: "4 8" },
+    { d: "M-7-5L-14-7L-18-8", rotation: cues.leftLegDegrees, pivot: "-7 -5" },
+    { d: "M-7 5L-14 7L-18 8", rotation: cues.rightLegDegrees, pivot: "-7 5" },
+  ];
+  limbs.forEach((limb) => {
+    appendSvg(body, "path", {
+      d: limb.d,
+      transform: `rotate(${limb.rotation} ${limb.pivot})`,
+      class: "range-humanoid-limbs range-humanoid-limbs--articulated",
+    });
+  });
+  [[4, -8], [0, -17], [4, 8], [0, 17], [-7, -5], [-14, -7], [-7, 5], [-14, 7]].forEach(([cx, cy]) => {
+    appendSvg(body, "circle", { cx, cy, r: 2.4, class: "range-source-joint" });
+  });
 }
 
 function renderQuadruped(position) {
+  const asset = visualAsset();
+  if (!asset) return renderUnavailableRobot(position);
+  const scale = robotPlanDimensions(asset, MM_PER_PIXEL);
+  const cues = robotMotionCues(asset, state.progress);
   const group = spriteGroup(position);
-  appendSvg(group, "rect", { x: -25, y: -15, width: 50, height: 30, rx: 12, class: "range-quad-body" });
-  appendSvg(group, "rect", { x: 21, y: -10, width: 16, height: 20, rx: 7, class: "range-quad-head" });
-  appendSvg(group, "path", { d: "M-17-12-24-25M-17 12-24 25M14-12 20-25M14 12 20 25", class: "range-quad-legs" });
-  appendSvg(group, "circle", { cx: 0, cy: 0, r: state.plan.clearance, class: "range-footprint" });
+  group.classList.add("range-robot--pupper");
+  appendSvg(group, "ellipse", { cx: 0, cy: 0, rx: scale.widthPx / 2, ry: scale.depthPx / 2, class: "range-footprint range-footprint--true-scale" });
+  appendSvg(group, "rect", { x: -18, y: -10, width: 36, height: 20, rx: 5, class: "range-quad-body range-quad-body--pupper" });
+  appendSvg(group, "rect", { x: -11, y: -6, width: 22, height: 12, rx: 3, class: "range-quad-deck" });
+  const legs = [
+    { hip: [-15, -8], knee: [-19, -15], foot: [-21, -21] },
+    { hip: [-15, 8], knee: [-19, 15], foot: [-21, 21] },
+    { hip: [15, -8], knee: [19, -15], foot: [22, -21] },
+    { hip: [15, 8], knee: [19, 15], foot: [22, 21] },
+  ];
+  legs.forEach((leg, index) => {
+    const cue = cues.legs[index];
+    const side = Math.sign(leg.hip[1]);
+    const hipPitch = [leg.hip[0], leg.hip[1] + side * 3];
+    const legGroup = appendSvg(group, "g", {
+      transform: `rotate(${cue.swingDegrees} ${leg.hip[0]} ${leg.hip[1]}) translate(0 ${-cue.liftPx})`,
+      class: "range-quad-leg range-quad-leg--three-joint",
+    });
+    appendSvg(legGroup, "path", { d: `M${leg.hip.join(" ")}L${hipPitch.join(" ")}L${leg.knee.join(" ")}L${leg.foot.join(" ")}`, class: "range-quad-legs" });
+    [leg.hip, hipPitch, leg.knee].forEach(([cx, cy]) => appendSvg(legGroup, "circle", { cx, cy, r: 2.4, class: "range-source-joint" }));
+  });
 }
 
 function renderDrone(position) {
+  const asset = visualAsset();
+  if (!asset) return renderUnavailableRobot(position);
+  const scale = robotPlanDimensions(asset, MM_PER_PIXEL);
+  const cues = robotMotionCues(asset, state.progress);
   const group = spriteGroup(position);
-  appendSvg(group, "path", { d: "M-22-18 22 18M22-18-22 18", class: "range-drone-arms" });
-  [[-22, -18], [22, -18], [-22, 18], [22, 18]].forEach(([cx, cy]) => {
-    appendSvg(group, "circle", { cx, cy, r: 13, class: "range-drone-rotor" });
+  group.classList.add("range-robot--crazyflie");
+  appendSvg(group, "circle", { cx: 0, cy: 0, r: scale.selectionRadiusPx, class: "range-selection-halo range-selection-halo--air" });
+  const airframe = appendSvg(group, "g", { transform: `rotate(${cues.bankDegrees})` });
+  const rotorRadius = (asset.display.rotorDiameterMm / MM_PER_PIXEL) / 2;
+  const rotorOffset = scale.widthPx / 2 - rotorRadius;
+  appendSvg(airframe, "path", { d: `M${-rotorOffset} ${-rotorOffset}L${rotorOffset} ${rotorOffset}M${rotorOffset} ${-rotorOffset}L${-rotorOffset} ${rotorOffset}`, class: "range-drone-arms" });
+  [[-rotorOffset, -rotorOffset], [rotorOffset, -rotorOffset], [-rotorOffset, rotorOffset], [rotorOffset, rotorOffset]].forEach(([cx, cy]) => {
+    appendSvg(airframe, "ellipse", {
+      cx,
+      cy,
+      rx: rotorRadius,
+      ry: rotorRadius * 0.74,
+      transform: `rotate(${cues.rotorDegrees} ${cx} ${cy})`,
+      class: "range-drone-rotor range-drone-rotor--true-scale",
+    });
   });
-  appendSvg(group, "circle", { cx: 0, cy: 0, r: 10, class: "range-drone-body" });
-  appendSvg(group, "circle", { cx: 0, cy: 0, r: 27, class: "range-footprint range-footprint--air" });
+  appendSvg(airframe, "rect", {
+    x: -(asset.display.boardWidthMm / MM_PER_PIXEL) / 2,
+    y: -(asset.display.boardDepthMm / MM_PER_PIXEL) / 2,
+    width: asset.display.boardWidthMm / MM_PER_PIXEL,
+    height: asset.display.boardDepthMm / MM_PER_PIXEL,
+    rx: 1.5,
+    class: "range-drone-body range-drone-body--crazyflie",
+  });
+  appendSvg(group, "text", { x: 22, y: 4, class: "range-true-scale-label" }, "92 MM TRUE SCALE");
+  appendSvg(group, "path", { d: "M11 0H18", class: "range-true-scale-leader" });
+}
+
+function renderUnavailableRobot(position) {
+  const group = spriteGroup(position);
+  group.classList.add("range-robot--unavailable");
+  appendSvg(group, "rect", { x: -24, y: -17, width: 48, height: 34, rx: 5, class: "range-model-envelope" });
+  appendSvg(group, "path", { d: "M-17-10 17 10M17-10-17 10", class: "range-model-envelope-cross" });
+  appendSvg(group, "text", { x: 0, y: 29, class: "range-model-unavailable", "text-anchor": "middle" }, "MODEL NOT LOADED");
 }
 
 function renderRobot() {
@@ -564,6 +696,7 @@ function renderTarget() {
 
 function renderSpace() {
   if (state.stageView !== "space") return;
+  const asset = visualAsset();
   renderSpatialStage(elements.rangeSpaceStage, {
     arena: ARENA,
     fixtures: FIXTURES,
@@ -574,7 +707,11 @@ function renderSpace() {
     progress: state.progress,
     robotColor: profile().visual.primary,
     playing: state.animationFrame !== null,
+    visualAsset: asset,
   });
+  spaceFidelity.innerHTML = asset
+    ? `<i></i><span><strong>${asset.representation.label}</strong> · ${asset.representation.fidelity.replaceAll("-", " ")} · geometry only</span>`
+    : "<i></i><span><strong>Model unavailable</strong> · envelope only; no robot-specific geometry is loaded</span>";
 }
 
 function challengeResultContent() {
@@ -679,6 +816,7 @@ function resultContent() {
 function renderInspector() {
   const currentProfile = profile();
   const currentRecord = record();
+  const asset = visualAsset();
   const counts = evidenceCounts();
   const content = resultContent();
   const known = knownFactEntries();
@@ -686,6 +824,24 @@ function renderInspector() {
   elements.rangePlatformLabel.textContent = PLATFORM_COPY[state.platform].label;
   elements.rangeModel.textContent = currentProfile.model;
   elements.rangeMaker.textContent = `${currentProfile.company} · ${currentProfile.country}`;
+  elements.rangeRobotReference.hidden = !asset;
+  if (asset) {
+    elements.rangeRobotMediaLink.href = asset.media.sourceUrl;
+    if (elements.rangeRobotPhoto.src !== asset.media.url) {
+      elements.rangeRobotReference.dataset.mediaState = "loading";
+      elements.rangeRobotPhoto.src = asset.media.url;
+    } else if (elements.rangeRobotPhoto.complete) {
+      elements.rangeRobotReference.dataset.mediaState = elements.rangeRobotPhoto.naturalWidth > 0
+        ? "ready"
+        : "unavailable";
+    }
+    elements.rangeRobotPhoto.alt = `Official reference image of ${currentProfile.model}`;
+    elements.rangeRenderLabel.textContent = asset.representation.label;
+    elements.rangeRenderBoundary.textContent = asset.representation.boundary;
+  } else {
+    elements.rangeRobotPhoto.removeAttribute("src");
+    elements.rangeRobotPhoto.alt = "";
+  }
   elements.rangeResult.textContent = content.result;
   elements.rangeEvidenceScore.textContent = `${counts.sourced} sourced / ${counts.unknown} open`;
 
@@ -733,7 +889,9 @@ function renderInspector() {
     );
   }
 
-  elements.rangeFidelity.textContent = currentRecord.fidelityLabel;
+  elements.rangeFidelity.textContent = asset
+    ? `${robotVisualFidelityLabel(asset)} · DECISION MODEL: ${currentRecord.fidelityLabel}`
+    : `NO ROBOT-SPECIFIC VISUAL ASSET · DECISION MODEL: ${currentRecord.fidelityLabel}`;
   elements.rangePlannerOutput.textContent = state.platform === "arm"
     ? `${state.plan.valid ? "IK SOLVED" : "UNREACHABLE"} / ${Math.round(state.plan.distanceMm)} MM RADIUS`
     : `${state.plan.valid ? "ROUTE FOUND" : state.plan.reason.toUpperCase()} / ${state.plan.expanded} EXPANDED`;

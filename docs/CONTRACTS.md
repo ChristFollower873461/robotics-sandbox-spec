@@ -98,10 +98,14 @@ contract error—not merely a UI convention—to feed a catalog record into the
 planar solver.
 
 The seven bundled arm records are `normalized`; their teaching link lengths
-must not be presented as manufacturer dimensions. The six locomotion and
-flight records are `unverified` for simulation geometry because their picker
-silhouettes are illustrative. Their source-backed physical claims remain
-separate.
+must not be presented as manufacturer dimensions. Catalog geometry status is
+record-specific: ToddlerBot is `inferred` because its route envelope remains
+approximate, while Pupper v3 and Crazyflie 2.1+ are `source-dimensioned` from
+published envelopes. Catalog robots without a reviewed rendition remain
+`unverified` and must display `MODEL NOT LOADED`, never another robot's
+silhouette. The separate `robot-visual-asset/v1` contract binds pinned source
+revisions, artifact paths, joint topology, measurement status, and display
+boundaries without changing the solver boundary.
 
 `opennessStatus` distinguishes a fully open platform from an open component,
 mixed open/restricted releases, and research source with restrictive terms.

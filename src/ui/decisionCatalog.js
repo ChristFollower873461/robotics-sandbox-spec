@@ -80,8 +80,8 @@ function record(profileId, platformClass, values) {
 const RECORDS = [
   record("interbotix-wx250s", "arm", {
     currentFidelity: SIMULATION_FIDELITY.KINEMATIC_APPROXIMATION,
-    fidelityLabel: "LEVEL 2 / NORMALIZED PLANAR KINEMATIC APPROXIMATION",
-    evaluatorBoundary: "Published reach screens the task; the live two-link drawing is normalized and is not vendor geometry.",
+    fidelityLabel: "LEVEL 2 / SOURCE-KINEMATIC VISUAL + NORMALIZED PLANAR REACH SOLVER",
+    evaluatorBoundary: "The visual follows the pinned six-axis URDF and base-mesh bounds; published reach still screens the task through a normalized planar solver, not full vendor IK or collision geometry.",
     facts: facts({
       reachMm: sourced(650, "mm", ["specifications"], "Current manufacturer-published reach; not a complete operating envelope."),
       payloadKg: sourced(0.25, "kg", ["specifications"], "Published working payload inside the recommended workspace; repeated operation and extension constraints still apply."),
@@ -190,8 +190,8 @@ const RECORDS = [
   }),
   record("toddlerbot-2", "humanoid", {
     currentFidelity: SIMULATION_FIDELITY.GEOMETRIC,
-    fidelityLabel: "LEVEL 1 / DIMENSIONED HUMANOID PROXY",
-    evaluatorBoundary: "Height and mass support rough fit only; the browser does not run gait policy, balance, contact, actuator, or controller dynamics.",
+    fidelityLabel: "LEVEL 1 / SOURCE-KINEMATIC SILHOUETTE + APPROXIMATE FOOTPRINT",
+    evaluatorBoundary: "The major visual chains follow the pinned 30-DOF URDF and published height; route width remains approximate, and the browser does not run gait policy, balance, contact, actuator, or controller dynamics.",
     facts: facts({
       widthMm: approximate(260, "mm", ["paper"], "Low-confidence display proxy; not a published operating width."),
       depthMm: approximate(180, "mm", ["paper"], "Low-confidence display proxy; not a published operating depth."),
@@ -228,8 +228,8 @@ const RECORDS = [
   }),
   record("pupper-v3", "quadruped", {
     currentFidelity: SIMULATION_FIDELITY.GEOMETRIC,
-    fidelityLabel: "LEVEL 1 / DIMENSIONED QUADRUPED PROXY",
-    evaluatorBoundary: "Crouched dimensions support fit screening; gait, footholds, friction, stability, slope, and payload are not calculated.",
+    fidelityLabel: "LEVEL 1 / SOURCE 12-DOF LAYOUT + DIMENSIONED CROUCHED ENVELOPE",
+    evaluatorBoundary: "The visual follows the pinned 12-DOF URDF and published crouched dimensions support fit screening; gait, footholds, friction, stability, slope, and payload are not calculated.",
     facts: facts({
       widthMm: sourced(250, "mm", ["specifications"], "Published crouched length mapped to the plan-view long axis."),
       depthMm: sourced(220, "mm", ["specifications"], "Published crouched width mapped to the plan-view short axis."),
@@ -259,8 +259,8 @@ const RECORDS = [
   }),
   record("crazyflie-2-1-plus", "drone", {
     currentFidelity: SIMULATION_FIDELITY.GEOMETRIC,
-    fidelityLabel: "LEVEL 1 / DIMENSIONED FLIGHT-ENVELOPE PROXY",
-    evaluatorBoundary: "Dimensions and published ideal flight time screen fit only; aerodynamics, batteries, payload, localization, sensors, and control are not simulated.",
+    fidelityLabel: "LEVEL 1 / SOURCE-DIMENSIONED 92 MM AIRFRAME / NO FLIGHT DYNAMICS",
+    evaluatorBoundary: "The parametric silhouette and fit screen use published dimensions; aerodynamics, batteries, payload, localization, sensors, and control are not simulated.",
     facts: facts({
       widthMm: sourced(92, "mm", ["product"], "Published overall width."),
       depthMm: sourced(92, "mm", ["product"], "Published overall depth."),

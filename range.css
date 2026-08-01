@@ -490,8 +490,14 @@ body { overflow-x: clip; }
 .range-robot { --robot-color: #0d725f; pointer-events: none; }
 .range-arm-base-shadow { fill: rgba(21, 35, 31, 0.18); }
 .range-arm-base { fill: #f6f3e8; stroke: #1d332c; stroke-width: 3; }
+.range-arm-base--widowx { fill: #d7e1e6; stroke-width: 2.5; }
+.range-arm-waist { fill: var(--robot-color); stroke: #122b24; stroke-width: 3; }
 .range-arm-links { fill: none; stroke: var(--robot-color); stroke-width: 18; stroke-linecap: round; stroke-linejoin: round; }
+.range-arm-links--widowx { stroke-width: 13; }
 .range-arm-joint { fill: #fffaf0; stroke: #1d332c; stroke-width: 4; }
+.range-arm-joint--3,
+.range-arm-joint--4,
+.range-arm-joint--5 { stroke-width: 3; }
 .range-arm-gripper { fill: none; stroke: #1d332c; stroke-width: 5; stroke-linecap: round; }
 .range-humanoid-head,
 .range-humanoid-body,
@@ -502,13 +508,24 @@ body { overflow-x: clip; }
 .range-quad-legs,
 .range-drone-arms { fill: none; stroke: #132b24; stroke-width: 6; stroke-linecap: round; }
 .range-drone-rotor { fill: rgba(255,255,255,0.72); stroke: var(--robot-color); stroke-width: 4; }
+.range-humanoid-body--toddler { fill: #f4f0e8; }
+.range-humanoid-head--toddler { fill: var(--robot-color); }
+.range-humanoid-limbs--articulated { stroke-width: 4.6; }
+.range-source-joint { fill: #fffaf0; stroke: #17352c; stroke-width: 1.5; }
+.range-quad-body--pupper { fill: #e7e5da; }
+.range-quad-deck { fill: var(--robot-color); stroke: #132b24; stroke-width: 2; }
+.range-quad-leg--three-joint .range-quad-legs { stroke-width: 4.5; }
+.range-drone-rotor--true-scale { stroke-width: 1.7; }
+.range-drone-body--crazyflie { fill: #30383a; stroke: var(--robot-color); stroke-width: 1.5; }
 .range-footprint { fill: rgba(255,255,255,0.16); stroke: #0d725f; stroke-width: 2; stroke-dasharray: 5 5; }
+.range-footprint--true-scale { fill: rgba(13,114,95,0.05); stroke-width: 1.5; stroke-dasharray: 4 4; }
 .range-footprint--air { stroke: #527a90; }
-.range-console[data-playing="true"] .range-robot--drone .range-drone-rotor { animation: range-rotor 300ms linear infinite; transform-box: fill-box; transform-origin: center; }
-.range-console[data-playing="true"] .range-robot--humanoid .range-humanoid-limbs,
-.range-console[data-playing="true"] .range-robot--quadruped .range-quad-legs { animation: range-step 240ms ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
-@keyframes range-rotor { to { transform: rotate(180deg); } }
-@keyframes range-step { to { transform: skewX(7deg); } }
+.range-selection-halo { fill: rgba(82,122,144,0.08); stroke: #527a90; stroke-width: 1.5; stroke-dasharray: 3 4; }
+.range-true-scale-label { fill: #395c51; paint-order: stroke; stroke: #ecece4; stroke-width: 4px; font: 800 7px/1 var(--guide-mono); letter-spacing: 0.04em; }
+.range-true-scale-leader { fill: none; stroke: #527a90; stroke-width: 1.5; }
+.range-model-envelope { fill: rgba(255,255,255,0.48); stroke: #a4614c; stroke-width: 2; stroke-dasharray: 5 4; }
+.range-model-envelope-cross { fill: none; stroke: #a4614c; stroke-width: 2; }
+.range-model-unavailable { fill: #874d3d; paint-order: stroke; stroke: #ecece4; stroke-width: 4px; font: 800 7px/1 var(--guide-mono); letter-spacing: 0.04em; }
 
 /* Synchronized spatial view — deliberately geometric, never a physics claim. */
 #range-space-stage {
@@ -566,14 +583,32 @@ body { overflow-x: clip; }
 .range-space-arm-outline { fill: none; stroke: #0b1814; stroke-width: 22; stroke-linejoin: round; stroke-linecap: round; }
 .range-space-arm-links { fill: none; stroke: var(--robot-color); stroke-width: 15; stroke-linejoin: round; stroke-linecap: round; }
 .range-space-arm-base { fill: #e9e8de; stroke: #0e201a; stroke-width: 2; }
+.range-space-arm-base-left { fill: #8da0a7; stroke: #0e201a; stroke-width: 1.6; }
+.range-space-arm-base-right { fill: #637982; stroke: #0e201a; stroke-width: 1.6; }
+.range-space-arm-base-top { fill: #d6e0e3; stroke: #0e201a; stroke-width: 1.6; }
 .range-space-arm-joint { fill: #fff6dc; stroke: #10231c; stroke-width: 3; }
 .range-space-gripper { fill: none; stroke: #fff6dc; stroke-width: 4; stroke-linecap: round; }
 .range-space-mobile-body,
 .range-space-mobile-head { fill: var(--robot-color); stroke: #0b1c16; stroke-width: 2.5; }
 .range-space-mobile-limbs { fill: none; stroke: #0b1c16; stroke-width: 5; stroke-linecap: round; }
 .range-space-rotor { fill: rgba(225,248,240,0.75); stroke: var(--robot-color); stroke-width: 3; }
-.range-space-drone.is-playing .range-space-rotor { animation: range-space-rotor 240ms linear infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes range-space-rotor { to { transform: scaleX(0.25); } }
+.range-space-source-joint { fill: #fff4d8; stroke: #10231c; stroke-width: 1.8; }
+.range-space-limb-outline { fill: none; stroke: #07130f; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+.range-space-source-limb { fill: none; stroke: var(--robot-color); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.range-space-source-limb--pupper { stroke-width: 5; }
+.range-space-humanoid-torso { fill: #e8e8df; stroke: #0b1c16; stroke-width: 2; }
+.range-space-humanoid-head { fill: var(--robot-color); stroke: #0b1c16; stroke-width: 2; }
+.range-space-height-cap { fill: none; stroke: #76bea4; stroke-width: 2; }
+.range-space-pupper-top { fill: #f3c84c; stroke: #0b1c16; stroke-width: 1.5; }
+.range-space-pupper-side { fill: #b98f1d; stroke: #0b1c16; stroke-width: 1.5; }
+.range-space-pupper-front { fill: #8c6b16; stroke: #0b1c16; stroke-width: 1.5; }
+.range-space-selection-halo { fill: rgba(114,199,225,0.09); stroke: #84c6dc; stroke-width: 1.3; stroke-dasharray: 3 4; }
+.range-space-drone-arm { fill: none; stroke: #13211d; stroke-width: 2.3; }
+.range-space-rotor--crazyflie { fill: rgba(226,244,238,0.76); stroke-width: 1.5; }
+.range-space-crazyflie-board { fill: #30383a; stroke: var(--robot-color); stroke-width: 1.4; }
+.range-space-unavailable-envelope { fill: rgba(255,255,255,0.1); stroke: #ef997d; stroke-width: 2; stroke-dasharray: 5 4; }
+.range-space-unavailable-cross { fill: none; stroke: #ef997d; stroke-width: 2; }
+.range-space-unavailable-label { fill: #ffd1c2; paint-order: stroke; stroke: #152820; stroke-width: 4px; font: 800 7px/1 var(--guide-mono); letter-spacing: 0.06em; }
 .range-space-part { stroke: #261f0d; stroke-width: 1.5; }
 .range-space-part-top { fill: #ffe27a; }
 .range-space-part-left { fill: #d9a92c; }
@@ -639,6 +674,52 @@ body { overflow-x: clip; }
 .range-identity > span { color: var(--range-green); font: 700 8px/1 var(--guide-mono); letter-spacing: 0.08em; text-transform: uppercase; }
 .range-identity h2 { margin: 7px 0 3px; font-family: var(--guide-display); font-size: 30px; font-weight: 600; line-height: 0.98; letter-spacing: -0.03em; }
 .range-identity p { margin: 0; color: #6a746f; font-size: 9px; line-height: 1.4; text-transform: uppercase; }
+.range-robot-reference {
+  margin: 16px 0 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  border: 1px solid #bcc5bc;
+  border-radius: 11px;
+  background: #f0f1eb;
+}
+.range-robot-reference[hidden] { display: none; }
+.range-robot-reference > a {
+  min-height: 92px;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  background: #dde2dc;
+}
+.range-robot-reference img { width: 100%; height: 100%; display: block; object-fit: contain; background: white; }
+.range-robot-reference > a > span {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  padding: 4px 5px;
+  border-radius: 4px;
+  background: rgba(18,34,28,0.9);
+  color: white;
+  font: 700 6px/1 var(--guide-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.range-robot-reference figcaption { min-width: 0; padding: 10px 11px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.range-robot-reference figcaption strong { color: #24473c; font-size: 10px; line-height: 1.25; }
+.range-robot-reference figcaption small { color: #65716c; font-size: 8px; line-height: 1.4; }
+.range-robot-reference[data-media-state="unavailable"] img { display: none; }
+.range-robot-reference[data-media-state="unavailable"] > a::before {
+  content: "Open official source";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  color: #44564f;
+  font: 700 8px/1.35 var(--guide-mono);
+  text-align: center;
+  text-transform: uppercase;
+}
 .range-metrics { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--range-line); }
 .range-metrics > div { min-height: 76px; padding: 14px 8px 12px 0; }
 .range-metrics > div:nth-child(odd) { border-right: 1px solid var(--range-line); }

@@ -23,7 +23,7 @@ const PROFILE_DEFINITIONS = [
     productUrl:
       "https://docs.trossenrobotics.com/interbotix_xsarms_docs/",
     sourceReach: "650 MM PUBLISHED REACH / 250 G WORKING PAYLOAD",
-    geometryTruth: "SOURCE REACH / NORMALIZED 2-LINK DRAWING",
+    geometryTruth: "SOURCE SIX-AXIS URDF + BASE-MESH BOUNDS FOR THE VISUAL / PUBLISHED REACH + NORMALIZED PLANAR MISSION SOLVER",
     geometryStatus: "normalized",
     sourceCheckedAt: "2026-08-01",
     sources: [
@@ -485,9 +485,9 @@ const PROFILE_DEFINITIONS = [
     sourceUrl: "https://github.com/hshi74/toddlerbot",
     productUrl: "https://hshi74.github.io/toddlerbot/",
     sourceReach: "30 ACTIVE DOF / 0.56 M / 3.4 KG",
-    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
-    geometryStatus: "unverified",
-    sourceCheckedAt: "2026-07-30",
+    geometryTruth: "SOURCE 30-DOF URDF TOPOLOGY + PUBLISHED HEIGHT / APPROXIMATE PLAN ENVELOPE / NO GAIT DYNAMICS",
+    geometryStatus: "inferred",
+    sourceCheckedAt: "2026-08-01",
     sources: [
       {
         sourceId: "software",
@@ -612,9 +612,9 @@ const PROFILE_DEFINITIONS = [
     sourceUrl: "https://github.com/Nate711/pupperv3-monorepo",
     productUrl: "https://pupper-v3-documentation.readthedocs.io/en/latest/",
     sourceReach: "12 DOF / 3 KG / 25 × 22 × 20 CM CROUCHED",
-    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
-    geometryStatus: "unverified",
-    sourceCheckedAt: "2026-07-30",
+    geometryTruth: "SOURCE 12-DOF URDF TOPOLOGY + PUBLISHED CROUCHED ENVELOPE / NO GAIT OR CONTACT DYNAMICS",
+    geometryStatus: "source-dimensioned",
+    sourceCheckedAt: "2026-08-01",
     sources: [
       {
         sourceId: "software",
@@ -748,9 +748,9 @@ const PROFILE_DEFINITIONS = [
     sourceUrl: "https://github.com/bitcraze/crazyflie-firmware",
     productUrl: "https://www.bitcraze.io/products/crazyflie-2-1-plus/",
     sourceReach: "29 G / 92 × 92 × 29 MM / 7 MIN FLIGHT",
-    geometryTruth: "CATALOG SPECS ONLY / SILHOUETTE IS NOT DIMENSIONED GEOMETRY",
-    geometryStatus: "unverified",
-    sourceCheckedAt: "2026-07-30",
+    geometryTruth: "PUBLISHED 92 × 92 × 29 MM AIRFRAME / PARAMETRIC SILHOUETTE / NO FLIGHT DYNAMICS",
+    geometryStatus: "source-dimensioned",
+    sourceCheckedAt: "2026-08-01",
     sources: [
       {
         sourceId: "firmware",
