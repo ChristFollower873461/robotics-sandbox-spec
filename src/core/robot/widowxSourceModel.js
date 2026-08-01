@@ -17,6 +17,10 @@ const freeze = (value) => {
 const mesh = (id, file, sha256, origin = {}) => ({
   id,
   file,
+  // Cloudflare's static-asset router currently treats the vendor .stl path as
+  // missing. The stored bytes stay exact, while a recognized binary suffix
+  // gives the delivery layer an explicit application/octet-stream contract.
+  assetFile: `${file}.bin`,
   sha256,
   origin: {
     xyz: origin.xyz || [0, 0, 0],
@@ -72,9 +76,9 @@ export const WIDOWX_SOURCE_MODEL = freeze({
   },
 });
 
-export function widowXMeshAssetUrl(file) {
-  if (!Object.values(WIDOWX_SOURCE_MODEL.meshes).some((entry) => entry.file === file)) {
-    throw new RangeError(`Unknown WidowX mesh file: ${file}`);
+export function widowXMeshAssetUrl(assetFile) {
+  if (!Object.values(WIDOWX_SOURCE_MODEL.meshes).some((entry) => entry.assetFile === assetFile)) {
+    throw new RangeError(`Unknown WidowX mesh asset: ${assetFile}`);
   }
-  return `/src/assets/widowx-250s/${file}`;
+  return `/src/assets/widowx-250s/${assetFile}`;
 }

@@ -11,7 +11,7 @@ The test range must never present one generic body as if it were a specific real
 | Pupper v3 | Four three-actuator legs plus published crouched envelope | `Nate711/pupperv3-monorepo@6f96c5e79faa05492992c19918f8cd90b9243281` | Gait, footholds, contact, friction, stability, slope, motor limits |
 | Crazyflie 2.1+ | Parametric four-rotor silhouette at the published 92 × 92 × 29 mm size | `bitcraze/bitcraze-mechanics@c70aa74368e713734ddebbf14238fd6c3c2079c6` | Restricted CAD redistribution, aerodynamics, sensing, battery, control |
 
-The official reference image beside the result is loaded from the project or manufacturer source. It is not bundled or claimed as a redistributable asset. The ten WidowX STL files are bundled under the upstream BSD-3-Clause license; every file has a pinned SHA-256 digest in `src/core/robot/widowxSourceModel.js`, and the required license text lives beside the meshes.
+The official reference image beside the result is loaded from the project or manufacturer source. It is not bundled or claimed as a redistributable asset. The ten WidowX STL files are bundled byte-for-byte under the upstream BSD-3-Clause license; the local `.stl.bin` suffix makes Cloudflare serve those same bytes as binary assets. Every file has a pinned SHA-256 digest in `src/core/robot/widowxSourceModel.js`, and the required license text lives beside the meshes.
 
 ## Scale and legibility
 

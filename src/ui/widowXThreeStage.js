@@ -217,7 +217,7 @@ export class WidowXThreeStage {
     const entries = Object.entries(WIDOWX_SOURCE_MODEL.meshes);
     try {
       const geometries = await Promise.all(entries.map(async ([name, definition]) => {
-        const geometry = await loader.loadAsync(widowXMeshAssetUrl(definition.file));
+        const geometry = await loader.loadAsync(widowXMeshAssetUrl(definition.assetFile));
         geometry.applyMatrix4(URDF_TO_THREE);
         geometry.computeBoundingSphere();
         this.meshesLoaded += 1;
