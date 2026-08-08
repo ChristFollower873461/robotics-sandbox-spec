@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Source-backed robot decision workbench, rough simulator, and guarded planar-arm teaching lab.",
   "scripts": {
+    "assets:social": "node scripts/generate-social-assets.mjs",
     "build": "node scripts/build-cloudflare.mjs",
     "deploy:cloudflare": "npm run build && wrangler deploy --config dist/server/wrangler.json --domain robotics.basementboys.org",
     "start": "node scripts/dev-server.mjs",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "esbuild": "0.28.1",
+    "sharp": "0.35.2",
     "wrangler": "4.117.0"
   },
   "engines": {

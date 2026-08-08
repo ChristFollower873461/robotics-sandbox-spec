@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
+const publicDir = path.join(rootDir, "public");
 const port = Number(process.env.PORT || 4173);
 
 const mimeTypes = {
@@ -21,7 +22,7 @@ const mimeTypes = {
   ".txt": "text/plain; charset=utf-8",
 };
 
-function resolvePath(urlPath) {
+function resolvePaths(urlPath) {
   const safePath = decodeURIComponent(urlPath.split("?")[0]);
   const candidate = safePath === "/" ? "/index.html" : safePath;
   const filePath = path.normalize(path.join(rootDir, candidate));
@@ -30,33 +31,47 @@ function resolvePath(urlPath) {
     return null;
   }
 
-  return filePath;
+  if (candidate === "/index.html") {
+    return [filePath];
+  }
+
+  const publicPath = path.normalize(path.join(publicDir, candidate));
+  return [filePath, publicPath];
 }
 
 const server = http.createServer(async (request, response) => {
-  const filePath = resolvePath(request.url || "/");
+  const filePaths = resolvePaths(request.url || "/");
 
-  if (!filePath) {
+  if (!filePaths) {
     response.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
     response.end("Forbidden");
     return;
   }
 
-  try {
-    const stats = await fs.stat(filePath);
-    const finalPath = stats.isDirectory() ? path.join(filePath, "index.html") : filePath;
-    const file = await fs.readFile(finalPath);
-    const extension = path.extname(finalPath);
+  for (const filePath of filePaths) {
+    try {
+      const stats = await fs.stat(filePath);
+      const finalPath = stats.isDirectory() ? path.join(filePath, "index.html") : filePath;
+      const file = await fs.readFile(finalPath);
+      const extension = path.extname(finalPath);
 
-    response.writeHead(200, {
-      "Cache-Control": "no-store",
-      "Content-Type": mimeTypes[extension] || "application/octet-stream",
-    });
-    response.end(file);
-  } catch (error) {
-    response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    response.end("Not found");
+      response.writeHead(200, {
+        "Cache-Control": "no-store",
+        "Content-Type": mimeTypes[extension] || "application/octet-stream",
+      });
+      response.end(file);
+      return;
+    } catch (error) {
+      if (error?.code !== "ENOENT") {
+        response.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
+        response.end("Unable to read local asset");
+        return;
+      }
+    }
   }
+
+  response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+  response.end("Not found");
 });
 
 server.listen(port, () => {
