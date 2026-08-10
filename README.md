@@ -132,6 +132,10 @@ Use the hosted workbench above, or run the exact same application yourself:
    npm run verify
    ```
 
+   The CI gate also builds the Cloudflare release, audits the locked dependency
+   graph, and tests the production HTTPS redirect and browser security headers.
+   The public visit-safety boundary is documented in [`SECURITY.md`](SECURITY.md).
+
 5. Export machine-readable inspection output:
 
    ```bash
