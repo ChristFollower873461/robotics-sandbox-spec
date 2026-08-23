@@ -12,6 +12,7 @@ test("Cloudflare deployment is pinned to the zone-owning account", async () => {
 
   assert.equal(configuration.name, "robotics-sandbox");
   assert.equal(configuration.account_id, "10c5a04d39502818093715beede0cb07");
+  assert.equal(configuration.assets.run_worker_first, true);
   assert.match(
     packageJson.scripts["deploy:cloudflare"],
     /--domain robotics\.basementboys\.org/
