@@ -7,7 +7,7 @@ const CONTENT_SECURITY_POLICY = [
   "frame-ancestors 'none'",
   "img-src 'self' data: blob: https:",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'sha256-vdZ5tDe+QNpWkuCfyRZusZvMDFIz1Za9JyJPkxoh6s4='",
   "style-src 'self' 'unsafe-inline'",
   "upgrade-insecure-requests",
 ].join("; ");
@@ -18,7 +18,7 @@ function secureResponse(response) {
   headers.set("cross-origin-opener-policy", "same-origin");
   headers.set("permissions-policy", "camera=(), geolocation=(), microphone=(), payment=(), usb=()");
   headers.set("referrer-policy", "no-referrer");
-  headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+  headers.set("strict-transport-security", "max-age=300");
   headers.set("x-content-type-options", "nosniff");
   headers.set("x-frame-options", "DENY");
 

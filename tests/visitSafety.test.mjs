@@ -39,7 +39,7 @@ test("public assets carry browser visit-safety headers", async () => {
   assert.equal(response.headers.get("cross-origin-opener-policy"), "same-origin");
   assert.equal(
     response.headers.get("strict-transport-security"),
-    "max-age=31536000; includeSubDomains",
+    "max-age=300",
   );
   assert.match(response.headers.get("permissions-policy") ?? "", /payment=\(\)/);
 
@@ -47,6 +47,12 @@ test("public assets carry browser visit-safety headers", async () => {
   assert.match(csp, /default-src 'self'/);
   assert.match(csp, /connect-src 'self'/);
   assert.match(csp, /img-src 'self' data: blob: https:/);
+  const scriptDirective = csp
+    .split(";")
+    .map((directive) => directive.trim())
+    .find((directive) => directive.startsWith("script-src ")) ?? "";
+  assert.match(scriptDirective, /sha256-vdZ5tDe\+QNpWkuCfyRZusZvMDFIz1Za9JyJPkxoh6s4=/);
+  assert.doesNotMatch(scriptDirective, /unsafe-inline|unsafe-eval/);
   assert.match(csp, /frame-ancestors 'none'/);
   assert.match(csp, /object-src 'none'/);
   assert.match(csp, /upgrade-insecure-requests/);
