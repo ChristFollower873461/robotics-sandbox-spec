@@ -102,16 +102,16 @@ workspace described below; it is infrastructure, not the frontend host.
 - Node.js 20+
 - Plain JavaScript (ES modules)
 - Node built-in test runner (`node:test`)
-- No third-party runtime dependencies
+- Browser runtime dependencies: Three.js and `urdf-loader`.
 
 ## Run / inspect
 
 Use the hosted workbench above, or run the exact same application yourself:
 
-1. Install dependencies (none required today, but keeps workflow consistent):
+1. Install the locked runtime and development dependencies:
 
    ```bash
-   npm install
+   npm ci
    ```
 
 2. Run a quick core logic inspection (FK/IK/trajectory/scenario summary):
