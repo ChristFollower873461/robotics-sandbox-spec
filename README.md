@@ -99,7 +99,7 @@ workspace described below; it is infrastructure, not the frontend host.
 
 ## Tech stack
 
-- Node.js 20+
+- Node.js 22+
 - Plain JavaScript (ES modules)
 - Node built-in test runner (`node:test`)
 - Browser runtime dependencies: Three.js and `urdf-loader`.

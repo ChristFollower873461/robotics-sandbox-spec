@@ -4,7 +4,7 @@ Thanks for contributing. This repo is intentionally small, so changes should sta
 
 ## Local workflow
 
-1. Use Node.js 20+.
+1. Use Node.js 22+.
 2. Install dependencies:
 
    ```bash
